@@ -23,26 +23,37 @@ El contenido de `dist/` se puede publicar en un alojamiento estático. La config
 ## Experiencia de entrada
 
 - Al principio solo se muestra el vídeo, sin sonido, sin controles, sin bucle y dentro de la página en iOS.
-- La secuencia empieza **2,5 segundos antes del final**, según el tiempo real de reproducción, no según el tiempo de carga de la página.
+- La secuencia empieza **en el primer segundo del vídeo**, según el tiempo real de reproducción, no según el tiempo de carga de la página.
 - Primero se dibuja **Aripajama**: una máscara SVG sigue los trazos de la imagen original, ya preparada con fondo transparente. No se usa una fuente de sustitución.
 - Después aparecen **Travel Planner**, **El mundo,**, **a tu manera.**, **Viajes diseñados contigo.** y, por último, **Subir a bordo →**.
-- El vídeo permanece en su último fotograma mientras termina la secuencia. El botón se habilita al finalizar su fundido.
-- «Subir a bordo» abre una segunda pantalla base; «Volver a la portada» vuelve a iniciar la introducción. Una recarga también la reinicia.
+- El botón se habilita al finalizar su fundido, aproximadamente en el segundo **8,3**, y permite navegar mientras el vídeo sigue reproduciéndose. Al terminar el vídeo, toda la composición queda visible y operativa y se conserva el último fotograma.
+- «Subir a bordo» abre el hub con un fundido cruzado de **800 ms**; «Volver a la portada» regresa suavemente y vuelve a iniciar la introducción. Una recarga también la reinicia.
 - Si se bloquea el autoplay, se ofrece reproducción manual o acceso a la portada fija. Si falla el archivo, se muestra la imagen final con la composición lista.
 - Con **movimiento reducido** se muestra directamente la portada estática y no se solicita el vídeo.
 
 ### Tiempos aproximados para el vídeo actual (10 s)
 
-| Elemento | Inicio desde la entrada |
+| Elemento | Inicio desde el comienzo del vídeo |
 | --- | --- |
-| Escritura del logo | 7,5 s |
-| Travel Planner | 10,5 s |
-| El mundo, | 11,15 s |
-| a tu manera. | 11,85 s |
-| Viajes diseñados contigo. | 12,75 s |
-| Subir a bordo | 13,7 s; disponible alrededor de 14,8 s |
+| Escritura del logo | 1 s |
+| Travel Planner | 4 s |
+| El mundo, | 4,65 s |
+| a tu manera. | 5,35 s |
+| Viajes diseñados contigo. | 6,25 s |
+| Subir a bordo | 7,2 s; disponible alrededor de 8,3 s |
 
 La frecuencia de eventos del navegador puede desplazar ligeramente el inicio. El contenido sigue siendo texto HTML salvo el nombre de marca; las fuentes se sirven localmente, sin peticiones a Google Fonts.
+
+## Fondo del hub
+
+- `videohub.mp4` se sirve mediante su derivado `/media/hub.mp4`: reproducción automática, sin audio, en bucle y dentro de la página en iOS.
+- Se recortan los últimos **0,5 s** del original y se mezclan **18 pares de fotogramas** del final y del comienzo, con un fundido suavizado y extremos completos. El ciclo preparado dura **8,75 s** (210 fotogramas) y mantiene la resolución de 720 × 1280 a 24 fps.
+- La portada permanece visible mientras se prepara el vídeo o su imagen inicial. Durante el fundido conviven ambas pantallas; la saliente se retira al finalizar. Si la carga no responde en 3 s, se permite entrar con un fondo de color de respaldo.
+- El vídeo cubre toda la pantalla mediante `object-fit: cover`, sin deformarse; en horizontal el encuadre se recorta por arriba y abajo. Un velo ligero en los extremos ayuda a leer los controles.
+- Sobre el paisaje aparecen «Tu viaje, en tres formas», un separador y «Conóceme, inspírate y empieza a crear tu próxima historia.». Los textos «01 — Quién soy», «02 — Biblioteca de viajes» y «03 — Crear mi viaje» se distribuyen escalonados sobre las ventanas, con una entrada suave y una composición adaptada a horizontal y escritorio.
+- Los tres textos numerados son contenido estático hasta disponer de sus páginas de destino. Se mantienen el regreso a la portada y el control de pausa/reproducción del fondo.
+- Si el autoplay se bloquea, se puede reproducir manualmente. Si el vídeo falla, se conserva la imagen inicial. WebKit reanuda la reproducción tras el salto nativo del bucle, respetando las pausas del usuario.
+- Con movimiento reducido se utiliza la imagen estática, no se descarga el vídeo y se omite el fundido.
 
 ## Estructura y personalización
 
@@ -51,24 +62,27 @@ src/
   components/Brand.tsx         Logo original y guías SVG de escritura
   hooks/useReducedMotion.ts   Preferencia de movimiento del sistema
   screens/IntroScreen.tsx     Vídeo, sincronización, textos y recuperación
-  screens/JourneyScreen.tsx   Segunda pantalla base
-  App.tsx                    Navegación entre las dos pantallas
+  screens/JourneyScreen.tsx   Fondo del hub, textos, respaldo y controles
+  App.tsx                    Preparación y fundido entre las pantallas
   styles.css                 Diseño mobile first y animaciones
 public/
   brand/aripajama.webp        Nombre de marca con transparencia
   media/portada.mp4           Vídeo preparado para la web
   media/portada-inicio.webp   Primer fotograma para la carga
   media/portada-final.webp    Último fotograma para el respaldo
+  media/hub.mp4               Fondo del hub con unión suave del bucle
+  media/hub-inicio.webp       Primer fotograma y respaldo del hub
 scripts/prepare-assets.mjs    Generación reproducible de los recursos
 tests/intro.spec.ts           Comprobaciones en Chromium y WebKit
+tests/journey.spec.ts         Fundido, bucle, controles y alternativas del hub
 tasks/todo.md                Plan y revisión del trabajo
 ```
 
 - **Textos:** `src/screens/IntroScreen.tsx` y `src/screens/JourneyScreen.tsx`.
 - **Colores, posición, tamaños y tiempos entre elementos:** `src/styles.css`. Los retardos de `.reveal-item` son relativos al inicio de la escritura.
-- **Momento de inicio:** constante `REVEAL_BEFORE_END` de `src/screens/IntroScreen.tsx`.
+- **Momento de inicio:** constante `REVEAL_AT` de `src/screens/IntroScreen.tsx`, en segundos de reproducción.
 - **Velocidad del trazo:** `start` y `duration` de las guías de `src/components/Brand.tsx`.
-- **Siguiente pantalla:** sustituir o ampliar `src/screens/JourneyScreen.tsx` con el contenido definitivo.
+- **Navegación del hub:** conectar los tres textos de `src/screens/JourneyScreen.tsx` con sus destinos cuando estén definidos; actualmente se presentan sin interacción.
 
 En móvil el vídeo llena la pantalla y la composición se sitúa sobre el espacio claro. En horizontal y escritorio, el paisaje ocupa la zona izquierda, con un borde fundido, y la marca y los textos ocupan la derecha. Se contemplan zonas seguras, teclado y objetivos táctiles de al menos 44 px.
 
@@ -80,7 +94,9 @@ Los derivados ya están incluidos: **FFmpeg no es necesario para arrancar ni com
 npm run assets:prepare
 ```
 
-Este comando parte de `videoPortada.mp4` y `letrasAripajama.png` en la raíz y conserva ambos originales. Prepara una copia del vídeo sin pista de audio, con los metadatos al principio (`faststart`), extrae el primer y último fotograma y elimina el fondo blanco del logotipo. El vídeo mantiene su resolución original de 720 × 1280 y su calidad, sin recodificarlo.
+Este comando parte de `videoPortada.mp4`, `videohub.mp4` y `letrasAripajama.png` en la raíz y conserva los originales. Para la portada prepara una copia del vídeo sin pista de audio, con los metadatos al principio (`faststart`), extrae el primer y último fotograma y elimina el fondo blanco del logotipo. El vídeo de portada mantiene su resolución original de 720 × 1280 y su calidad, sin recodificarlo.
+
+Para el hub se utilizan FFmpeg y FFprobe: se recodifica en H.264, sin audio, con `faststart` y CRF 17. Tras eliminar los últimos 12 fotogramas, se mezclan los 18 últimos con los 18 primeros mediante una curva suave y redondeo al entero más próximo. El primer par conserva completamente el final y el último conserva completamente el fotograma 17 del comienzo; el ciclo arranca en el fotograma 18, continuando el movimiento. La imagen de respaldo se extrae del primer fotograma del derivado.
 
 El recorte y las guías del logo están ajustados a la imagen actual. Si cambia el diseño del logotipo, hay que actualizar ambos; el resto de los textos y el descriptor son independientes.
 
@@ -91,4 +107,4 @@ npx playwright install chromium webkit
 npm run test:e2e
 ```
 
-Las pruebas verifican la reproducción real y el orden de aparición, la navegación y el reinicio, un error de decodificación, el bloqueo de autoplay, la preferencia de movimiento reducido, el foco del teclado y la ausencia de desbordamientos en 320 × 568, 390 × 844, 941 × 1672, 844 × 390 y 1440 × 900. También generan capturas en `test-results/`, incluidos el logo durante la escritura y la portada completa. Chromium y WebKit se ejecutan con emulación de móvil; no sustituyen la revisión en un dispositivo físico.
+Las pruebas verifican la reproducción real y el orden de aparición, la navegación y el reinicio, un error de decodificación, el bloqueo de autoplay, la preferencia de movimiento reducido, el foco del teclado y la ausencia de desbordamientos en 320 × 568, 390 × 844, 941 × 1672, 844 × 390 y 1440 × 900. En el hub comprueban además el fundido con el fondo preparado, dos ciclos completos reales, la duración del recurso recortado, la pausa y reanudación, y las alternativas ante error y bloqueo. También generan capturas en `test-results/`, incluidos el logo durante la escritura, la portada, el fundido y el hub. Chromium y WebKit se ejecutan con emulación de móvil; no sustituyen la revisión en un dispositivo físico.

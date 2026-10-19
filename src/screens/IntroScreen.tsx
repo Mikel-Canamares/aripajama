@@ -3,16 +3,18 @@ import { Brand } from '../components/Brand'
 import { useReducedMotion } from '../hooks/useReducedMotion'
 
 // Time relative to the actual media clock, not time since page load.
-const REVEAL_BEFORE_END = 2.5
+const REVEAL_AT = 1
 
 export function IntroScreen({ onEnter }: { onEnter: () => void }) {
   const videoRef = useRef<HTMLVideoElement>(null)
   const reducedMotion = useReducedMotion()
   const [revealed, setRevealed] = useState(false)
   const [videoFailed, setVideoFailed] = useState(false)
+  const [videoEnded, setVideoEnded] = useState(false)
   const [blocked, setBlocked] = useState(false)
   const [buttonReady, setButtonReady] = useState(false)
-  const showImmediately = reducedMotion || videoFailed
+  const showStatic = reducedMotion || videoFailed
+  const showImmediately = showStatic || videoEnded
   const showComposition = revealed || showImmediately
 
   const playVideo = () => {
@@ -37,7 +39,7 @@ export function IntroScreen({ onEnter }: { onEnter: () => void }) {
 
   const syncReveal = () => {
     const video = videoRef.current
-    if (video && Number.isFinite(video.duration) && video.currentTime >= Math.max(0, video.duration - REVEAL_BEFORE_END)) {
+    if (video && video.currentTime >= REVEAL_AT) {
       setRevealed(true)
     }
   }
@@ -50,7 +52,7 @@ export function IntroScreen({ onEnter }: { onEnter: () => void }) {
       aria-label="Bienvenido a Aripajama"
     >
       <div className="intro__media" aria-hidden="true">
-        {showImmediately ? (
+        {showStatic ? (
           <img className="intro__film" src="/media/portada-final.webp" width="720" height="1280" alt="" />
         ) : (
           <video
@@ -66,7 +68,7 @@ export function IntroScreen({ onEnter }: { onEnter: () => void }) {
             tabIndex={-1}
             onTimeUpdate={syncReveal}
             onPlaying={() => setBlocked(false)}
-            onEnded={() => setRevealed(true)}
+            onEnded={() => setVideoEnded(true)}
             onError={() => { setVideoFailed(true); setBlocked(false) }}
           />
         )}

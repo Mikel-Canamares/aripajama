@@ -46,4 +46,34 @@ ffmpeg(['-i', video, '-map', '0:v:0', '-c:v', 'copy', '-an', '-movflags', '+fast
 ffmpeg(['-i', video, '-frames:v', '1', '-c:v', 'libwebp', '-quality', '85', path.join(media, 'portada-inicio.webp')])
 ffmpeg(['-sseof', '-0.05', '-i', video, '-frames:v', '1', '-c:v', 'libwebp', '-quality', '90', path.join(media, 'portada-final.webp')])
 
+const hubSource = path.join(root, 'videohub.mp4')
+const hubVideo = path.join(media, 'hub.mp4')
+const hubDuration = Number(execFileSync('ffprobe', [
+  '-v', 'error', '-select_streams', 'v:0', '-show_entries', 'stream=duration',
+  '-of', 'default=noprint_wrappers=1:nokey=1', hubSource,
+], { encoding: 'utf8' }).trim())
+const frameRate = 24
+const endFrame = Math.round((hubDuration - .5) * frameRate)
+const overlapFrames = Math.round(.75 * frameRate)
+const blendStart = endFrame - overlapFrames
+const progress = `min(1,T*${frameRate}/${overlapFrames - 1})`
+const easedProgress = `(${progress}*${progress}*(3-2*${progress}))`
+
+// Drop the final half-second, then blend exactly 18 tail/opening frame pairs.
+// Inclusive endpoints give 100% tail at frame 0 and 100% opening at frame 17.
+// Smoothstep eases the blend at both ends; frame 17 then loops into source frame 18.
+ffmpeg([
+  '-i', hubSource,
+  '-filter_complex',
+  `[0:v:0]fps=${frameRate},split=3[main][tail][head];` +
+  `[main]trim=start_frame=${overlapFrames}:end_frame=${blendStart},setpts=PTS-STARTPTS[body];` +
+  `[tail]trim=start_frame=${blendStart}:end_frame=${endFrame},setpts=PTS-STARTPTS[end];` +
+  `[head]trim=start_frame=0:end_frame=${overlapFrames},setpts=PTS-STARTPTS[start];` +
+  `[end][start]blend=all_expr='round(A+(B-A)*${easedProgress})':shortest=1[join];` +
+  `[body][join]concat=n=2:v=1:a=0,format=yuv420p[loop]`,
+  '-map', '[loop]', '-an', '-c:v', 'libx264', '-preset', 'slow', '-crf', '17',
+  '-movflags', '+faststart', hubVideo,
+])
+ffmpeg(['-i', hubVideo, '-frames:v', '1', '-c:v', 'libwebp', '-quality', '90', path.join(media, 'hub-inicio.webp')])
+
 console.log('Recursos preparados en public/brand y public/media. Los originales se conservan intactos.')
