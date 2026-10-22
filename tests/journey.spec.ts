@@ -6,7 +6,7 @@ async function prepareEntry(page: Page) {
   const video = page.locator('.intro video')
   await expect.poll(() => video.evaluate((element: HTMLVideoElement) => Number.isFinite(element.duration))).toBe(true)
   await video.evaluate((element: HTMLVideoElement) => { element.currentTime = element.duration - .1 })
-  await expect(page.getByRole('button', { name: 'Subir a bordo' })).toBeEnabled()
+  await expect(page.getByRole('button', { name: 'Comencemos' })).toBeEnabled()
 }
 
 test('entra con fundido sobre un fondo preparado y reproduce el bucle real', async ({ page }, testInfo) => {
@@ -37,7 +37,7 @@ test('entra con fundido sobre un fondo preparado y reproduce el bucle real', asy
     }
     document.addEventListener('transitionrun', inspect)
   }))
-  await page.getByRole('button', { name: 'Subir a bordo' }).click()
+  await page.getByRole('button', { name: 'Comencemos' }).click()
   const experience = page.locator('.experience')
   const frame = await crossfade
   expect(frame.ready).toBe(true)
@@ -87,7 +87,7 @@ test('entra con fundido sobre un fondo preparado y reproduce el bucle real', asy
 
 test('un fallo de decodificación conserva el fondo estático y la navegación', async ({ page }) => {
   await prepareEntry(page)
-  await page.getByRole('button', { name: 'Subir a bordo' }).click()
+  await page.getByRole('button', { name: 'Comencemos' }).click()
   await expect(page.getByRole('button', { name: 'Pausar fondo' })).toBeVisible()
   await page.locator('.journey video').evaluate((video: HTMLVideoElement) => {
     video.src = 'data:video/mp4;base64,AAAA'
@@ -115,7 +115,7 @@ test('permite reproducir el fondo si se bloquea el autoplay del hub', async ({ p
     }
   })
   await prepareEntry(page)
-  await page.getByRole('button', { name: 'Subir a bordo' }).click()
+  await page.getByRole('button', { name: 'Comencemos' }).click()
   await page.getByRole('button', { name: 'Reproducir fondo' }).click()
   await expect(page.getByRole('button', { name: 'Pausar fondo' })).toBeVisible()
   await expect.poll(() => page.locator('.journey video').evaluate((element: HTMLVideoElement) => element.paused)).toBe(false)
@@ -136,7 +136,7 @@ test('el hub estático respeta movimiento reducido y cabe en todos los encuadres
   ]) {
     await page.setViewportSize(viewport)
     await page.goto('/')
-    await page.getByRole('button', { name: 'Subir a bordo' }).click()
+    await page.getByRole('button', { name: 'Comencemos' }).click()
     await expect(page.getByRole('heading', { name: 'Tu viaje, en tres formas' })).toBeFocused()
     await expect(page.locator('video')).toHaveCount(0)
     await expect(page.locator('.journey__header')).toBeInViewport({ ratio: .99 })

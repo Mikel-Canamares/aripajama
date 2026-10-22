@@ -9,6 +9,7 @@ const media = path.join(root, 'public', 'media')
 const brand = path.join(root, 'public', 'brand')
 await Promise.all([mkdir(media, { recursive: true }), mkdir(brand, { recursive: true })])
 
+if (!process.argv.includes('--intro-only')) {
 // Remove the textured white paper without changing the original letter shapes.
 // This crop excludes the separate descriptor; the SVG mask uses source coordinates.
 const crop = { left: 320, top: 80, width: 1380, height: 480 }
@@ -37,14 +38,18 @@ for (let y = 0; y < info.height; y++) {
 await sharp(rgba, { raw: { width: info.width, height: info.height, channels: 4 } })
   .webp({ lossless: true })
   .toFile(path.join(brand, 'aripajama.webp'))
+}
 
-const video = path.join(root, 'videoPortada.mp4')
+const video = path.join(root, 'videoPortadaNuevo.mov')
 const ffmpeg = (args) => execFileSync('ffmpeg', ['-hide_banner', '-loglevel', 'error', '-y', ...args], { stdio: 'inherit' })
 
-// Preserve the video stream, remove unused audio, and move metadata to the front.
-ffmpeg(['-i', video, '-map', '0:v:0', '-c:v', 'copy', '-an', '-movflags', '+faststart', path.join(media, 'portada.mp4')])
+// Convert HEVC to browser-compatible H.264, without audio or source metadata.
+ffmpeg(['-i', video, '-map', '0:v:0', '-map_metadata', '-1', '-c:v', 'libx264', '-preset', 'slow', '-crf', '18', '-pix_fmt', 'yuv420p', '-an', '-movflags', '+faststart', path.join(media, 'portada.mp4')])
 ffmpeg(['-i', video, '-frames:v', '1', '-c:v', 'libwebp', '-quality', '85', path.join(media, 'portada-inicio.webp')])
 ffmpeg(['-sseof', '-0.05', '-i', video, '-frames:v', '1', '-c:v', 'libwebp', '-quality', '90', path.join(media, 'portada-final.webp')])
+
+// Allow updating the intro without regenerating unrelated brand and hub assets.
+if (process.argv.includes('--intro-only')) process.exit(0)
 
 const hubSource = path.join(root, 'videohub.mp4')
 const hubVideo = path.join(media, 'hub.mp4')

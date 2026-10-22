@@ -53,7 +53,7 @@ export function IntroScreen({ onEnter }: { onEnter: () => void }) {
     >
       <div className="intro__media" aria-hidden="true">
         {showStatic ? (
-          <img className="intro__film" src="/media/portada-final.webp" width="720" height="1280" alt="" />
+          <img className="intro__film" src="/media/portada-final.webp" width="1080" height="1920" alt="" />
         ) : (
           <video
             ref={videoRef}
@@ -80,7 +80,7 @@ export function IntroScreen({ onEnter }: { onEnter: () => void }) {
           <span className="intro__headline-first reveal-item">El mundo,</span>
           <span className="intro__headline-second reveal-item">a tu manera.</span>
         </h1>
-        <p className="intro__tagline reveal-item">Viajes diseñados contigo.</p>
+        <p className="intro__tagline reveal-item">Viajes diseñados contigo</p>
         <div
           className="intro__action reveal-item"
           onAnimationEnd={(event) => {
@@ -92,7 +92,7 @@ export function IntroScreen({ onEnter }: { onEnter: () => void }) {
             onClick={onEnter}
             disabled={!(buttonReady || showImmediately)}
           >
-            <span>Subir a bordo</span>
+            <span>Comencemos</span>
             <svg className="button__arrow" viewBox="0 0 32 16" fill="none" aria-hidden="true">
               <path d="M1 8h28M23 1l7 7-7 7" />
             </svg>

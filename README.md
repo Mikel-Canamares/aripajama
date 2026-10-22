@@ -25,13 +25,13 @@ El contenido de `dist/` se puede publicar en un alojamiento estático. La config
 - Al principio solo se muestra el vídeo, sin sonido, sin controles, sin bucle y dentro de la página en iOS.
 - La secuencia empieza **en el primer segundo del vídeo**, según el tiempo real de reproducción, no según el tiempo de carga de la página.
 - Primero se dibuja **Aripajama**: una máscara SVG sigue los trazos de la imagen original, ya preparada con fondo transparente. No se usa una fuente de sustitución.
-- Después aparecen **Travel Planner**, **El mundo,**, **a tu manera.**, **Viajes diseñados contigo.** y, por último, **Subir a bordo →**.
-- El botón se habilita al finalizar su fundido, aproximadamente en el segundo **8,3**, y permite navegar mientras el vídeo sigue reproduciéndose. Al terminar el vídeo, toda la composición queda visible y operativa y se conserva el último fotograma.
-- «Subir a bordo» abre el hub con un fundido cruzado de **800 ms**; «Volver a la portada» regresa suavemente y vuelve a iniciar la introducción. Una recarga también la reinicia.
+- Después aparecen **Travel Planner**, **El mundo,**, **a tu manera.**, **VIAJES DISEÑADOS CONTIGO** y, por último, **COMENCEMOS →**. La composición vertical sitúa la marca arriba a la derecha y el titular burdeos con su segunda línea en cursiva taupe a media altura, sobre el fondo blanco del globo y las cintas doradas.
+- El botón se habilita al finalizar su fundido o al terminar el vídeo, lo que ocurra primero. Con el vídeo actual, de **7,5 s**, el final completa la composición y la deja operativa, conservando el último fotograma.
+- «Comencemos» abre el hub con un fundido cruzado de **800 ms**; «Volver a la portada» regresa suavemente y vuelve a iniciar la introducción. Una recarga también la reinicia.
 - Si se bloquea el autoplay, se ofrece reproducción manual o acceso a la portada fija. Si falla el archivo, se muestra la imagen final con la composición lista.
 - Con **movimiento reducido** se muestra directamente la portada estática y no se solicita el vídeo.
 
-### Tiempos aproximados para el vídeo actual (10 s)
+### Tiempos aproximados para el vídeo actual (7,5 s)
 
 | Elemento | Inicio desde el comienzo del vídeo |
 | --- | --- |
@@ -39,8 +39,8 @@ El contenido de `dist/` se puede publicar en un alojamiento estático. La config
 | Travel Planner | 4 s |
 | El mundo, | 4,65 s |
 | a tu manera. | 5,35 s |
-| Viajes diseñados contigo. | 6,25 s |
-| Subir a bordo | 7,2 s; disponible alrededor de 8,3 s |
+| Viajes diseñados contigo | 6,25 s |
+| Comencemos | 7,2 s; disponible al terminar el vídeo (7,5 s) |
 
 La frecuencia de eventos del navegador puede desplazar ligeramente el inicio. El contenido sigue siendo texto HTML salvo el nombre de marca; las fuentes se sirven localmente, sin peticiones a Google Fonts.
 
@@ -94,7 +94,7 @@ Los derivados ya están incluidos: **FFmpeg no es necesario para arrancar ni com
 npm run assets:prepare
 ```
 
-Este comando parte de `videoPortada.mp4`, `videohub.mp4` y `letrasAripajama.png` en la raíz y conserva los originales. Para la portada prepara una copia del vídeo sin pista de audio, con los metadatos al principio (`faststart`), extrae el primer y último fotograma y elimina el fondo blanco del logotipo. El vídeo de portada mantiene su resolución original de 720 × 1280 y su calidad, sin recodificarlo.
+Este comando parte de `videoPortadaNuevo.mov`, `videohub.mp4` y `letrasAripajama.png` en la raíz y conserva los originales. Para la portada convierte HEVC a H.264 (CRF 18, `yuv420p`), sin audio ni metadatos del original y con `faststart`, y extrae el primer y último fotograma. Mantiene la resolución de 1080 × 1920. También elimina el fondo blanco del logotipo. Para regenerar solo el vídeo de portada y sus imágenes, sin modificar el logo ni el hub, usa `npm run assets:prepare -- --intro-only`.
 
 Para el hub se utilizan FFmpeg y FFprobe: se recodifica en H.264, sin audio, con `faststart` y CRF 17. Tras eliminar los últimos 12 fotogramas, se mezclan los 18 últimos con los 18 primeros mediante una curva suave y redondeo al entero más próximo. El primer par conserva completamente el final y el último conserva completamente el fotograma 17 del comienzo; el ciclo arranca en el fotograma 18, continuando el movimiento. La imagen de respaldo se extrae del primer fotograma del derivado.
 

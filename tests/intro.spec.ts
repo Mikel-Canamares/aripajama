@@ -1,12 +1,12 @@
 import { expect, test } from '@playwright/test'
 
-test('revela la composición y permite navegar mientras se reproduce el vídeo', async ({ page }, testInfo) => {
+test('revela la composición y permite navegar al completar el nuevo vídeo', async ({ page }, testInfo) => {
   const errors: string[] = []
   page.on('pageerror', (error) => errors.push(error.message))
   await page.goto('/')
   const video = page.locator('.intro video')
   const intro = page.locator('.intro')
-  const button = page.getByRole('button', { name: 'Subir a bordo', includeHidden: true })
+  const button = page.getByRole('button', { name: 'Comencemos', includeHidden: true })
 
   await expect.poll(() => video.evaluate((element: HTMLVideoElement) => element.currentTime), { intervals: [50] }).toBeGreaterThan(.1)
   await expect(intro).toHaveAttribute('data-revealed', 'false')
@@ -30,10 +30,9 @@ test('revela la composición y permite navegar mientras se reproduce el vídeo',
     ended: element.ended,
     paused: element.paused,
   }))
-  expect(readyAt.time).toBeGreaterThanOrEqual(8)
-  expect(readyAt.time).toBeLessThan(9.5)
-  expect(readyAt.ended).toBe(false)
-  expect(readyAt.paused).toBe(false)
+  expect(readyAt.time).toBeCloseTo(7.5, 1)
+  expect(readyAt.ended).toBe(true)
+  expect(readyAt.paused).toBe(true)
   await expect(page.locator('.brand__finish')).toHaveCSS('opacity', '1')
   for (const item of await page.locator('.reveal-item').all()) {
     await expect(item).toHaveCSS('opacity', '1')
@@ -58,7 +57,7 @@ test('al terminar el vídeo completa la composición aunque la animación siga p
   await page.goto('/')
   const video = page.locator('video')
   await expect.poll(() => video.evaluate((element: HTMLVideoElement) => Number.isFinite(element.duration)), { intervals: [50] }).toBe(true)
-  await expect(page.getByRole('button', { name: 'Subir a bordo', includeHidden: true })).toBeDisabled()
+  await expect(page.getByRole('button', { name: 'Comencemos', includeHidden: true })).toBeDisabled()
   await video.evaluate((element: HTMLVideoElement) => { element.currentTime = element.duration - .1 })
   await expect.poll(() => video.evaluate((element: HTMLVideoElement) => element.ended)).toBe(true)
   await expect(page.locator('.intro')).toHaveAttribute('data-immediate', 'true')
@@ -67,7 +66,7 @@ test('al terminar el vídeo completa la composición aunque la animación siga p
   for (const item of await page.locator('.reveal-item').all()) {
     await expect(item).toHaveCSS('opacity', '1')
   }
-  await page.getByRole('button', { name: 'Subir a bordo' }).click()
+  await page.getByRole('button', { name: 'Comencemos' }).click()
   await expect(page.getByRole('heading', { name: 'Tu viaje, en tres formas' })).toBeFocused()
 })
 
@@ -82,7 +81,7 @@ test('un fallo del vídeo ofrece una portada estática y navegable', async ({ pa
   await expect(page.locator('.intro')).toHaveAttribute('data-immediate', 'true')
   await expect(page.locator('video')).toHaveCount(0)
   await expect(page.locator('.intro__film')).toHaveAttribute('src', '/media/portada-final.webp')
-  await page.getByRole('button', { name: 'Subir a bordo' }).click()
+  await page.getByRole('button', { name: 'Comencemos' }).click()
   await expect(page.getByRole('heading', { name: 'Tu viaje, en tres formas' })).toBeVisible()
 })
 
@@ -97,7 +96,7 @@ test('permite continuar si el navegador bloquea la reproducción automática', a
   await page.goto('/')
   await expect(page.getByRole('button', { name: 'Reproducir introducción' })).toBeVisible()
   await page.getByRole('button', { name: 'Ir a la portada' }).click()
-  await expect(page.getByRole('button', { name: 'Subir a bordo' })).toBeEnabled()
+  await expect(page.getByRole('button', { name: 'Comencemos' })).toBeEnabled()
 })
 
 test('movimiento reducido evita el vídeo y conserva la composición y el foco', async ({ page }) => {
@@ -108,7 +107,7 @@ test('movimiento reducido evita el vídeo y conserva la composición y el foco',
   await expect(page.locator('video')).toHaveCount(0)
   await expect(page.locator('.intro__action')).toHaveCSS('opacity', '1')
   await page.keyboard.press('Tab')
-  await expect(page.getByRole('button', { name: 'Subir a bordo' })).toBeFocused()
+  await expect(page.getByRole('button', { name: 'Comencemos' })).toBeFocused()
   await page.keyboard.press('Enter')
   await expect(page.getByRole('heading', { name: 'Tu viaje, en tres formas' })).toBeFocused()
   expect(videoRequests).toEqual([])
@@ -126,7 +125,12 @@ test('la portada cabe en móvil pequeño, referencia, horizontal y escritorio', 
     await page.setViewportSize(viewport)
     await page.goto('/')
     await page.evaluate(() => document.fonts.ready)
-    const button = page.getByRole('button', { name: 'Subir a bordo' })
+    const button = page.getByRole('button', { name: 'Comencemos' })
+    await expect(page.locator('.intro__headline')).toBeInViewport({ ratio: .99 })
+    await expect(page.locator('.intro__headline-second')).toHaveCSS('font-style', 'italic')
+    await expect(page.locator('.intro__tagline')).toHaveText('Viajes diseñados contigo')
+    await expect(page.locator('.intro__tagline')).toBeInViewport({ ratio: .99 })
+    await expect(page.locator('.intro .brand')).toBeInViewport({ ratio: .99 })
     await expect(button).toBeInViewport({ ratio: .99 })
     const bounds = await button.boundingBox()
     expect(bounds!.height).toBeGreaterThanOrEqual(44)
