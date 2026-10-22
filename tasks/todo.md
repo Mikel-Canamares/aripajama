@@ -1,5 +1,23 @@
 # Portada Aripajama
 
+## Limpieza completada: recursos del hub eliminados, hub como placeholder
+
+- [x] Eliminar archivos de vídeo fuente de la raíz: `videoPortada.mp4`, `videoPortadaNuevo.mov`, `videohub.mp4`, `letrasAripajama.png`.
+- [x] Eliminar `public/media/hub.mp4` y `public/media/hub-inicio.webp`.
+- [x] Simplificar `JourneyScreen.tsx` a placeholder limpio sin código de vídeo.
+- [x] Eliminar estilos CSS del hub relacionados con vídeo (`.journey__landscape`, `.journey__film`, `.journey__film--video`).
+- [x] Recortar `prepare-assets.mjs` para procesar solo los recursos de la portada.
+- [x] Simplificar `tests/journey.spec.ts` a tests de navegación y encuadres (sin tests de vídeo).
+- [x] Verificar `npm run build`: correcto.
+
+### Estado actual
+
+- La portada (`IntroScreen`) funciona igual que antes.
+- El hub (`JourneyScreen`) es un placeholder con los tres textos numerados y el botón «Volver a la portada», sin fondo de vídeo.
+- Pendiente: diseño definitivo del hub.
+
+
+
 ## Plan aprobado: textos sobre el fondo del hub
 
 - [x] Revisar el fondo actual y los componentes y estilos relevantes.
