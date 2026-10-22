@@ -2,10 +2,13 @@ import { useCallback, useEffect, useState } from 'react'
 import { useReducedMotion } from './hooks/useReducedMotion'
 import { IntroScreen } from './screens/IntroScreen'
 import { JourneyScreen } from './screens/JourneyScreen'
+import { LibraryScreen } from './screens/LibraryScreen'
 
 export function App() {
   const [phase, setPhase] = useState<'intro' | 'preparing' | 'entering' | 'journey' | 'returning'>('intro')
   const [hubReady, setHubReady] = useState(false)
+  const [libraryOpen, setLibraryOpen] = useState(false)
+  const [restoreLibraryFocus, setRestoreLibraryFocus] = useState(false)
   const reducedMotion = useReducedMotion()
   const handleHubReady = useCallback(() => setHubReady(true), [])
 
@@ -50,11 +53,19 @@ export function App() {
             setPhase((current) => current === 'entering' ? 'journey' : current === 'returning' ? 'intro' : current)
           }}
         >
-          <JourneyScreen
-            active={phase === 'journey'}
-            onReady={handleHubReady}
-            onBack={() => setPhase('returning')}
-          />
+          <div hidden={libraryOpen}>
+            <JourneyScreen
+              active={phase === 'journey' && !libraryOpen}
+              restoreLibraryFocus={restoreLibraryFocus}
+              onReady={handleHubReady}
+              onBack={() => { setRestoreLibraryFocus(false); setPhase('returning') }}
+              onOpenLibrary={() => { setRestoreLibraryFocus(false); setLibraryOpen(true) }}
+            />
+          </div>
+          {libraryOpen && <LibraryScreen onBack={() => {
+            setRestoreLibraryFocus(true)
+            setLibraryOpen(false)
+          }} />}
         </div>
       )}
     </div>

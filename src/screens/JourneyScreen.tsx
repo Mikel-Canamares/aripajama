@@ -18,17 +18,24 @@ function Lines({ lines }: { lines: string[] }) {
   ))
 }
 
-export function JourneyScreen({ active, onReady, onBack }: {
+export function JourneyScreen({ active, onReady, onBack, onOpenLibrary, restoreLibraryFocus }: {
   active: boolean
   onReady: () => void
   onBack: () => void
+  onOpenLibrary: () => void
+  restoreLibraryFocus: boolean
 }) {
   const titleRef = useRef<HTMLHeadingElement>(null)
+  const libraryRef = useRef<HTMLButtonElement>(null)
   const [artwork, setArtwork] = useState<'loading' | 'ready' | 'error'>('loading')
 
   useEffect(() => {
-    if (active) titleRef.current?.focus({ preventScroll: true })
-  }, [active])
+    if (active) {
+      window.scrollTo(0, 0)
+      const target = restoreLibraryFocus ? libraryRef.current : titleRef.current
+      target?.focus({ preventScroll: true })
+    }
+  }, [active, restoreLibraryFocus])
 
   useEffect(() => {
     if (!active) return
@@ -86,6 +93,12 @@ export function JourneyScreen({ active, onReady, onBack }: {
         <ol className="journey__cards" role="list">
           {CONTENT.cards.map(({ id, title, subtitle }) => (
             <li key={id} className={`journey__card journey__card--${id}`}>
+              {id === 'library' && <button
+                ref={libraryRef}
+                className="journey__card-link"
+                aria-label="Biblioteca de viajes"
+                onClick={onOpenLibrary}
+              />}
               <div className="journey__card-text">
                 <h2 className="journey__card-title"><Lines lines={title} /></h2>
                 <p className="journey__card-sub"><Lines lines={subtitle} /></p>

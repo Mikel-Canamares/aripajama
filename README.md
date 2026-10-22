@@ -63,7 +63,7 @@ Las tarjetas se renderizan como componentes HTML/CSS independientes sobre el fon
 - Modifica las variables `--journey-heading-*`, `--journey-subheading-*`, `--journey-card-*` y `--journey-caption-*` dentro de `.journey` en `src/styles.css`.
 - Cada grupo permite cambiar fuente, tamaño, peso, color e interletraje. Los tamaños en `cqw` son porcentajes del ancho del lienzo: `1cqw` equivale a 9,42 px en la referencia a tamaño completo.
 - Las fuentes se sirven localmente. Si se cambia mucho el contenido o el tamaño, revisar que el texto siga dentro de las tarjetas y no alcance las flechas.
-- Las tarjetas siguen siendo contenido estático hasta disponer de sus destinos.
+- La tarjeta «Biblioteca de viajes» abre la biblioteca. Las otras dos siguen siendo contenido estático hasta disponer de sus destinos.
 
 ### Navegación, carga y accesibilidad
 
@@ -99,11 +99,21 @@ tasks/todo.md                Plan y revisión del trabajo
 - **Colores, posición, tamaños y tiempos entre elementos:** `src/styles.css`. Los retardos de `.reveal-item` son relativos al inicio de la escritura.
 - **Momento de inicio:** constante `REVEAL_AT` de `src/screens/IntroScreen.tsx`, en segundos de reproducción.
 - **Velocidad del trazo:** `start` y `duration` de las guías de `src/components/Brand.tsx`.
-- **Navegación del hub:** conectar los tres textos de `src/screens/JourneyScreen.tsx` con sus destinos cuando estén definidos; actualmente se presentan sin interacción.
+- **Navegación del hub:** la biblioteca está conectada desde `src/App.tsx`; los destinos «Quién soy» y «Crear mi viaje» siguen pendientes.
 
 En la portada, el vídeo llena el móvil y la composición se sitúa sobre el espacio claro. En horizontal y escritorio, el paisaje de la portada ocupa la zona izquierda, con un borde fundido, y la marca y los textos ocupan la derecha. El hub conserva siempre su lienzo vertical centrado. Se contemplan zonas seguras, teclado y objetivos táctiles de al menos 44 px.
 
 ## Recursos y verificación
+
+### Biblioteca de viajes
+
+`src/screens/LibraryScreen.tsx` implementa la pantalla principal con textos HTML, fondo independiente, accesos por país/tipo, cuatro continentes y el pie editorial. El diseño tiene dos columnas desde 360 px, una en móviles estrechos y cuatro en escritorio desde 1100 px. La pantalla permite scroll vertical natural y contempla zonas seguras.
+
+«Volver» y Escape regresan al hub y restauran el foco en la tarjeta de acceso. Los destinos internos están deshabilitados y se identifican como próximos; los contadores de la referencia son provisionales, no provienen de un catálogo real.
+
+Los recursos están incluidos en `public/media/library/`. Para regenerarlos: `node scripts/prepare-library-assets.mjs [ruta-al-fondo.png]`. Por defecto se utiliza `../recursos/bibliotecaFondo.png`; el script necesita conexión para descargar las fronteras de Natural Earth (dominio público) y genera mapas SVG con una textura de papel aproximada. La aplicación no realiza solicitudes externas para estos recursos. El fondo se convierte a WebP mediante la dependencia existente `sharp`, sin modificar el original.
+
+`tests/library.spec.ts` verifica navegación, foco, destinos pendientes, fallos gráficos y tamaños desde 280 px hasta 1440 px, con capturas en Chromium y WebKit.
 
 Los recursos web ya están incluidos. `scripts/prepare-assets.mjs` es un generador histórico para la portada que necesita sus fuentes originales en la raíz y FFmpeg; no es necesario ejecutarlo para arrancar, compilar o editar el hub.
 

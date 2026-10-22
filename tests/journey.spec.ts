@@ -15,6 +15,8 @@ test('entra con el fondo preparado y regresa con el control de teclado', async (
   const back = page.getByRole('button', { name: 'Volver a la portada' })
   await expect(back).toHaveCSS('opacity', '0')
   await page.keyboard.press('Tab')
+  await expect(page.getByRole('button', { name: 'Biblioteca de viajes', exact: true })).toBeFocused()
+  await page.keyboard.press('Tab')
   await expect(back).toBeFocused()
   await expect(back).toHaveCSS('opacity', '1')
   expect((await back.boundingBox())!.height).toBeGreaterThanOrEqual(44)
@@ -47,7 +49,8 @@ test('conserva la composición completa en móvil, referencia y escritorio', asy
     await expect(page.locator('.journey__canvas')).toBeInViewport({ ratio: .99 })
     await expect(page.locator('.journey__header')).toBeInViewport({ ratio: .99 })
     await expect(page.locator('.journey__subtitle')).toHaveText(/Conóceme, inspírate y empieza\s*a crear tu próxima historia\./)
-    await expect(page.locator('.journey__cards a, .journey__cards button, .journey__cards [tabindex]')).toHaveCount(0)
+    await expect(page.locator('.journey__cards button')).toHaveCount(1)
+    await expect(page.getByRole('button', { name: 'Biblioteca de viajes', exact: true })).toBeEnabled()
     const canvas = (await page.locator('.journey__canvas').boundingBox())!
     expect(canvas.width).toBeLessThanOrEqual(viewport.width)
     expect(canvas.height).toBeLessThanOrEqual(viewport.height + 1)

@@ -44,6 +44,7 @@ test('revela la composición y permite navegar al completar el nuevo vídeo', as
   const nextHeading = page.getByRole('heading', { name: 'Tu viaje, en tres formas' })
   await expect(nextHeading).toBeFocused()
   await page.keyboard.press('Tab')
+  await page.keyboard.press('Tab')
   await page.getByRole('button', { name: 'Volver a la portada' }).click()
   // Check the reset during the return fade, before the reveal starts at 1 s.
   await expect(intro).toHaveAttribute('data-revealed', 'false')
