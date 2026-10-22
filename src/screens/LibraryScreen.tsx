@@ -1,62 +1,126 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useLayoutEffect, useRef, useState } from 'react'
+import { CONTINENTS, TRIPS, readLibraryView } from '../data/library'
+import { useReducedMotion } from '../hooks/useReducedMotion'
+import { LibraryCatalog } from './LibraryCatalog'
+import { LibraryIcon as Icon } from '../components/LibraryIcon'
 
-const CONTINENTS = [
-  { id: 'europe', name: 'Europa', trips: 27 },
-  { id: 'asia', name: 'Asia', trips: 5 },
-  { id: 'america', name: 'América', trips: 5 },
-  { id: 'africa', name: 'África', trips: 2 },
-]
-
-function Icon({ name }: { name: 'globe' | 'compass' | 'lock' | 'heart' | 'leaf' | 'arrow' }) {
-  return <svg viewBox="0 0 64 64" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-    {name === 'globe' && <><circle cx="32" cy="32" r="27" /><path d="m14 12 9 5-3 8-7 2-6-4m28-18-6 10 7 6 8-3 8 8 6 1M9 36l11-3 10 8-4 9-1 8m14-27-6 5 5 8 8 1 4 10m-3-44-7 9" /></>}
-    {name === 'compass' && <><circle cx="32" cy="32" r="27" /><path d="m47 17-9 21-21 9 9-21Z" /><circle cx="32" cy="32" r="2" /></>}
-    {name === 'arrow' && <><circle cx="32" cy="32" r="27" /><path d="M21 32h22M34 23l9 9-9 9" /></>}
-    {name === 'lock' && <><rect x="15" y="28" width="34" height="29" rx="3" /><path d="M22 28V17a10 10 0 0 1 20 0v11" /><circle cx="32" cy="41" r="2.5" /><path d="M32 44v5" /></>}
-    {name === 'heart' && <path d="M32 54 10 32C-5 14 18 2 32 20 46 2 69 14 54 32Z" />}
-    {name === 'leaf' && <><path d="M10 57 49 9M20 45C6 43 10 30 10 30c10 0 15 5 10 15Zm8-11c-12-3-10-15-10-15 10 1 13 6 10 15Zm8-11C26 20 30 9 30 9c8 2 11 7 6 14Zm5-6c0-11 10-14 10-14 4 8 0 13-10 14ZM24 40c1-10 17-12 17-12 0 10-6 14-17 12Zm10-12c2-9 17-10 17-10-1 8-7 12-17 10Z" /></>}
-  </svg>
-}
-
-export function LibraryScreen({ onBack }: { onBack: () => void }) {
+export function LibraryScreen({ active, onReady, onBack }: { active: boolean; onReady: () => void; onBack: () => void }) {
   const titleRef = useRef<HTMLHeadingElement>(null)
-  const [backgroundFailed, setBackgroundFailed] = useState(false)
+  const [background, setBackground] = useState<'loading' | 'ready' | 'error'>('loading')
+  const [route, setRoute] = useState(() => ({ hash: window.location.hash || '#biblioteca', restore: false }))
+  const [pending, setPending] = useState<{ hash: string; restore: boolean } | null>(null)
+  const [stage, setStage] = useState<'idle' | 'out' | 'in'>('idle')
+  const reducedMotion = useReducedMotion()
+  const contentRef = useRef<HTMLDivElement>(null)
+  const view = readLibraryView(route.hash)
 
   useEffect(() => {
-    window.scrollTo(0, 0)
-    titleRef.current?.focus({ preventScroll: true })
+    const previous = history.scrollRestoration
+    history.scrollRestoration = 'manual'
+    return () => { history.scrollRestoration = previous }
+  }, [])
+
+  function navigate(hash: string, sourceId?: string, replace = false) {
+    if (!active || stage !== 'idle' || hash === route.hash) return
+    const focused = document.activeElement as HTMLElement | null
+    // Safari touch activation does not necessarily focus the button that was pressed.
+    history.replaceState({ ...history.state, libraryPosition: { scroll: window.scrollY, focus: sourceId || focused?.id } }, '')
+    const state = { libraryDepth: replace ? 0 : (history.state?.libraryDepth || 0) + 1 }
+    if (replace) history.replaceState(state, '', hash)
+    else history.pushState(state, '', hash)
+    setPending({ hash, restore: false })
+    setStage('out')
+  }
+
+  function back() {
+    if (!active || stage !== 'idle') return
+    if (view.page === 'home') { onBack(); return }
+    if (history.state?.libraryDepth > 0) history.back()
+    else navigate(view.page === 'trips' && view.country ? '#biblioteca/paises' : '#biblioteca', undefined, true)
+  }
+
+  useEffect(() => {
+    const handlePop = () => {
+      if (!window.location.hash.startsWith('#biblioteca')) return
+      setPending({ hash: window.location.hash, restore: true })
+      setStage('out')
+    }
+    window.addEventListener('popstate', handlePop)
+    return () => window.removeEventListener('popstate', handlePop)
   }, [])
 
   useEffect(() => {
+    if (stage === 'idle') return
+    const timer = window.setTimeout(() => {
+      if (stage === 'out' && pending) {
+        setRoute(pending)
+        setPending(null)
+        setStage('in')
+      } else setStage('idle')
+    }, reducedMotion ? 0 : stage === 'out' ? 160 : 420)
+    return () => window.clearTimeout(timer)
+  }, [stage, pending, reducedMotion])
+
+  useLayoutEffect(() => {
+    if (stage !== 'in') return
+    window.scrollTo(0, route.restore ? history.state?.libraryPosition?.scroll || 0 : 0)
+  }, [route, stage])
+
+  useEffect(() => {
+    if (!active || stage !== 'idle') return
+    const id = route.restore && history.state?.libraryPosition?.focus
+    const restored = id && contentRef.current?.querySelector<HTMLElement>(`[id="${CSS.escape(id)}"]`)
+    const target = restored || titleRef.current
+    target?.focus({ preventScroll: true })
+  }, [active, stage, route])
+
+  useEffect(() => {
+    if (background !== 'loading') { onReady(); return }
+    const timer = window.setTimeout(() => setBackground('error'), 3000)
+    return () => window.clearTimeout(timer)
+  }, [background, onReady])
+
+  useEffect(() => {
+    if (!active || stage !== 'idle') return
     const handleKeyDown = (event: KeyboardEvent) => {
       if (event.key !== 'Escape') return
       event.preventDefault()
-      onBack()
+      back()
     }
     window.addEventListener('keydown', handleKeyDown)
     return () => window.removeEventListener('keydown', handleKeyDown)
-  }, [onBack])
+  })
 
-  return <main className="library screen" data-background={backgroundFailed ? 'error' : 'ready'}>
-    <img className="library__background" src="/media/library/background.webp" width="941" height="1672" alt="" onError={() => setBackgroundFailed(true)} />
-    <div className="library__content">
-      <button className="library__back" onClick={onBack}><span aria-hidden="true">←</span> Volver</button>
+  return <main className="library screen" data-background={background} data-view={view.page}>
+    <img className="library__background" src="/media/library/background.webp" width="941" height="1672" alt="" onError={() => setBackground('error')} onLoad={async event => {
+      const image = event.currentTarget
+      try {
+        await image.decode()
+        await document.fonts.ready
+        setBackground('ready')
+      } catch { setBackground('error') }
+    }} />
+    <div className="library__content" ref={contentRef}>
+    <div className="library__view" data-stage={stage} inert={stage !== 'idle'} aria-hidden={stage !== 'idle'}>
+      <button className="library__back" onClick={back}><span aria-hidden="true">←</span> Volver</button>
+      {view.page !== 'home' ? <LibraryCatalog view={view} titleRef={titleRef} onNavigate={navigate} /> : <>
       <header className="library__header">
         <h1 ref={titleRef} tabIndex={-1}>Biblioteca<br />de viajes</h1>
         <span className="library__rule" aria-hidden="true" />
         <p>Destinos recorridos.<br />Experiencias reales.</p>
       </header>
-      <section className="library__browse" aria-label="Otras formas de explorar" aria-describedby="library-pending">
-        <button className="library__browse-card" disabled><Icon name="globe" /><span>Países</span><Icon name="arrow" /></button>
+      <section className="library__browse" aria-label="Otras formas de explorar">
+        <button id="library-countries" className="library__browse-card" onClick={() => navigate('#biblioteca/paises', 'library-countries')}><Icon name="globe" /><span>Países</span><Icon name="arrow" /></button>
         <button className="library__browse-card library__browse-card--type" disabled><Icon name="compass" /><span>Tipo de viaje</span><Icon name="arrow" /></button>
       </section>
-      <section className="library__continents" aria-labelledby="library-continents" aria-describedby="library-pending library-counts">
+      <div className="library__all"><button id="library-all" className="text-button" onClick={() => navigate('#biblioteca/viajes', 'library-all')}>Ver los {TRIPS.length} viajes <span aria-hidden="true">→</span></button></div>
+      <section className="library__continents" aria-labelledby="library-continents">
         <h2 id="library-continents" className="library__section-title">Explora por continente</h2>
         <ul className="library__grid">
           {CONTINENTS.map(continent => <li key={continent.id}>
-            <button className={`library__continent library__continent--${continent.id}`} disabled>
+            <button id={`library-${continent.id}`} className={`library__continent library__continent--${continent.id}`} onClick={() => navigate(`#biblioteca/viajes?continente=${continent.id}`, `library-${continent.id}`)}>
               <img src={`/media/library/${continent.id}.svg`} alt="" width="360" height="360" />
-              <span className="library__continent-copy"><span className="library__continent-name">{continent.name}</span><span className="library__continent-rule" /><span className="library__count">{continent.trips} viajes</span></span>
+              <span className="library__continent-copy"><span className="library__continent-name">{continent.name}</span><span className="library__continent-rule" /><span className="library__count">{TRIPS.filter(trip => trip.continent === continent.id).length} viajes</span></span>
             </button>
           </li>)}
         </ul>
@@ -67,9 +131,10 @@ export function LibraryScreen({ onBack }: { onBack: () => void }) {
         <p><Icon name="leaf" /><span>Destinos con<br />sentido</span></p>
       </footer>
       <div className="library__notice">
-        <p id="library-pending">Próximamente: explora los viajes por país, tipo de viaje y continente.</p>
-        <p id="library-counts">Los recuentos son provisionales y están pendientes de conectar al catálogo.</p>
+        <p id="library-pending">Próximamente: explora por tipo de viaje y descubre los itinerarios detallados.</p>
       </div>
+      </>}
+    </div>
     </div>
   </main>
 }

@@ -109,11 +109,34 @@ En la portada, el vídeo llena el móvil y la composición se sitúa sobre el es
 
 `src/screens/LibraryScreen.tsx` implementa la pantalla principal con textos HTML, fondo independiente, accesos por país/tipo, cuatro continentes y el pie editorial. El diseño tiene dos columnas desde 360 px, una en móviles estrechos y cuatro en escritorio desde 1100 px. La pantalla permite scroll vertical natural y contempla zonas seguras.
 
-«Volver» y Escape regresan al hub y restauran el foco en la tarjeta de acceso. Los destinos internos están deshabilitados y se identifican como próximos; los contadores de la referencia son provisionales, no provienen de un catálogo real.
+«Países», los cuatro continentes y «Ver los 39 viajes» abren listados dinámicos. Los contadores se calculan desde el catálogo local de 27 países y 39 viajes, incluidos los itinerarios multipaís sin duplicación de totales. Solo «Tipo de viaje» y los detalles de itinerarios siguen pendientes. Las filas de viaje no muestran botones o flechas de detalle ficticios.
+
+El mismo fondo limpio `/media/library/background.webp` permanece montado al cambiar entre las vistas internas. Los países usan una columna en móvil, dos desde 600 px y tres desde 1100 px. Los viajes se agrupan por continente y se distribuyen en columnas verticales con el mismo orden editorial del DOM. Las transiciones internas duran 160 ms de salida y 420 ms de entrada; respetan movimiento reducido y restauran foco y scroll de origen al regresar.
+
+Las URLs `/#biblioteca`, `/#biblioteca/paises`, `/#biblioteca/viajes`, `/#biblioteca/viajes?pais=ES` y `/#biblioteca/viajes?continente=asia` permiten compartir filtros, recargar y navegar atrás/adelante sin reproducir la portada. País y continente se pueden combinar con semántica AND. Los filtros inválidos se explican y los filtros válidos sin resultados muestran un estado vacío. La navegación utiliza History API, sin dependencias de routing.
+
+La navegación hub/biblioteca utiliza un fundido direccional de 650 ms con desplazamiento corto y escala sutil. El fondo y el contenido entran con movimiento independiente y pequeños desfases, sin animaciones perpetuas. Se prepara el fondo antes del cambio, con respaldo a los 3 s si no llega. Durante el cambio ambas pantallas son inertes y el foco se transfiere al terminar. El regreso conserva visualmente el scroll saliente antes de mostrar el hub desde arriba. Con movimiento reducido se omiten las animaciones y la espera de transición.
 
 Los recursos están incluidos en `public/media/library/`. Para regenerarlos: `node scripts/prepare-library-assets.mjs [ruta-al-fondo.png]`. Por defecto se utiliza `../recursos/bibliotecaFondo.png`; el script necesita conexión para descargar las fronteras de Natural Earth (dominio público) y genera mapas SVG con una textura de papel aproximada. La aplicación no realiza solicitudes externas para estos recursos. El fondo se convierte a WebP mediante la dependencia existente `sharp`, sin modificar el original.
 
 `tests/library.spec.ts` verifica navegación, foco, destinos pendientes, fallos gráficos y tamaños desde 280 px hasta 1440 px, con capturas en Chromium y WebKit.
+
+### Catálogo e iconos ilustrados
+
+Los datos tipados se encuentran en `src/data/library.ts`. El registro gráfico independiente está en `src/data/library-icons.ts`. `LibraryCatalog.tsx` presenta todas las combinaciones de filtros sin crear una pantalla por destino.
+
+La colección incluida en `public/media/library/icons/` contiene 47 WebP transparentes de 384 × 384 px, con variantes arena, salvia, azul y rosa. El acabado de papel, las facetas y el color están horneados en cada recurso, no se generan en el navegador. Menorca y La Palma tienen siluetas propias; Austria/Alemania, Croacia/Italia y Malasia/Singapur disponen de composiciones multipaís. Singapur se amplía ópticamente para no convertirse en un punto. La colección se puede revisar en [docs/library-icons-preview.webp](docs/library-icons-preview.webp).
+
+Para regenerar la colección: `npm run assets:library-icons`. Utiliza `sharp` ya instalado y cartografía Natural Earth 5.1.2 de dominio público, fijada a esa versión. La primera ejecución requiere conexión; las siguientes reutilizan la descarga en la carpeta temporal `opencode`. El generador no modifica el fondo ni los originales y la aplicación sirve todos los iconos localmente. Los recortes ilustrados privilegian la legibilidad del territorio principal (por ejemplo, Francia metropolitana y Estados Unidos contiguos); no representan mapas políticos exhaustivos.
+
+Para añadir contenido:
+
+1. Añadir el país a `COUNTRIES`, en orden alfabético, con código estable, continente y tono. Registrar su geometría y encuadre en `COUNTRY_ART`.
+2. Añadir el viaje a `TRIPS`, con identificador estable, orden editorial, países asociados e icono. Omitir `days` y `subtitle` si no se conocen; no rellenarlos con supuestos.
+3. Para una isla o composición nueva, ampliar `REGIONAL_ART` o `COMPOSITE_ART`. Ajustar la composición en el generador si necesita un encuadre óptico especial.
+4. Ejecutar `npm run assets:library-icons`, revisar la lámina y las tarjetas reales, y validar con `npm run build` y `npm run test:e2e -- tests/catalog.spec.ts`.
+
+Los contadores, filtros y listados se actualizan a partir de los datos. Las pruebas del catálogo comprueban integridad, relaciones, recursos transparentes, filtros multipaís, enlaces directos, historial, foco, scroll, errores gráficos y responsive.
 
 Los recursos web ya están incluidos. `scripts/prepare-assets.mjs` es un generador histórico para la portada que necesita sus fuentes originales en la raíz y FFmpeg; no es necesario ejecutarlo para arrancar, compilar o editar el hub.
 

@@ -11,6 +11,7 @@
     "build": "tsc -b && vite build",
     "preview": "vite preview --host 0.0.0.0",
     "assets:prepare": "node scripts/prepare-assets.mjs",
+    "assets:library-icons": "node --experimental-strip-types scripts/prepare-library-icons.mjs",
     "test:e2e": "playwright test"
   },
   "dependencies": {
