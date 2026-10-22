@@ -1,3 +1,46 @@
+## JourneyScreen adaptativa y responsive conservando el estilo visual · 22/10/2026
+
+- [x] Desacoplar las tarjetas del lienzo estático y estilizarlas en CSS con vidrio esmerilado cálido, borde dorado y botón circular SVG con flecha.
+- [x] Eliminar las restricciones rígidas de `aspect-ratio: 942 / 1670` y permitir que `.journey` cubra el 100 % del alto de pantalla (`100svh`) sin barras de encuadre (letterboxing) en móviles altos.
+- [x] Diseñar e implementar la adaptación para escritorio y pantallas panorámicas (`min-aspect-ratio: 1/1`): composición editorial dividida con el arte de sedas en la izquierda con fundido suave y la cabecera más las 3 tarjetas en la derecha.
+- [x] Adaptar la experiencia en móviles horizontales (`max-height: 500px`) garantizando textos legibles y objetivos táctiles ≥ 44 px.
+- [x] Añadir micro-interacciones hover en tarjetas y flechas con respeto a movimiento reducido.
+- [x] Limpiar los trazos estáticos y botones de `hub-clean.webp` mediante inpainting para que el fondo de seda fluya de manera natural en todas las resoluciones.
+- [x] Actualizar las pruebas E2E en Playwright y verificar que las 24 pruebas pasen limpiamente en Chromium y WebKit.
+
+### Review
+
+- **Problema y causa:** `JourneyScreen` estaba bloqueada en una proporción fija 942/1670 que producía franjas vacías (letterboxing) en móviles modernos, una franja estrecha de 500 px en pantallas de escritorio y un pilar ilegible de 220 px con textos a 5 px en horizontal.
+- **Cambios realizados:**
+  - `src/screens/JourneyScreen.tsx`: estructura HTML semántica enriquecida con icono circular SVG con flecha y contenedor `.journey__media` desacoplado del contenido.
+  - `src/styles.css`: estilos CSS fluidos con `clamp()`, variables tipográficas retrocompatibles, vidrio esmerilado traslúcido (`backdrop-filter: blur(8px)`), marco dorado fino y micro-interacciones hover; composición dividida para escritorio/horizontal en diálogo con `IntroScreen`, y regla compacta para baja altura.
+  - `public/media/hub-clean.webp`: inpainting de alta precisión para eliminar los recuadros estáticos del fondo conservando intactas las ondas de seda y los hilos dorados.
+  - `tests/journey.spec.ts`: pruebas E2E actualizadas para validar la adaptabilidad responsive en 7 viewports (280×568, 320×568, 384×915, 390×844, 942×1670, 844×390, 1440×900).
+- **Validación:**
+  - `npm run build`: compilación de producción TypeScript + Vite limpia sin advertencias.
+  - `npx playwright test`: **24 de 24 pruebas superadas** al 100 % en `mobile-chromium` y `mobile-webkit`.
+  - Capturas visuales verificadas en todos los viewports: sin desbordamiento horizontal, sin solapamiento de textos y con encuadres armónicos.
+
+## JourneyScreen fiel a la referencia con texto editable · 22/10/2026
+
+- [x] Limpiar las letras mediante imagegen y guardar un WebP sin pérdidas, conservando el original.
+- [x] Sustituir las ondas SVG por el fondo y las tarjetas originales; mantener el lienzo 942 × 1670 completo y centrado.
+- [x] Centralizar los textos en CONTENT y exponer variables CSS de tipografía por grupo.
+- [x] Preparar imagen y fuentes antes del fundido; contemplar fallo, espera máxima y recuperación posterior.
+- [x] Conservar encabezados, foco y movimiento reducido; revelar el regreso con Tab y permitir Escape.
+- [x] Validar encuadres, navegación, carga y personalización en Chromium y WebKit.
+
+### Review
+
+- **Problema y causa:** el hub anterior aproximaba la referencia con ondas SVG, tipografía y distribución diferentes; además mostraba un control de regreso ajeno al diseño.
+- **Cambios:** fondo sin letras, textos HTML proporcionados al lienzo, tarjetas estáticas, regreso oculto en reposo y visible con foco. Se mantiene visible bajo el puntero después de revelarlo para evitar que Safari pierda el clic al quitar el foco en mousedown.
+- **Archivos:** JourneyScreen, estilos, import de Cormorant 700, recurso hub-clean.webp, pruebas de hub y un ajuste de foco previo al regreso en la prueba de portada; README y docs/hub-artwork.md explican edición y procedencia.
+- **Validación:** compilación de producción correcta. Los 12 casos del hub pasan en Chromium y WebKit; capturas de 280 × 568, 320 × 568, 384 × 915, 390 × 844, 942 × 1670, 844 × 390 y 1440 × 900. Revisada la composición a tamaño de referencia y el encuadre horizontal.
+- **Limitaciones:** la ejecución ampliada detecta fallos en tres pruebas de vídeo de la portada en WebKit. Un diagnóstico independiente devuelve MEDIA_ERR_SRC_NOT_SUPPORTED (código 4) al cargar el MP4 existente; no se han cambiado el vídeo, la lógica de portada ni sus aserciones de reproducción.
+- **Riesgos visuales:** limpieza generativa con posibles diferencias pequeñas y fuente original desconocida; Cormorant Garamond y Manrope son aproximaciones locales. Los textos largos requieren revisar su encaje. Las tarjetas esperan destinos.
+- Sin dependencias nuevas ni operaciones Git.
+
+
 # Portada Aripajama
 
 ## Limpieza completada: recursos del hub eliminados, hub como placeholder

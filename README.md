@@ -44,16 +44,34 @@ El contenido de `dist/` se puede publicar en un alojamiento estático. La config
 
 La frecuencia de eventos del navegador puede desplazar ligeramente el inicio. El contenido sigue siendo texto HTML salvo el nombre de marca; las fuentes se sirven localmente, sin peticiones a Google Fonts.
 
-## Fondo del hub
+## Diseño del hub
 
-- `videohub.mp4` se sirve mediante su derivado `/media/hub.mp4`: reproducción automática, sin audio, en bucle y dentro de la página en iOS.
-- Se recortan los últimos **0,5 s** del original y se mezclan **18 pares de fotogramas** del final y del comienzo, con un fundido suavizado y extremos completos. El ciclo preparado dura **8,75 s** (210 fotogramas) y mantiene la resolución de 720 × 1280 a 24 fps.
-- La portada permanece visible mientras se prepara el vídeo o su imagen inicial. Durante el fundido conviven ambas pantallas; la saliente se retira al finalizar. Si la carga no responde en 3 s, se permite entrar con un fondo de color de respaldo.
-- El vídeo cubre toda la pantalla mediante `object-fit: cover`, sin deformarse; en horizontal el encuadre se recorta por arriba y abajo. Un velo ligero en los extremos ayuda a leer los controles.
-- Sobre el paisaje aparecen «Tu viaje, en tres formas», un separador y «Conóceme, inspírate y empieza a crear tu próxima historia.». Los textos «01 — Quién soy», «02 — Biblioteca de viajes» y «03 — Crear mi viaje» se distribuyen escalonados sobre las ventanas, con una entrada suave y una composición adaptada a horizontal y escritorio.
-- Los tres textos numerados son contenido estático hasta disponer de sus páginas de destino. Se mantienen el regreso a la portada y el control de pausa/reproducción del fondo.
-- Si el autoplay se bloquea, se puede reproducir manualmente. Si el vídeo falla, se conserva la imagen inicial. WebKit reanuda la reproducción tras el salto nativo del bucle, respetando las pausas del usuario.
-- Con movimiento reducido se utiliza la imagen estática, no se descarga el vídeo y se omite el fundido.
+`JourneyScreen` es una pantalla de navegación plenamente **responsive y adaptativa** que conserva la elegancia visual y los códigos de diseño de la referencia original:
+- En **móvil vertical**, el fondo llena el 100 % de la pantalla (`100svh`) sin barras vacías de encuadre (letterboxing) en teléfonos modernos altos ni compactos.
+- En **escritorio y pantallas panorámicas** (`min-aspect-ratio: 1/1`), adopta una composición editorial dividida en perfecta sintonía con la portada: el arte de sedas e hilos dorados fluye por la izquierda con un fundido suave hacia el fondo marfil, y la cabecera con las 3 tarjetas de navegación se sitúa a la derecha con ancho noble de lectura (~540 px) y micro-interacciones al pasar el puntero.
+- En **móvil horizontal** (alturas menores a 500 px), la composición se compacta con precisión para mantener textos legibles y objetivos táctiles ≥ 44 px sin scroll forzado.
+
+Las tarjetas se renderizan como componentes HTML/CSS independientes sobre el fondo de seda:
+- Acabado de vidrio esmerilado cálido traslúcido (`backdrop-filter: blur(8px)`).
+- Fino marco dorado suave (`border: 1px solid #c5ab9988`).
+- Botón circular SVG con flecha fina (`→`) que se desplaza sutilmente en hover (`translateX(3px)`).
+- Elevación suave en reposo y respuesta táctil y de teclado accesible.
+
+### Editar textos y tipografía
+
+- Modifica `CONTENT` en `src/screens/JourneyScreen.tsx`. Los arrays de cada título y subtítulo representan sus líneas.
+- Modifica las variables `--journey-heading-*`, `--journey-subheading-*`, `--journey-card-*` y `--journey-caption-*` dentro de `.journey` en `src/styles.css`.
+- Cada grupo permite cambiar fuente, tamaño, peso, color e interletraje. Los tamaños en `cqw` son porcentajes del ancho del lienzo: `1cqw` equivale a 9,42 px en la referencia a tamaño completo.
+- Las fuentes se sirven localmente. Si se cambia mucho el contenido o el tamaño, revisar que el texto siga dentro de las tarjetas y no alcance las flechas.
+- Las tarjetas siguen siendo contenido estático hasta disponer de sus destinos.
+
+### Navegación, carga y accesibilidad
+
+La portada permanece visible mientras se decodifica la imagen y se preparan las fuentes; después se aplica el fundido existente de 800 ms al conjunto de fondo y textos. Un fallo o una espera de 3 s permite entrar con fondo claro, siluetas de tarjetas y texto HTML. Una imagen que termine de cargar posteriormente recupera el diseño.
+
+El foco pasa al título al entrar. «Volver a la portada» aparece al recibir foco con Tab; también se puede volver con Escape. Con movimiento reducido no hay fundido ni solicitudes de vídeo.
+
+El origen del recurso y el prompt de limpieza están documentados en [docs/hub-artwork.md](docs/hub-artwork.md).
 
 ## Estructura y personalización
 
@@ -62,7 +80,7 @@ src/
   components/Brand.tsx         Logo original y guías SVG de escritura
   hooks/useReducedMotion.ts   Preferencia de movimiento del sistema
   screens/IntroScreen.tsx     Vídeo, sincronización, textos y recuperación
-  screens/JourneyScreen.tsx   Fondo del hub, textos, respaldo y controles
+  screens/JourneyScreen.tsx   Lienzo del hub y textos HTML editables
   App.tsx                    Preparación y fundido entre las pantallas
   styles.css                 Diseño mobile first y animaciones
 public/
@@ -70,11 +88,10 @@ public/
   media/portada.mp4           Vídeo preparado para la web
   media/portada-inicio.webp   Primer fotograma para la carga
   media/portada-final.webp    Último fotograma para el respaldo
-  media/hub.mp4               Fondo del hub con unión suave del bucle
-  media/hub-inicio.webp       Primer fotograma y respaldo del hub
+  media/hub-clean.webp        Fondo y tarjetas del hub sin texto
 scripts/prepare-assets.mjs    Generación reproducible de los recursos
 tests/intro.spec.ts           Comprobaciones en Chromium y WebKit
-tests/journey.spec.ts         Fundido, bucle, controles y alternativas del hub
+tests/journey.spec.ts         Encuadres, fundido, carga, teclado y texto editable
 tasks/todo.md                Plan y revisión del trabajo
 ```
 
@@ -84,27 +101,10 @@ tasks/todo.md                Plan y revisión del trabajo
 - **Velocidad del trazo:** `start` y `duration` de las guías de `src/components/Brand.tsx`.
 - **Navegación del hub:** conectar los tres textos de `src/screens/JourneyScreen.tsx` con sus destinos cuando estén definidos; actualmente se presentan sin interacción.
 
-En móvil el vídeo llena la pantalla y la composición se sitúa sobre el espacio claro. En horizontal y escritorio, el paisaje ocupa la zona izquierda, con un borde fundido, y la marca y los textos ocupan la derecha. Se contemplan zonas seguras, teclado y objetivos táctiles de al menos 44 px.
+En la portada, el vídeo llena el móvil y la composición se sitúa sobre el espacio claro. En horizontal y escritorio, el paisaje de la portada ocupa la zona izquierda, con un borde fundido, y la marca y los textos ocupan la derecha. El hub conserva siempre su lienzo vertical centrado. Se contemplan zonas seguras, teclado y objetivos táctiles de al menos 44 px.
 
-## Regenerar recursos
+## Recursos y verificación
 
-Los derivados ya están incluidos: **FFmpeg no es necesario para arrancar ni compilar**. Para regenerarlos se necesita `ffmpeg` en el PATH:
+Los recursos web ya están incluidos. `scripts/prepare-assets.mjs` es un generador histórico para la portada que necesita sus fuentes originales en la raíz y FFmpeg; no es necesario ejecutarlo para arrancar, compilar o editar el hub.
 
-```sh
-npm run assets:prepare
-```
-
-Este comando parte de `videoPortadaNuevo.mov`, `videohub.mp4` y `letrasAripajama.png` en la raíz y conserva los originales. Para la portada convierte HEVC a H.264 (CRF 18, `yuv420p`), sin audio ni metadatos del original y con `faststart`, y extrae el primer y último fotograma. Mantiene la resolución de 1080 × 1920. También elimina el fondo blanco del logotipo. Para regenerar solo el vídeo de portada y sus imágenes, sin modificar el logo ni el hub, usa `npm run assets:prepare -- --intro-only`.
-
-Para el hub se utilizan FFmpeg y FFprobe: se recodifica en H.264, sin audio, con `faststart` y CRF 17. Tras eliminar los últimos 12 fotogramas, se mezclan los 18 últimos con los 18 primeros mediante una curva suave y redondeo al entero más próximo. El primer par conserva completamente el final y el último conserva completamente el fotograma 17 del comienzo; el ciclo arranca en el fotograma 18, continuando el movimiento. La imagen de respaldo se extrae del primer fotograma del derivado.
-
-El recorte y las guías del logo están ajustados a la imagen actual. Si cambia el diseño del logotipo, hay que actualizar ambos; el resto de los textos y el descriptor son independientes.
-
-## Verificación en navegador
-
-```sh
-npx playwright install chromium webkit
-npm run test:e2e
-```
-
-Las pruebas verifican la reproducción real y el orden de aparición, la navegación y el reinicio, un error de decodificación, el bloqueo de autoplay, la preferencia de movimiento reducido, el foco del teclado y la ausencia de desbordamientos en 320 × 568, 390 × 844, 941 × 1672, 844 × 390 y 1440 × 900. En el hub comprueban además el fundido con el fondo preparado, dos ciclos completos reales, la duración del recurso recortado, la pausa y reanudación, y las alternativas ante error y bloqueo. También generan capturas en `test-results/`, incluidos el logo durante la escritura, la portada, el fundido y el hub. Chromium y WebKit se ejecutan con emulación de móvil; no sustituyen la revisión en un dispositivo físico.
+Ejecuta `npm run build` y `npm run test:e2e`. Las pruebas del hub comprueban los encuadres de 280 × 568 a 1440 × 900, incluida la referencia de 942 × 1670; además verifican carga y recuperación, movimiento reducido, foco, regreso con teclado y personalización del texto. Las capturas se guardan en `test-results/`. Los navegadores emulados no sustituyen la revisión en un móvil físico.
