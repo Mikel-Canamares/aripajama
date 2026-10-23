@@ -1,4 +1,5 @@
 import { Fragment, useEffect, useRef, useState } from 'react'
+import { useRevealSequence } from '../hooks/useRevealSequence'
 
 // Copy stays independent of the artwork. Arrays define the reference's line breaks.
 const CONTENT = {
@@ -18,24 +19,28 @@ function Lines({ lines }: { lines: string[] }) {
   ))
 }
 
-export function JourneyScreen({ active, onReady, onBack, onOpenLibrary, restoreLibraryFocus }: {
+export function JourneyScreen({ active, onReady, onBack, onOpenLibrary, onOpenCreate, restoreFocus }: {
   active: boolean
   onReady: () => void
   onBack: () => void
   onOpenLibrary: () => void
-  restoreLibraryFocus: boolean
+  onOpenCreate: () => void
+  restoreFocus: 'library' | 'create' | null
 }) {
   const titleRef = useRef<HTMLHeadingElement>(null)
+  const rootRef = useRef<HTMLElement>(null)
   const libraryRef = useRef<HTMLButtonElement>(null)
+  const createRef = useRef<HTMLButtonElement>(null)
   const [artwork, setArtwork] = useState<'loading' | 'ready' | 'error'>('loading')
+  useRevealSequence(rootRef, active)
 
   useEffect(() => {
     if (active) {
       window.scrollTo(0, 0)
-      const target = restoreLibraryFocus ? libraryRef.current : titleRef.current
+      const target = restoreFocus === 'create' ? createRef.current : restoreFocus === 'library' ? libraryRef.current : titleRef.current
       target?.focus({ preventScroll: true })
     }
-  }, [active, restoreLibraryFocus])
+  }, [active, restoreFocus])
 
   useEffect(() => {
     if (!active) return
@@ -60,7 +65,7 @@ export function JourneyScreen({ active, onReady, onBack, onOpenLibrary, restoreL
   }, [artwork, onReady])
 
   return (
-    <main className="journey screen" data-artwork={artwork}>
+    <main ref={rootRef} data-reveal-scope="" className="journey screen" data-artwork={artwork}>
       <div className="journey__media">
         <img
           className="journey__artwork"
@@ -83,27 +88,33 @@ export function JourneyScreen({ active, onReady, onBack, onOpenLibrary, restoreL
         />
       </div>
       <div className="journey__canvas">
-        <header className="journey__header">
+        <header className="journey__header" data-reveal-group="">
           <h1 className="journey__title" ref={titleRef} tabIndex={-1}>
-            <span className="journey__title-main">{CONTENT.title}</span>{' '}
-            <span className="journey__title-sub">{CONTENT.subtitle}</span>
+            <span data-reveal="" className="journey__title-main">{CONTENT.title}</span>{' '}
+            <span data-reveal="" className="journey__title-sub">{CONTENT.subtitle}</span>
           </h1>
           <p className="journey__subtitle visually-hidden">{CONTENT.description}</p>
         </header>
         <ol className="journey__cards" role="list">
           {CONTENT.cards.map(({ id, title, subtitle }) => (
-            <li key={id} className={`journey__card journey__card--${id}`}>
+            <li data-reveal="" data-reveal-frame="" data-reveal-group="" key={id} className={`journey__card journey__card--${id}`}>
               {id === 'library' && <button
                 ref={libraryRef}
                 className="journey__card-link"
                 aria-label="Biblioteca de viajes"
                 onClick={onOpenLibrary}
               />}
+              {id === 'create' && <button
+                ref={createRef}
+                className="journey__card-link"
+                aria-label="Crear mi viaje"
+                onClick={onOpenCreate}
+              />}
               <div className="journey__card-text">
-                <h2 className="journey__card-title"><Lines lines={title} /></h2>
-                <p className="journey__card-sub"><Lines lines={subtitle} /></p>
+                <h2 data-reveal="" className="journey__card-title"><Lines lines={title} /></h2>
+                <p data-reveal="" className="journey__card-sub"><Lines lines={subtitle} /></p>
               </div>
-              <span className="journey__card-arrow" aria-hidden="true">
+              <span data-reveal="" className="journey__card-arrow" aria-hidden="true">
                 <svg className="journey__card-arrow-icon" viewBox="0 0 44 44" fill="none">
                   <circle cx="22" cy="22" r="21" stroke="currentColor" strokeWidth="1" />
                   <path d="M16 22h12M22 16l6 6-6 6" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" />

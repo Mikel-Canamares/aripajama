@@ -44,7 +44,11 @@ test('revela la composición y permite navegar al completar el nuevo vídeo', as
   const nextHeading = page.getByRole('heading', { name: 'Tu viaje, en tres formas' })
   await expect(nextHeading).toBeFocused()
   await page.keyboard.press('Tab')
+  await expect(page.getByRole('button', { name: 'Biblioteca de viajes', exact: true })).toBeFocused()
   await page.keyboard.press('Tab')
+  await expect(page.getByRole('button', { name: 'Crear mi viaje', exact: true })).toBeFocused()
+  await page.keyboard.press('Tab')
+  await expect(page.getByRole('button', { name: 'Volver a la portada' })).toBeFocused()
   await page.getByRole('button', { name: 'Volver a la portada' }).click()
   // Check the reset during the return fade, before the reveal starts at 1 s.
   await expect(intro).toHaveAttribute('data-revealed', 'false')
@@ -89,6 +93,11 @@ test('un fallo del vídeo ofrece una portada estática y navegable', async ({ pa
 
 test('permite continuar si el navegador bloquea la reproducción automática', async ({ page }) => {
   await page.addInitScript(() => {
+    // Isolate autoplay denial from native decoder failures. Real media errors
+    // are exercised separately by the preceding fallback test.
+    document.addEventListener('error', event => {
+      if (event.target instanceof HTMLMediaElement) event.stopImmediatePropagation()
+    }, true)
     HTMLMediaElement.prototype.play = function () {
       this.pause()
       this.removeAttribute('autoplay')

@@ -63,7 +63,7 @@ Las tarjetas se renderizan como componentes HTML/CSS independientes sobre el fon
 - Modifica las variables `--journey-heading-*`, `--journey-subheading-*`, `--journey-card-*` y `--journey-caption-*` dentro de `.journey` en `src/styles.css`.
 - Cada grupo permite cambiar fuente, tamaño, peso, color e interletraje. Los tamaños en `cqw` son porcentajes del ancho del lienzo: `1cqw` equivale a 9,42 px en la referencia a tamaño completo.
 - Las fuentes se sirven localmente. Si se cambia mucho el contenido o el tamaño, revisar que el texto siga dentro de las tarjetas y no alcance las flechas.
-- La tarjeta «Biblioteca de viajes» abre la biblioteca. Las otras dos siguen siendo contenido estático hasta disponer de sus destinos.
+- Las tarjetas «Biblioteca de viajes» y «Crear mi viaje» abren sus respectivas pantallas. «Quién soy» sigue pendiente.
 
 ### Navegación, carga y accesibilidad
 
@@ -99,11 +99,47 @@ tasks/todo.md                Plan y revisión del trabajo
 - **Colores, posición, tamaños y tiempos entre elementos:** `src/styles.css`. Los retardos de `.reveal-item` son relativos al inicio de la escritura.
 - **Momento de inicio:** constante `REVEAL_AT` de `src/screens/IntroScreen.tsx`, en segundos de reproducción.
 - **Velocidad del trazo:** `start` y `duration` de las guías de `src/components/Brand.tsx`.
-- **Navegación del hub:** la biblioteca está conectada desde `src/App.tsx`; los destinos «Quién soy» y «Crear mi viaje» siguen pendientes.
+- **Navegación del hub:** la biblioteca y «Crear mi viaje» están conectadas desde `src/App.tsx`; el destino «Quién soy» sigue pendiente.
 
 En la portada, el vídeo llena el móvil y la composición se sitúa sobre el espacio claro. En horizontal y escritorio, el paisaje de la portada ocupa la zona izquierda, con un borde fundido, y la marca y los textos ocupan la derecha. El hub conserva siempre su lienzo vertical centrado. Se contemplan zonas seguras, teclado y objetivos táctiles de al menos 44 px.
 
 ## Recursos y verificación
+
+### Aparición progresiva en toda la web
+
+El hub, la biblioteca, países, listados, la ficha de viaje, el visor y «Crear mi viaje» comparten `src/hooks/useRevealSequence.ts` y `src/reveal.css`. Cada título, párrafo, ilustración, número, separador y acceso marcado aparece con opacidad y un desplazamiento vertical de 16 px durante 550 ms; el siguiente empieza 140 ms después. Las tarjetas funden su marco y sus contenidos aparecen por separado. No se insertan contenedores que alteren las cuadrículas o las columnas, y el desplazamiento usa `translate`, separado del `transform` de hover. La portada conserva su escritura y coreografía sincronizada con el vídeo.
+
+`data-reveal` identifica los elementos; `data-reveal-group` conserva el orden de sus piezas dentro de una tarjeta o cabecera; `data-reveal-scope` delimita cada vista y el visor modal. Los grupos visibles se ordenan por filas y de izquierda a derecha según sus posiciones reales, también en los listados por columnas. `IntersectionObserver` inicia una cascada para cada tanda que llega a la zona visible, sin sumar los elementos que siguen fuera de pantalla. Si se abandona la zona antes de empezar, se cancela esa espera hasta volver a verla.
+
+La preparación ocurre antes de pintar y la cascada se activa cuando la pantalla está operativa. Al volver a una entrada del historial se recuperan las piezas ya mostradas junto con el foco y el scroll existentes. Una navegación nueva crea otra secuencia; una recarga también la reproduce. Se añade únicamente una identidad `revealEntry` al estado interno del historial y se conserva el progreso en memoria, con un máximo de 100 vistas por pestaña. El hub conserva su progreso mientras permanece montado y vuelve a animarse al entrar desde la portada.
+
+Los controles que reciben foco muestran su grupo inmediatamente, sin esperar a la cascada. El título enfocado empieza su aparición sin retardo. Los controles de regreso, cierre, índice persistente y herramientas del visor siguen disponibles. Con movimiento reducido se muestra todo directamente; activarlo durante una secuencia cancela las esperas y completa los elementos, incluidos los que están fuera de pantalla. El contenido es visible por defecto si falta `IntersectionObserver` o falla su inicialización. No hay dependencias nuevas ni animaciones perpetuas.
+
+`tests/reveal.spec.ts` comprueba opacidad intermedia real, orden y separación de las apariciones, scroll, orden visual de columnas, foco, historial, repetición en visitas nuevas, cambios de movimiento reducido, fallo del observador y aislamiento del visor. También genera capturas de 280 a 1440 px y texto al 200 %. Para validar el conjunto:
+
+```sh
+npm run build
+npm run test:e2e -- --workers=1
+```
+
+### Crear mi viaje
+
+`/#crear-mi-viaje` abre la presentación del servicio directamente y permite recargar sin reproducir la portada. La tarjeta del hub utiliza las mismas transiciones que la biblioteca. «Volver», Escape y el historial permiten regresar al hub y recuperar el foco en «Crear mi viaje». Una visita directa dispone de regreso local al hub. El movimiento reducido omite las animaciones; un fallo o una espera de tres segundos del fondo permite entrar con fondo blanco y conserva el contenido HTML. Si el fondo llega después, se recupera automáticamente.
+
+`src/screens/CreateTripScreen.tsx` contiene los textos y los cuatro pasos; `src/create-trip.css` define el diseño. Los pasos se presentan en filas por debajo de 900 px y en cuatro columnas desde ese ancho, con contenido de hasta 1200 px. Las dos tarjetas de acción conservan dos columnas desde 360 px y se apilan en tamaños inferiores. También se reorganizan con texto ampliado cuando el espacio disponible ya no permite mantener su lectura. El pie, las zonas seguras y los controles de 44 px se adaptan a móvil, horizontal y escritorio.
+
+«Descubrir» y «Hablemos» están deshabilitados y muestran una indicación visible de disponibilidad futura. No hay todavía cuestionario, cálculo de perfiles, envío de información ni enlace de WhatsApp. Las diez preguntas del futuro cuestionario no se han definido: la pantalla solo conserva la presentación de las referencias.
+
+Los cinco WebP de `public/media/create-trip/` se sirven localmente y suman aproximadamente 60 kB. El fondo procede de `viajesPersonalizadosFondoLimpio.png`; los cuatro iconos son recortes de los discos ilustrados de `viajesPersonalizados.png`. Las maquetas completas no se utilizan como contenido de pantalla. Las tarjetas móviles se reproducen con colores y textura CSS; las de escritorio tienen fondo claro y borde fino. Los originales permanecen sin modificar. Para regenerar los recursos con `sharp`, ya incluido:
+
+```sh
+node scripts/prepare-create-trip-assets.mjs
+# También admite las rutas del fondo limpio y la referencia móvil como argumentos.
+```
+
+Por defecto se leen los dos PNG de `../recursos/`. La aplicación no necesita esa carpeta una vez generados los recursos. Los iconos proceden de una referencia de resolución limitada y no deben ampliarse más allá de su tamaño original.
+
+`tests/create-trip.spec.ts` comprueba acceso por teclado, entrada directa, recarga, historial, restauración de foco, transiciones, movimiento reducido, cancelación de carga, errores y recuperación del fondo, botones pendientes, texto al 200 % y capturas desde 280 hasta 1440 px. Ejecutar `npm run build` y `npm run test:e2e -- tests/create-trip.spec.ts tests/journey.spec.ts tests/library.spec.ts --workers=1`. Las capturas se guardan en `test-results/`; queda aconsejada la revisión en un móvil físico.
 
 ### Biblioteca de viajes
 
@@ -115,7 +151,7 @@ El mismo fondo limpio `/media/library/background.webp` permanece montado al camb
 
 Las URLs `/#biblioteca`, `/#biblioteca/paises`, `/#biblioteca/viajes`, `/#biblioteca/viajes?pais=ES` y `/#biblioteca/viajes?continente=asia` permiten compartir filtros, recargar y navegar atrás/adelante sin reproducir la portada. País y continente se pueden combinar con semántica AND. Los filtros inválidos se explican y los filtros válidos sin resultados muestran un estado vacío. La navegación utiliza History API, sin dependencias de routing.
 
-La navegación hub/biblioteca utiliza un fundido direccional de 650 ms con desplazamiento corto y escala sutil. El fondo y el contenido entran con movimiento independiente y pequeños desfases, sin animaciones perpetuas. Se prepara el fondo antes del cambio, con respaldo a los 3 s si no llega. Durante el cambio ambas pantallas son inertes y el foco se transfiere al terminar. El regreso conserva visualmente el scroll saliente antes de mostrar el hub desde arriba. Con movimiento reducido se omiten las animaciones y la espera de transición.
+La navegación hub/biblioteca utiliza un fundido direccional de 650 ms con desplazamiento corto y escala sutil. El fondo mantiene su transición y los elementos del contenido usan la cascada compartida descrita arriba. Se prepara el fondo antes del cambio, con respaldo a los 3 s si no llega. Durante el cambio ambas pantallas son inertes y el foco se transfiere al terminar. El regreso conserva visualmente el scroll saliente antes de mostrar el hub desde arriba. Con movimiento reducido se omiten las animaciones y la espera de transición.
 
 Los recursos están incluidos en `public/media/library/`. Para regenerarlos: `node scripts/prepare-library-assets.mjs [ruta-al-fondo.png]`. Por defecto se utiliza `../recursos/bibliotecaFondo.png`; el script necesita conexión para descargar las fronteras de Natural Earth (dominio público) y genera mapas SVG con una textura de papel aproximada. La aplicación no realiza solicitudes externas para estos recursos. El fondo se convierte a WebP mediante la dependencia existente `sharp`, sin modificar el original.
 

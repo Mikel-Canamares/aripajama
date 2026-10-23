@@ -1,0 +1,23 @@
+@layer motion {
+  [data-reveal-state='pending'], [data-reveal-state='queued'] {
+    opacity: 0;
+    translate: 0 16px;
+    pointer-events: none;
+    transition: none;
+  }
+  [data-reveal-state='running'] {
+    opacity: 1;
+    translate: 0 0;
+    transition: opacity 550ms var(--ease-reveal), translate 550ms var(--ease-reveal),
+      transform 350ms var(--ease-reveal), background-color 350ms, border-color 350ms, box-shadow 350ms;
+    will-change: opacity, translate;
+  }
+  /* A card's shell fades while its contents move independently. */
+  [data-reveal-frame][data-reveal-state] { translate: none; }
+}
+
+@layer responsive {
+  @media (prefers-reduced-motion: reduce) {
+    [data-reveal-state] { opacity: 1; translate: none; }
+  }
+}

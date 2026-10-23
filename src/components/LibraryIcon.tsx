@@ -1,5 +1,5 @@
 export function LibraryIcon({ name }: { name: 'globe' | 'compass' | 'lock' | 'heart' | 'leaf' | 'arrow' }) {
-  return <svg viewBox="0 0 64 64" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+  return <svg data-reveal="" viewBox="0 0 64 64" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
     {name === 'globe' && <><circle cx="32" cy="32" r="27" /><path d="m14 12 9 5-3 8-7 2-6-4m28-18-6 10 7 6 8-3 8 8 6 1M9 36l11-3 10 8-4 9-1 8m14-27-6 5 5 8 8 1 4 10m-3-44-7 9" /></>}
     {name === 'compass' && <><circle cx="32" cy="32" r="27" /><path d="m47 17-9 21-21 9 9-21Z" /><circle cx="32" cy="32" r="2" /></>}
     {name === 'arrow' && <><circle cx="32" cy="32" r="27" /><path d="M21 32h22M34 23l9 9-9 9" /></>}

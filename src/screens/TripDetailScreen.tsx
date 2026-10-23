@@ -1,14 +1,15 @@
-import { useEffect, useLayoutEffect, useRef, useState, type RefObject } from 'react'
+import { useEffect, useId, useLayoutEffect, useRef, useState, type RefObject } from 'react'
 import { CONTINENTS, type Trip } from '../data/library'
 import type { TripDetail, TripImage } from '../data/trip-details'
 import { useReducedMotion } from '../hooks/useReducedMotion'
 import '../trip-detail.css'
+import { useRevealSequence } from '../hooks/useRevealSequence'
 
 function Photograph({ image, eager = false, className = '' }: { image: TripImage; eager?: boolean; className?: string }) {
   const [failed, setFailed] = useState(false)
   return failed
-    ? <div className={`trip-photo trip-photo--missing ${className}`} role="img" aria-label={image.alt}><span>Imagen no disponible</span></div>
-    : <img className={`trip-photo ${className}`} src={image.src} width={image.width} height={image.height} alt={image.alt} loading={eager ? 'eager' : 'lazy'} onError={() => setFailed(true)} />
+    ? <div data-reveal="" className={`trip-photo trip-photo--missing ${className}`} role="img" aria-label={image.alt}><span>Imagen no disponible</span></div>
+    : <img data-reveal="" className={`trip-photo ${className}`} src={image.src} width={image.width} height={image.height} alt={image.alt} loading={eager ? 'eager' : 'lazy'} onError={() => setFailed(true)} />
 }
 
 function ThemeIcon({ name }: { name: TripDetail['themes'][number]['icon'] }) {
@@ -18,6 +19,7 @@ function ThemeIcon({ name }: { name: TripDetail['themes'][number]['icon'] }) {
 }
 
 function OriginalViewer({ sheets, initialIndex, opener, onClose }: { sheets: TripDetail['sheets']; initialIndex: number; opener: HTMLElement; onClose: () => void }) {
+  const viewerId = useId()
   const dialogRef = useRef<HTMLDialogElement>(null)
   const viewportRef = useRef<HTMLDivElement>(null)
   const [index, setIndex] = useState(initialIndex)
@@ -37,6 +39,8 @@ function OriginalViewer({ sheets, initialIndex, opener, onClose }: { sheets: Tri
     }
   }, [opener])
 
+  useRevealSequence(dialogRef, true, `${viewerId}:${index}`)
+
   function changeSheet(next: number) {
     if (next < 0 || next >= sheets.length) return
     setIndex(next)
@@ -45,7 +49,7 @@ function OriginalViewer({ sheets, initialIndex, opener, onClose }: { sheets: Tri
     viewportRef.current?.scrollTo(0, 0)
   }
 
-  return <dialog ref={dialogRef} className="trip-viewer" aria-labelledby="trip-viewer-title" onCancel={event => { event.preventDefault(); onClose() }} onKeyDown={event => {
+  return <dialog data-reveal-scope="" ref={dialogRef} className="trip-viewer" aria-labelledby="trip-viewer-title" onCancel={event => { event.preventDefault(); onClose() }} onKeyDown={event => {
     if (event.key === 'Tab') {
       const targets = [...event.currentTarget.querySelectorAll<HTMLElement>('button:not(:disabled), [tabindex="0"]')]
       const first = targets[0]
@@ -59,8 +63,8 @@ function OriginalViewer({ sheets, initialIndex, opener, onClose }: { sheets: Tri
       changeSheet(index + (event.key === 'ArrowLeft' ? -1 : 1))
     }
   }}>
-    <header className="trip-viewer__header">
-      <div aria-live="polite"><p className="trip-eyebrow">Láminas originales · {index + 1} / {sheets.length}</p><h2 id="trip-viewer-title">{sheet.title}</h2></div>
+    <header data-reveal-group="" className="trip-viewer__header">
+      <div aria-live="polite"><p data-reveal="" className="trip-eyebrow">Láminas originales · {index + 1} / {sheets.length}</p><h2 data-reveal="" id="trip-viewer-title">{sheet.title}</h2></div>
       <button autoFocus onClick={onClose} aria-label="Cerrar visor">Cerrar <span aria-hidden="true">×</span></button>
     </header>
     <div className="trip-viewer__tools" aria-label="Controles de la lámina">
@@ -69,7 +73,7 @@ function OriginalViewer({ sheets, initialIndex, opener, onClose }: { sheets: Tri
       <button disabled={index === sheets.length - 1} onClick={() => changeSheet(index + 1)} aria-label="Lámina siguiente"><span>Siguiente</span> →</button>
     </div>
     <div ref={viewportRef} className="trip-viewer__viewport" data-zoomed={zoomed} tabIndex={0} role="region" aria-label={zoomed ? 'Lámina ampliada; desplázate para explorar' : 'Lámina completa'}>
-      {failed ? <p role="status">No se ha podido cargar esta lámina. Puedes consultar el contenido en la ficha del viaje.</p> : <img key={sheet.src} src={sheet.src} alt={`Lámina original: ${sheet.title}`} width="941" height="1672" onError={() => setFailed(true)} />}
+      {failed ? <p data-reveal="" role="status">No se ha podido cargar esta lámina. Puedes consultar el contenido en la ficha del viaje.</p> : <img data-reveal="" key={sheet.src} src={sheet.src} alt={`Lámina original: ${sheet.title}`} width="941" height="1672" onError={() => setFailed(true)} />}
     </div>
   </dialog>
 }
@@ -101,38 +105,38 @@ export function TripDetailScreen({ trip, detail, titleRef }: { trip: Trip; detai
       {sections.map(section => <button key={section.id} onClick={() => goTo(section.id)}>{section.label}</button>)}
     </nav>
 
-    <header className="trip-hero">
+    <header data-reveal-group="" className="trip-hero">
       <div className="trip-hero__copy">
-        <p className="trip-eyebrow">{CONTINENTS.find(continent => continent.id === trip.continent)?.name} · Un viaje para recordar</p>
-        <h1 id="trip-inicio" ref={titleRef} tabIndex={-1}>{trip.title}</h1>
-        <span className="trip-rule" aria-hidden="true" />
-        <p className="trip-hero__introduction">{detail.introduction}</p>
-        <ul className="trip-facts" aria-label="El viaje en cifras">{trip.days && <li><strong>{trip.days}</strong> días</li>}<li><strong>{destinations}</strong> destinos</li><li><strong>{detail.stages.length}</strong> etapas</li></ul>
-        <button className="trip-originals" onClick={event => setViewer({ index: 0, opener: event.currentTarget })}>Ver las láminas originales <span aria-hidden="true">↗</span></button>
+        <p data-reveal="" className="trip-eyebrow">{CONTINENTS.find(continent => continent.id === trip.continent)?.name} · Un viaje para recordar</p>
+        <h1 data-reveal="" id="trip-inicio" ref={titleRef} tabIndex={-1}>{trip.title}</h1>
+        <span data-reveal="" className="trip-rule" aria-hidden="true" />
+        <p data-reveal="" className="trip-hero__introduction">{detail.introduction}</p>
+        <ul className="trip-facts" aria-label="El viaje en cifras">{trip.days && <li data-reveal=""><strong>{trip.days}</strong> días</li>}<li data-reveal=""><strong>{destinations}</strong> destinos</li><li data-reveal=""><strong>{detail.stages.length}</strong> etapas</li></ul>
+        <button data-reveal="" className="trip-originals" onClick={event => setViewer({ index: 0, opener: event.currentTarget })}>Ver las láminas originales <span aria-hidden="true">↗</span></button>
       </div>
       <Photograph image={detail.cover} eager className="trip-hero__image" />
     </header>
 
     <section className="trip-section" aria-labelledby="trip-ruta">
-      <div className="trip-section__heading"><p className="trip-eyebrow">01 · El recorrido</p><h2 id="trip-ruta" tabIndex={-1}>La ruta</h2><p>{detail.routeIntroduction}</p></div>
+      <div data-reveal-group="" className="trip-section__heading"><p data-reveal="" className="trip-eyebrow">01 · El recorrido</p><h2 data-reveal="" id="trip-ruta" tabIndex={-1}>La ruta</h2><p data-reveal="">{detail.routeIntroduction}</p></div>
       <div className="trip-route">
-        <figure className="trip-route__map"><button className="trip-route__enlarge" onClick={event => setViewer({ index: 1, opener: event.currentTarget })} aria-label="Ampliar el mapa de la ruta"><Photograph image={detail.map} /><span>Ampliar mapa <span aria-hidden="true">↗</span></span></button><figcaption>{detail.routeCaption}</figcaption></figure>
-        <div className="trip-route__summary"><p className="trip-eyebrow">Tu viaje, paso a paso</p><ol className="trip-route__stops">{detail.stages.map((stage, index) => <li key={index}><span className="trip-route__number" aria-hidden="true">{String(index + 1).padStart(2, '0')}</span><div><h3>{stage.destination}</h3><p>{stage.days}</p></div></li>)}</ol><p className="trip-route__note">{detail.routeSummary}</p><p>{detail.routeClosing}</p></div>
+        <figure data-reveal-group="" className="trip-route__map"><button className="trip-route__enlarge" onClick={event => setViewer({ index: 1, opener: event.currentTarget })} aria-label="Ampliar el mapa de la ruta"><Photograph image={detail.map} /><span data-reveal="">Ampliar mapa <span aria-hidden="true">↗</span></span></button><figcaption data-reveal="">{detail.routeCaption}</figcaption></figure>
+        <div className="trip-route__summary"><p data-reveal="" className="trip-eyebrow">Tu viaje, paso a paso</p><ol className="trip-route__stops">{detail.stages.map((stage, index) => <li data-reveal-group="" key={index}><span data-reveal="" className="trip-route__number" aria-hidden="true">{String(index + 1).padStart(2, '0')}</span><div><h3 data-reveal="">{stage.destination}</h3><p data-reveal="">{stage.days}</p></div></li>)}</ol><p data-reveal="" className="trip-route__note">{detail.routeSummary}</p><p data-reveal="">{detail.routeClosing}</p></div>
       </div>
     </section>
 
     <section className="trip-section" aria-labelledby="trip-etapas">
-      <div className="trip-section__heading"><p className="trip-eyebrow">02 · Grandes momentos</p><h2 id="trip-etapas" tabIndex={-1}>El viaje</h2><p>Grandes momentos, un mismo destino.</p></div>
-      <ol className="trip-stages">{detail.stages.map((stage, index) => <li className="trip-stage" key={index}>
+      <div data-reveal-group="" className="trip-section__heading"><p data-reveal="" className="trip-eyebrow">02 · Grandes momentos</p><h2 data-reveal="" id="trip-etapas" tabIndex={-1}>El viaje</h2><p data-reveal="">Grandes momentos, un mismo destino.</p></div>
+      <ol className="trip-stages">{detail.stages.map((stage, index) => <li data-reveal="" data-reveal-frame="" data-reveal-group="" className="trip-stage" key={index}>
         <Photograph image={stage.image} />
-        <div className="trip-stage__copy"><p className="trip-eyebrow">Etapa {String(index + 1).padStart(2, '0')}</p><h3>{stage.destination}</h3><p className="trip-stage__days">{stage.days}</p><p>{stage.description}</p></div>
+        <div className="trip-stage__copy"><p data-reveal="" className="trip-eyebrow">Etapa {String(index + 1).padStart(2, '0')}</p><h3 data-reveal="">{stage.destination}</h3><p data-reveal="" className="trip-stage__days">{stage.days}</p><p data-reveal="">{stage.description}</p></div>
       </li>)}</ol>
     </section>
 
     <section className="trip-section trip-essence" aria-labelledby="trip-esencia">
-      <div className="trip-section__heading"><p className="trip-eyebrow">03 · La esencia</p><h2 id="trip-esencia" tabIndex={-1}>Lo que me llevo</h2><p>Más que un destino, una forma de viajar.</p></div>
-      <div className="trip-themes">{detail.themes.map(theme => <div className="trip-theme" key={theme.title}><span className="trip-theme__icon"><ThemeIcon name={theme.icon} /></span><h3>{theme.title}</h3><span className="trip-rule" aria-hidden="true" /><p>{theme.description}</p></div>)}</div>
-      <blockquote className="trip-reflection">{detail.reflection}</blockquote>
+      <div data-reveal-group="" className="trip-section__heading"><p data-reveal="" className="trip-eyebrow">03 · La esencia</p><h2 data-reveal="" id="trip-esencia" tabIndex={-1}>Lo que me llevo</h2><p data-reveal="">Más que un destino, una forma de viajar.</p></div>
+      <div className="trip-themes">{detail.themes.map(theme => <div data-reveal-group="" className="trip-theme" key={theme.title}><span data-reveal="" className="trip-theme__icon"><ThemeIcon name={theme.icon} /></span><h3 data-reveal="">{theme.title}</h3><span data-reveal="" className="trip-rule" aria-hidden="true" /><p data-reveal="">{theme.description}</p></div>)}</div>
+      <blockquote data-reveal="" className="trip-reflection">{detail.reflection}</blockquote>
       <Photograph image={detail.closingImage} className="trip-closing" />
     </section>
     {viewer !== null && <OriginalViewer sheets={detail.sheets} initialIndex={viewer.index} opener={viewer.opener} onClose={() => setViewer(null)} />}

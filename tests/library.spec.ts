@@ -27,7 +27,7 @@ test('anima ambas direcciones y bloquea interacción hasta completar el cambio',
   await page.keyboard.press('Escape')
   await expect(page.locator('.navigation')).toHaveAttribute('data-navigation', 'library')
   await expect(page.getByRole('heading', { name: 'Biblioteca de viajes', level: 1 })).toBeFocused()
-  await expect(page.locator('.library__header')).toHaveCSS('animation-name', 'library-content')
+  await expect(page.locator('.library__header h1')).toHaveAttribute('data-reveal-state', /running|shown/)
   await page.getByRole('button', { name: 'Volver', exact: true }).click()
   await expect(page.locator('.navigation')).toHaveAttribute('data-navigation', 'returning')
   await expect(page.locator('.navigation__hub')).toHaveCSS('animation-name', 'hub-arrive')

@@ -1,0 +1,100 @@
+@layer components {
+  .create-trip {
+    position: relative;
+    isolation: isolate;
+    overflow: clip;
+    background: #fff;
+    color: #151311;
+    padding: max(1rem, env(safe-area-inset-top)) max(5%, env(safe-area-inset-right)) max(2.5rem, env(safe-area-inset-bottom)) max(5%, env(safe-area-inset-left));
+  }
+  .create-trip__background { position: absolute; z-index: -1; top: 0; right: 0; width: 100%; height: auto; pointer-events: none; }
+  .create-trip[data-background='error'] .create-trip__background { visibility: hidden; }
+  .create-trip__content { max-width: 1200px; margin-inline: auto; container-type: inline-size; }
+  .create-trip__back { display: inline-flex; align-items: center; gap: .4em; min-height: 44px; padding: .25rem 0; border: 0; background: transparent; font: 400 clamp(1.35rem, 3.8cqw, 2.3rem)/1 var(--font-editorial); }
+  .create-trip__back span { color: #b54c24; font-family: Georgia, serif; }
+  .create-trip__header { margin-block: clamp(1.75rem, 6cqw, 4rem) clamp(2.75rem, 10cqw, 6rem); }
+  .create-trip__header h1 { margin: 0; width: fit-content; max-width: 100%; font: 600 clamp(2.6rem, 8.5cqw, 5.5rem)/.88 var(--font-editorial); letter-spacing: -.055em; }
+  .create-trip__header h1:focus { outline: none; }
+  .create-trip__rule { display: block; width: clamp(38px, 8.5cqw, 78px); height: 3px; margin-block: clamp(1rem, 3.6cqw, 2rem) clamp(.9rem, 3cqw, 1.7rem); background: #a96620; }
+  .create-trip__header p { max-width: 20em; font: 400 clamp(1.25rem, 3.6cqw, 2.3rem)/1.15 var(--font-editorial); }
+  .create-trip__section-title { display: flex; align-items: center; gap: clamp(.75rem, 3.5cqw, 2rem); margin: 0 0 clamp(1.3rem, 5cqw, 3rem); font: 400 clamp(.85rem, 3cqw, 1.6rem)/1.4 'Manrope', sans-serif; letter-spacing: .16em; text-align: center; text-transform: uppercase; }
+  .create-trip__section-title::before, .create-trip__section-title::after { content: ''; height: 1px; background: #b77c41; flex: 1; }
+  .create-trip__steps { list-style: none; margin: 0; padding: 0 2%; }
+  .create-trip__step { display: grid; grid-template-columns: clamp(48px, 14cqw, 110px) clamp(30px, 9cqw, 80px) minmax(0, 1fr); align-items: center; column-gap: clamp(.4rem, 2.5cqw, 1.7rem); padding: clamp(1rem, 2.8cqw, 1.75rem) 0; }
+  .create-trip__step + .create-trip__step { border-top: 1px solid #edc6af; }
+  .create-trip__step > img { width: 100%; height: auto; mix-blend-mode: multiply; }
+  .create-trip__number { font: 600 italic clamp(1.65rem, 5.7cqw, 3.6rem)/1 var(--font-editorial); text-align: center; }
+  .create-trip__step-copy { border-left: 1px solid #b77c41; padding-left: clamp(.7rem, 4.5cqw, 2.8rem); }
+  .create-trip__step h3 { margin: 0 0 .2em; font: 600 clamp(1.3rem, 3.8cqw, 2.3rem)/1 var(--font-editorial); letter-spacing: -.045em; }
+  .create-trip__step p { color: #25374a; font: 400 clamp(1.05rem, 3cqw, 1.8rem)/1.12 var(--font-editorial); }
+  .create-trip__actions { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: clamp(.65rem, 2.3cqw, 2rem); margin-block: clamp(1.75rem, 5cqw, 4rem) clamp(1.75rem, 5cqw, 3.5rem); }
+  .create-trip__card { display: flex; flex-direction: column; align-items: center; min-width: 0; padding: clamp(.9rem, 3.5cqw, 2.5rem) clamp(.6rem, 2.5cqw, 2rem) .8rem; border: 1px solid #e7b99c; border-radius: 14px; text-align: center; background: radial-gradient(ellipse at 0 100%, #d88965aa, transparent 65%), repeating-linear-gradient(135deg, #ffffff30 0 1px, transparent 1px 9px), #f9e9d9; }
+  .create-trip__card--contact { border-color: #b5cdd7; background: radial-gradient(ellipse at 0 100%, #5b9bb5aa, transparent 65%), repeating-linear-gradient(135deg, #ffffff40 0 1px, transparent 1px 9px), #e5eff2; }
+  .create-trip__card h2 { margin: 0 0 .55em; font: 600 clamp(1.35rem, 3.8cqw, 2.3rem)/1 var(--font-editorial); letter-spacing: -.045em; }
+  .create-trip__card p { margin-bottom: 1rem; max-width: 24em; font: 400 clamp(1rem, 2.8cqw, 1.7rem)/1.12 var(--font-editorial); }
+  .create-trip__card button { display: flex; align-items: center; justify-content: center; gap: .6em; margin-top: auto; width: 100%; max-width: 350px; min-height: 44px; padding: .55rem .45rem; border: 1px solid #a34d2a; border-radius: 999px; background: linear-gradient(120deg, #a44c29, #b66c45); color: #fff; font: 400 clamp(.7rem, 2.3cqw, 1.1rem)/1.25 'Manrope', sans-serif; letter-spacing: .12em; text-transform: uppercase; opacity: 1; }
+  .create-trip__card button > span { font-size: 1.5em; line-height: 1; }
+  .create-trip__card--contact button { border-color: #192337; background: #ffffffa6; color: #192337; }
+  .create-trip__card button svg { width: 1.8em; height: 1.8em; flex-shrink: 0; }
+  .create-trip__card small { margin-top: .55rem; font: 400 clamp(.65rem, 1.6cqw, .8rem)/1.4 'Manrope', sans-serif; color: #54463b; }
+  .create-trip__card--contact small { color: #344c5b; }
+  .create-trip__footer { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); margin-block: 0 1rem; }
+  .create-trip__footer p { display: flex; align-items: center; gap: .7em; padding-inline: 9%; font: 400 clamp(.6rem, 1.65cqw, .9rem)/1.6 'Manrope', sans-serif; letter-spacing: .08em; text-transform: uppercase; color: #25374a; }
+  .create-trip__footer p:first-child { padding-left: 0; }
+  .create-trip__footer p:last-child { padding-right: 0; }
+  .create-trip__footer p + p { border-left: 1px solid #b77c41; }
+  .create-trip__footer svg { width: 25%; max-width: 48px; flex-shrink: 0; color: #101515; }
+}
+
+@layer motion {
+  .create-trip__back span { transition: transform .3s var(--ease-reveal); }
+  .create-trip__back:hover span { transform: translateX(-4px); }
+  .navigation:is([data-navigation='entering'], [data-navigation='create']) .create-trip__background { animation: library-backdrop .95s var(--ease-reveal) both; transform-origin: top right; }
+
+}
+
+@layer responsive {
+  @media (max-width: 599px) {
+    .create-trip__footer p { flex-direction: column; align-items: center; padding-inline: .4rem; text-align: center; }
+    .create-trip__footer svg { width: 28px; }
+  }
+  @media (max-width: 359px) {
+    .create-trip__actions { grid-template-columns: 1fr; }
+    .create-trip__card { padding: 1.25rem; }
+    .create-trip__card h2 { font-size: 1.6rem; }
+    .create-trip__card button { font-size: .85rem; }
+    .create-trip__section-title { letter-spacing: .1em; }
+  }
+  @media (min-width: 900px) {
+    .create-trip { padding-top: max(2rem, env(safe-area-inset-top)); }
+    .create-trip__background { width: min(100%, 1440px); height: min(70vw, 650px); object-fit: cover; object-position: top right; mask-image: linear-gradient(#000 60%, transparent); }
+    .create-trip__header { margin-block: 3.5rem 4.5rem; }
+    .create-trip__header h1 { font-size: clamp(4.5rem, 8cqw, 6.5rem); }
+    .create-trip__header p { max-width: 16em; }
+    .create-trip__steps { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); padding: 0; }
+    .create-trip__step { position: relative; display: flex; flex-direction: column; justify-content: flex-start; padding: 0 clamp(1rem, 2cqw, 2rem); text-align: center; }
+    .create-trip__step + .create-trip__step { border-top: 0; }
+    .create-trip__step + .create-trip__step::before { content: ''; position: absolute; top: 42px; bottom: 0; left: 0; width: 1px; background: linear-gradient(#b77c41 0 25%, transparent 25% 31%, #b77c41 31%); }
+    .create-trip__step > img { width: 104px; }
+    .create-trip__number { margin-block: .45rem .6rem; font-size: 3.5rem; }
+    .create-trip__step-copy { display: flex; flex-direction: column; flex: 1; padding: 0; border: 0; }
+    .create-trip__step h3 { min-height: 2.05em; margin-bottom: .8rem; font-size: clamp(1.8rem, 2.8cqw, 2.3rem); }
+    .create-trip__step p { font-size: clamp(1.3rem, 2.3cqw, 1.75rem); }
+    .create-trip__actions { gap: 2rem; margin: 5.5rem 2% 4rem; }
+    .create-trip__card, .create-trip__card--contact { background: #ffffffb8; border-color: #cf9878; }
+    .create-trip__card p { max-width: 18em; }
+    .create-trip__footer { margin-bottom: 3rem; }
+  }
+  /* Relative to text size: keep the chosen columns at normal mobile sizes,
+     then reflow when enlarged text would no longer fit those columns. */
+  @container (max-width: 20rem) {
+    .create-trip__actions { grid-template-columns: 1fr; }
+    .create-trip__step { grid-template-columns: 56px minmax(0, 1fr); row-gap: .5rem; }
+    .create-trip__step > img { grid-column: 1; grid-row: 1; }
+    .create-trip__number { grid-column: 1; grid-row: 2; align-self: start; }
+    .create-trip__step-copy { grid-column: 2; grid-row: 1 / span 2; }
+    .create-trip__footer { grid-template-columns: 1fr; gap: 1rem; }
+    .create-trip__footer p, .create-trip__footer p:first-child, .create-trip__footer p:last-child { flex-direction: row; padding: 0; text-align: left; border: 0; }
+    .create-trip__footer svg { width: 32px; }
+  }
+}

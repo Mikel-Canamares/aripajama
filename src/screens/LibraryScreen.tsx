@@ -5,12 +5,13 @@ import { LibraryCatalog } from './LibraryCatalog'
 import { TripDetailScreen } from './TripDetailScreen'
 import { TRIP_DETAILS } from '../data/trip-details'
 import { LibraryIcon as Icon } from '../components/LibraryIcon'
+import { revealEntry, useRevealSequence } from '../hooks/useRevealSequence'
 
 export function LibraryScreen({ active, onReady, onBack }: { active: boolean; onReady: () => void; onBack: () => void }) {
   const titleRef = useRef<HTMLHeadingElement>(null)
   const [background, setBackground] = useState<'loading' | 'ready' | 'error'>('loading')
-  const [route, setRoute] = useState(() => ({ hash: window.location.hash || '#biblioteca', restore: false }))
-  const [pending, setPending] = useState<{ hash: string; restore: boolean } | null>(null)
+  const [route, setRoute] = useState(() => ({ hash: window.location.hash || '#biblioteca', restore: false, entry: revealEntry() }))
+  const [pending, setPending] = useState<typeof route | null>(null)
   const [stage, setStage] = useState<'idle' | 'out' | 'in'>('idle')
   const reducedMotion = useReducedMotion()
   const contentRef = useRef<HTMLDivElement>(null)
@@ -30,7 +31,7 @@ export function LibraryScreen({ active, onReady, onBack }: { active: boolean; on
     const state = { libraryDepth: replace ? 0 : (history.state?.libraryDepth || 0) + 1 }
     if (replace) history.replaceState(state, '', hash)
     else history.pushState(state, '', hash)
-    setPending({ hash, restore: false })
+    setPending({ hash, restore: false, entry: revealEntry() })
     setStage('out')
   }
 
@@ -44,7 +45,7 @@ export function LibraryScreen({ active, onReady, onBack }: { active: boolean; on
   useEffect(() => {
     const handlePop = () => {
       if (!window.location.hash.startsWith('#biblioteca')) return
-      setPending({ hash: window.location.hash, restore: true })
+      setPending({ hash: window.location.hash, restore: true, entry: revealEntry() })
       setStage('out')
     }
     window.addEventListener('popstate', handlePop)
@@ -67,6 +68,8 @@ export function LibraryScreen({ active, onReady, onBack }: { active: boolean; on
     if (stage !== 'in') return
     window.scrollTo(0, route.restore ? history.state?.libraryPosition?.scroll || 0 : 0)
   }, [route, stage])
+
+  useRevealSequence(contentRef, active && stage === 'idle', `library:${route.entry}`)
 
   useEffect(() => {
     if (!active || stage !== 'idle') return
@@ -102,37 +105,37 @@ export function LibraryScreen({ active, onReady, onBack }: { active: boolean; on
         setBackground('ready')
       } catch { setBackground('error') }
     }} />
-    <div className="library__content" ref={contentRef}>
+    <div className="library__content" ref={contentRef} data-reveal-scope="">
     <div className="library__view" data-stage={stage} inert={stage !== 'idle'} aria-hidden={stage !== 'idle'}>
       <button className="library__back" onClick={back}><span aria-hidden="true">←</span> Volver</button>
       {view.page === 'detail' ? <TripDetailScreen key={view.tripId} trip={TRIPS.find(trip => trip.id === view.tripId)!} detail={TRIP_DETAILS[view.tripId]!} titleRef={titleRef} /> : view.page !== 'home' ? <LibraryCatalog view={view} titleRef={titleRef} onNavigate={navigate} /> : <>
-      <header className="library__header">
-        <h1 ref={titleRef} tabIndex={-1}>Biblioteca<br />de viajes</h1>
-        <span className="library__rule" aria-hidden="true" />
-        <p>Destinos recorridos.<br />Experiencias reales.</p>
+      <header className="library__header" data-reveal-group="">
+        <h1 data-reveal="" ref={titleRef} tabIndex={-1}>Biblioteca<br />de viajes</h1>
+        <span data-reveal="" className="library__rule" aria-hidden="true" />
+        <p data-reveal="">Destinos recorridos.<br />Experiencias reales.</p>
       </header>
       <section className="library__browse" aria-label="Otras formas de explorar">
-        <button id="library-countries" className="library__browse-card" onClick={() => navigate('#biblioteca/paises', 'library-countries')}><Icon name="globe" /><span>Países</span><Icon name="arrow" /></button>
+        <button data-reveal="" data-reveal-frame="" data-reveal-group="" id="library-countries" className="library__browse-card" onClick={() => navigate('#biblioteca/paises', 'library-countries')}><Icon name="globe" /><span data-reveal="">Países</span><Icon name="arrow" /></button>
       </section>
-      <div className="library__all"><button id="library-all" className="text-button" onClick={() => navigate('#biblioteca/viajes', 'library-all')}>Ver los {TRIPS.length} viajes <span aria-hidden="true">→</span></button></div>
+      <div className="library__all"><button data-reveal="" id="library-all" className="text-button" onClick={() => navigate('#biblioteca/viajes', 'library-all')}>Ver los {TRIPS.length} viajes <span aria-hidden="true">→</span></button></div>
       <section className="library__continents" aria-labelledby="library-continents">
-        <h2 id="library-continents" className="library__section-title">Explora por continente</h2>
+        <h2 data-reveal="" id="library-continents" className="library__section-title">Explora por continente</h2>
         <ul className="library__grid">
           {CONTINENTS.map(continent => <li key={continent.id}>
-            <button id={`library-${continent.id}`} className={`library__continent library__continent--${continent.id}`} onClick={() => navigate(`#biblioteca/viajes?continente=${continent.id}`, `library-${continent.id}`)}>
-              <img src={`/media/library/${continent.id}.svg`} alt="" width="360" height="360" />
-              <span className="library__continent-copy"><span className="library__continent-name">{continent.name}</span><span className="library__continent-rule" /><span className="library__count">{TRIPS.filter(trip => trip.continent === continent.id).length} viajes</span></span>
+            <button data-reveal="" data-reveal-frame="" data-reveal-group="" id={`library-${continent.id}`} className={`library__continent library__continent--${continent.id}`} onClick={() => navigate(`#biblioteca/viajes?continente=${continent.id}`, `library-${continent.id}`)}>
+              <img data-reveal="" src={`/media/library/${continent.id}.svg`} alt="" width="360" height="360" />
+              <span className="library__continent-copy"><span data-reveal="" className="library__continent-name">{continent.name}</span><span data-reveal="" className="library__continent-rule" /><span data-reveal="" className="library__count">{TRIPS.filter(trip => trip.continent === continent.id).length} viajes</span></span>
             </button>
           </li>)}
         </ul>
       </section>
       <footer className="library__footer" aria-label="Nuestra forma de viajar">
-        <p><Icon name="lock" /><span>Itinerarios<br />reales</span></p>
-        <p><Icon name="heart" /><span>Experiencias<br />de primera mano</span></p>
-        <p><Icon name="leaf" /><span>Destinos con<br />sentido</span></p>
+        <p data-reveal-group=""><Icon name="lock" /><span data-reveal="">Itinerarios<br />reales</span></p>
+        <p data-reveal-group=""><Icon name="heart" /><span data-reveal="">Experiencias<br />de primera mano</span></p>
+        <p data-reveal-group=""><Icon name="leaf" /><span data-reveal="">Destinos con<br />sentido</span></p>
       </footer>
       <div className="library__notice">
-        <p id="library-pending">Descubre el itinerario de Tailandia. Próximamente: más fichas y exploración por tipo de viaje.</p>
+        <p data-reveal="" id="library-pending">Descubre el itinerario de Tailandia. Próximamente: más fichas y exploración por tipo de viaje.</p>
       </div>
       </>}
     </div>

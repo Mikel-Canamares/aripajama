@@ -3,44 +3,56 @@ import { useReducedMotion } from './hooks/useReducedMotion'
 import { IntroScreen } from './screens/IntroScreen'
 import { JourneyScreen } from './screens/JourneyScreen'
 import { LibraryScreen } from './screens/LibraryScreen'
+import { CreateTripScreen } from './screens/CreateTripScreen'
+
+type Destination = 'library' | 'create'
+
+function readDestination(): Destination | null {
+  if (window.location.hash.startsWith('#biblioteca')) return 'library'
+  if (window.location.hash === '#crear-mi-viaje') return 'create'
+  return null
+}
 
 export function App() {
-  const [phase, setPhase] = useState<'intro' | 'preparing' | 'entering' | 'journey' | 'returning'>(() => window.location.hash.startsWith('#biblioteca') ? 'journey' : 'intro')
+  const [phase, setPhase] = useState<'intro' | 'preparing' | 'entering' | 'journey' | 'returning'>(() => readDestination() ? 'journey' : 'intro')
   const [hubReady, setHubReady] = useState(false)
-  const [navigation, setNavigation] = useState<'hub' | 'preparing' | 'entering' | 'library' | 'returning'>(() => window.location.hash.startsWith('#biblioteca') ? 'library' : 'hub')
-  const [libraryReady, setLibraryReady] = useState(false)
+  const [navigation, setNavigation] = useState<'hub' | 'preparing' | 'entering' | Destination | 'returning'>(() => readDestination() || 'hub')
+  const [destination, setDestination] = useState<Destination>(() => readDestination() || 'library')
+  const [destinationReady, setDestinationReady] = useState(false)
   const [exitScroll, setExitScroll] = useState(0)
-  const [restoreLibraryFocus, setRestoreLibraryFocus] = useState(false)
+  const [restoreFocus, setRestoreFocus] = useState<Destination | null>(null)
   const reducedMotion = useReducedMotion()
   const handleHubReady = useCallback(() => setHubReady(true), [])
-  const handleLibraryReady = useCallback(() => setLibraryReady(true), [])
+  const handleDestinationReady = useCallback(() => setDestinationReady(true), [])
 
   useEffect(() => {
     const handlePop = () => {
-      if (window.location.hash.startsWith('#biblioteca')) {
-        if (navigation === 'hub') {
+      const next = readDestination()
+      if (next) {
+        if (navigation === 'hub' || next !== destination) {
           setPhase('journey')
-          setLibraryReady(false)
+          setDestination(next)
+          setDestinationReady(false)
           setNavigation('preparing')
-        } else if (navigation === 'returning') setNavigation('library')
-      } else if (navigation === 'library' || navigation === 'preparing' || navigation === 'entering') {
+        } else if (navigation === 'returning') setNavigation(next)
+      } else if (navigation === 'library' || navigation === 'create' || navigation === 'preparing' || navigation === 'entering') {
         setExitScroll(window.scrollY)
-        setRestoreLibraryFocus(true)
+        setRestoreFocus(destination)
         setNavigation(navigation === 'preparing' ? 'hub' : 'returning')
       }
     }
     window.addEventListener('popstate', handlePop)
     return () => window.removeEventListener('popstate', handlePop)
-  }, [navigation])
+  }, [navigation, destination])
 
   useEffect(() => {
-    if (navigation !== 'preparing' || !libraryReady) return
+    if (navigation !== 'preparing' || !destinationReady) return
     let nextFrame = 0
     const frame = requestAnimationFrame(() => {
       nextFrame = requestAnimationFrame(() => setNavigation(current => current === 'preparing' ? 'entering' : current))
     })
     return () => { cancelAnimationFrame(frame); cancelAnimationFrame(nextFrame) }
-  }, [navigation, libraryReady])
+  }, [navigation, destinationReady])
 
   useLayoutEffect(() => {
     if (navigation === 'returning') window.scrollTo(0, 0)
@@ -50,10 +62,10 @@ export function App() {
     if (navigation !== 'entering' && navigation !== 'returning') return
     // Also settle when animationend is interrupted or the preference changes mid-flight.
     const timer = window.setTimeout(() => {
-      setNavigation(navigation === 'entering' ? 'library' : 'hub')
+      setNavigation(navigation === 'entering' ? destination : 'hub')
     }, reducedMotion ? 0 : 1100)
     return () => window.clearTimeout(timer)
-  }, [navigation, reducedMotion])
+  }, [navigation, reducedMotion, destination])
 
   useEffect(() => {
     if (phase !== 'preparing' || !hubReady) return
@@ -74,6 +86,28 @@ export function App() {
   }, [phase, reducedMotion])
 
   const introActive = phase === 'intro' || phase === 'preparing'
+
+  function openDestination(next: Destination) {
+    if (navigation !== 'hub') return
+    setDestination(next)
+    setDestinationReady(false)
+    setRestoreFocus(null)
+    history.pushState(next === 'library' ? { libraryDepth: 0 } : { createFromHub: true }, '', next === 'library' ? '#biblioteca' : '#crear-mi-viaje')
+    setNavigation('preparing')
+  }
+
+  function returnToHub() {
+    if (navigation !== destination) return
+    // A hub entry belongs to this app; direct visits have a safe local fallback.
+    if (destination === 'create' && history.state?.createFromHub) {
+      history.back()
+      return
+    }
+    history.replaceState(null, '', window.location.pathname + window.location.search)
+    setExitScroll(window.scrollY)
+    setRestoreFocus(destination)
+    setNavigation('returning')
+  }
 
   return (
     <div className="experience" data-phase={phase}>
@@ -99,7 +133,7 @@ export function App() {
           <div className="navigation" data-navigation={navigation}>
           <div
             className="navigation__hub"
-            hidden={navigation === 'library'}
+            hidden={navigation === 'library' || navigation === 'create'}
             inert={navigation !== 'hub' && navigation !== 'preparing'}
             aria-hidden={navigation !== 'hub' && navigation !== 'preparing'}
             onAnimationEnd={event => {
@@ -110,40 +144,31 @@ export function App() {
           >
             <JourneyScreen
               active={phase === 'journey' && (navigation === 'hub' || navigation === 'preparing')}
-              restoreLibraryFocus={restoreLibraryFocus}
+              restoreFocus={restoreFocus}
               onReady={handleHubReady}
               onBack={() => {
                 if (navigation === 'preparing') { history.replaceState(null, '', window.location.pathname + window.location.search); setNavigation('hub'); return }
-                setRestoreLibraryFocus(false)
+                setRestoreFocus(null)
                 setPhase('returning')
               }}
-              onOpenLibrary={() => {
-                if (navigation !== 'hub') return
-                setLibraryReady(false)
-                setRestoreLibraryFocus(false)
-                history.pushState({ libraryDepth: 0 }, '', '#biblioteca')
-                setNavigation('preparing')
-              }}
+              onOpenLibrary={() => openDestination('library')}
+              onOpenCreate={() => openDestination('create')}
             />
           </div>
           {navigation !== 'hub' && <div
-            className="navigation__library"
-            inert={navigation !== 'library'}
-            aria-hidden={navigation !== 'library'}
+            className={`navigation__destination navigation__${destination}`}
+            inert={navigation !== destination}
+            aria-hidden={navigation !== destination}
             style={{ top: navigation === 'returning' ? -exitScroll : undefined }}
             onAnimationEnd={event => {
               if (event.target === event.currentTarget && event.animationName === 'library-arrive') {
-                setNavigation(current => current === 'entering' ? 'library' : current)
+                setNavigation(current => current === 'entering' ? destination : current)
               }
             }}
           >
-            <LibraryScreen active={navigation === 'library'} onReady={handleLibraryReady} onBack={() => {
-              if (navigation !== 'library') return
-              history.replaceState(null, '', window.location.pathname + window.location.search)
-              setExitScroll(window.scrollY)
-              setRestoreLibraryFocus(true)
-              setNavigation('returning')
-            }} />
+            {destination === 'library'
+              ? <LibraryScreen active={navigation === 'library'} onReady={handleDestinationReady} onBack={returnToHub} />
+              : <CreateTripScreen active={navigation === 'create'} onReady={handleDestinationReady} onBack={returnToHub} />}
           </div>}
           </div>
         </div>
