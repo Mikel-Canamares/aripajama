@@ -128,7 +128,28 @@ npm run test:e2e -- --workers=1
 
 `src/screens/CreateTripScreen.tsx` contiene los textos y los cuatro pasos; `src/create-trip.css` define el diseño. Los pasos se presentan en filas por debajo de 900 px y en cuatro columnas desde ese ancho, con contenido de hasta 1200 px. Las dos tarjetas de acción conservan dos columnas desde 360 px y se apilan en tamaños inferiores. También se reorganizan con texto ampliado cuando el espacio disponible ya no permite mantener su lectura. El pie, las zonas seguras y los controles de 44 px se adaptan a móvil, horizontal y escritorio.
 
-«Descubrir» y «Hablemos» están deshabilitados y muestran una indicación visible de disponibilidad futura. No hay todavía cuestionario, cálculo de perfiles, envío de información ni enlace de WhatsApp. Las diez preguntas del futuro cuestionario no se han definido: la pantalla solo conserva la presentación de las referencias.
+«Descubrir» abre el cuestionario de diez preguntas y retoma la primera pendiente. «Hablemos» continúa deshabilitado con su indicación de disponibilidad futura; no existe enlace de WhatsApp.
+
+#### Cuestionario
+
+El flujo se coordina en `src/screens/CreateTripFlow.tsx`; `QuestionnaireScreen.tsx` presenta una pregunta por pantalla y el cierre provisional. Los textos, el orden y las 52 opciones de las referencias están en `src/data/questionnaire.ts`. Las preguntas 1–8 permiten seleccionar varias opciones; las preguntas 9 y 10 utilizan radios. Todas exigen al menos una respuesta. Las tarjetas completas son etiquetas de controles nativos, con marca, borde y fondo de selección. No hay avance automático.
+
+Las rutas `/#crear-mi-viaje/cuestionario/1` hasta `/10`, y `/completado`, permiten entrada directa y recarga sin portada. Si faltan respuestas anteriores, se abre la primera pendiente. «Volver» y Escape regresan a la pregunta anterior y, desde la primera, a la presentación con foco en «Descubrir». El historial conserva scroll, foco y apariciones ya vistas. Las transiciones internas bloquean la interacción durante 160 ms de salida y 420 ms de entrada; con movimiento reducido terminan inmediatamente. Los cambios de hash externos también se atienden, incluidos los navegadores que no emiten `popstate` para ellos.
+
+El borrador versionado `aripajama:create-trip:v1` guarda exclusivamente identificadores de respuestas y paso actual en `sessionStorage`, durante la sesión de la pestaña. Se valida al recuperarlo: un borrador corrupto se descarta; si el almacenamiento está bloqueado, el flujo funciona en memoria. «Empezar de nuevo» limpia únicamente este borrador. No se envían respuestas, ni se calculan perfiles, ni se incluyen los detalles prácticos: tras las diez preguntas aparece un cierre provisional con revisión y regreso a la presentación. El navegador puede restaurar sesiones de pestañas según su propia configuración.
+
+`src/questionnaire.css` adapta las opciones circulares de la primera pregunta a una, dos o tres columnas. Las siguientes usan una columna hasta 960 px; las escenas laterales decorativas se ocultan por debajo de 600 px y con texto ampliado cuando falta espacio. La cascada compartida respeta scroll, teclado y movimiento reducido; las selecciones no la reinician. Los fallos de imágenes mantienen el formulario operativo con fondo claro.
+
+Para regenerar los recursos locales con `sharp`, sin modificar los originales:
+
+```sh
+node scripts/prepare-questionnaire-assets.mjs
+# Admite como argumento la carpeta de referencias.
+```
+
+El origen por defecto es `../recursos/personalizados/crearmiviaje/`. El script recorta únicamente iconos, escenas y decoraciones de los diez PNG del cuestionario en `public/media/questionnaire/`. Los textos, fondos de tarjetas y controles se reconstruyen con HTML y CSS; la imagen adicional de detalles prácticos no se utiliza. La resolución de las referencias limita la nitidez al ampliar las ilustraciones.
+
+`tests/questionnaire.spec.ts` cubre las diez preguntas, las 52 opciones, obligatoriedad, selección múltiple y única, cierre, revisión, reinicio, guardado, historial, foco, scroll, enlaces directos, recursos fallidos, animaciones y fallos de almacenamiento u observador. Incluye capturas desde 280 hasta 1440 px, horizontal y texto al 200 %. Ejecutar `npm run build` y `npm run test:e2e -- tests/questionnaire.spec.ts tests/create-trip.spec.ts tests/journey.spec.ts tests/library.spec.ts tests/reveal.spec.ts --workers=1`.
 
 Los cinco WebP de `public/media/create-trip/` se sirven localmente y suman aproximadamente 60 kB. El fondo procede de `viajesPersonalizadosFondoLimpio.png`; los cuatro iconos son recortes de los discos ilustrados de `viajesPersonalizados.png`. Las maquetas completas no se utilizan como contenido de pantalla. Las tarjetas móviles se reproducen con colores y textura CSS; las de escritorio tienen fondo claro y borde fino. Los originales permanecen sin modificar. Para regenerar los recursos con `sharp`, ya incluido:
 

@@ -50,15 +50,15 @@ test('admite enlace directo y recarga sin portada, y regreso local seguro', asyn
   expect(videoRequests).toEqual([])
 })
 
-test('conserva los textos, los cuatro pasos y las acciones pendientes sin enlaces ficticios', async ({ page }) => {
+test('conserva los textos, los cuatro pasos y habilita únicamente el cuestionario', async ({ page }) => {
   await page.emulateMedia({ reducedMotion: 'reduce' })
   await page.goto('/#crear-mi-viaje')
   await expect(title(page)).toHaveText('No hay dosformas igualesde viajar.')
   await expect(page.locator('.create-trip__steps > li')).toHaveCount(4)
   await expect(page.locator('.create-trip__step h3')).toHaveText(['Te descubro', 'Lo imaginamos juntos', 'Diseño tu itinerario', 'Lo hacemos realidad'])
-  await expect(page.getByRole('button', { name: 'Descubrir', exact: true })).toBeDisabled()
+  await expect(page.getByRole('button', { name: 'Descubrir', exact: true })).toBeEnabled()
   await expect(page.getByRole('button', { name: 'Hablemos', exact: true })).toBeDisabled()
-  await expect(page.locator('#create-trip-discover-pending')).toBeVisible()
+  await expect(page.locator('#create-trip-discover-pending')).toHaveCount(0)
   await expect(page.locator('#create-trip-contact-pending')).toBeVisible()
   await expect(page.locator('.create-trip a, .create-trip input, .create-trip form')).toHaveCount(0)
 })

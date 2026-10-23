@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { LibraryIcon } from '../components/LibraryIcon'
-import { revealEntry, useRevealSequence } from '../hooks/useRevealSequence'
+import { useRevealSequence } from '../hooks/useRevealSequence'
+import type { CreatePosition } from './CreateTripFlow'
 import '../create-trip.css'
 
 const STEPS = [
@@ -17,14 +18,16 @@ function WhatsAppIcon() {
   </svg>
 }
 
-export function CreateTripScreen({ active, onReady, onBack }: {
+export function CreateTripScreen({ active, onReady, onBack, onDiscover, position, entry }: {
   active: boolean
   onReady: () => void
   onBack: () => void
+  onDiscover: () => void
+  position?: CreatePosition
+  entry: string
 }) {
   const titleRef = useRef<HTMLHeadingElement>(null)
   const contentRef = useRef<HTMLDivElement>(null)
-  const [entry] = useState(revealEntry)
   useRevealSequence(contentRef, active, `create:${entry}`)
   const [background, setBackground] = useState<'loading' | 'ready' | 'error'>('loading')
 
@@ -36,9 +39,10 @@ export function CreateTripScreen({ active, onReady, onBack }: {
 
   useEffect(() => {
     if (!active) return
-    window.scrollTo(0, 0)
-    titleRef.current?.focus({ preventScroll: true })
-  }, [active])
+    window.scrollTo(0, position?.scroll || 0)
+    const restored = position?.focus ? document.getElementById(position.focus) : null
+    ;(restored || titleRef.current)?.focus({ preventScroll: true })
+  }, [active, position])
 
   useEffect(() => {
     if (!active) return
@@ -81,8 +85,7 @@ export function CreateTripScreen({ active, onReady, onBack }: {
         <article data-reveal="" data-reveal-frame="" data-reveal-group="" className="create-trip__card create-trip__card--discover">
           <h2 data-reveal="">Quiero empezar mi viaje</h2>
           <p data-reveal="">Responde a 10 preguntas, descubre tu perfil viajero y cuéntame qué tienes en mente.</p>
-          <button data-reveal="" disabled aria-describedby="create-trip-discover-pending">Descubrir <span aria-hidden="true">⟶</span></button>
-          <small data-reveal="" id="create-trip-discover-pending">Cuestionario próximamente</small>
+          <button data-reveal="" id="create-trip-discover" onClick={onDiscover}>Descubrir <span aria-hidden="true">⟶</span></button>
         </article>
         <article data-reveal="" data-reveal-frame="" data-reveal-group="" className="create-trip__card create-trip__card--contact">
           <h2 data-reveal="">Tengo dudas antes de empezar</h2>

@@ -3,13 +3,13 @@ import { useReducedMotion } from './hooks/useReducedMotion'
 import { IntroScreen } from './screens/IntroScreen'
 import { JourneyScreen } from './screens/JourneyScreen'
 import { LibraryScreen } from './screens/LibraryScreen'
-import { CreateTripScreen } from './screens/CreateTripScreen'
+import { CreateTripFlow } from './screens/CreateTripFlow'
 
 type Destination = 'library' | 'create'
 
 function readDestination(): Destination | null {
   if (window.location.hash.startsWith('#biblioteca')) return 'library'
-  if (window.location.hash === '#crear-mi-viaje') return 'create'
+  if (/^#crear-mi-viaje(?:\/|$)/.test(window.location.hash)) return 'create'
   return null
 }
 
@@ -42,7 +42,8 @@ export function App() {
       }
     }
     window.addEventListener('popstate', handlePop)
-    return () => window.removeEventListener('popstate', handlePop)
+    window.addEventListener('hashchange', handlePop)
+    return () => { window.removeEventListener('popstate', handlePop); window.removeEventListener('hashchange', handlePop) }
   }, [navigation, destination])
 
   useEffect(() => {
@@ -100,7 +101,7 @@ export function App() {
     if (navigation !== destination) return
     // A hub entry belongs to this app; direct visits have a safe local fallback.
     if (destination === 'create' && history.state?.createFromHub) {
-      history.back()
+      history.go(-((history.state?.createDepth || 0) + 1))
       return
     }
     history.replaceState(null, '', window.location.pathname + window.location.search)
@@ -168,7 +169,7 @@ export function App() {
           >
             {destination === 'library'
               ? <LibraryScreen active={navigation === 'library'} onReady={handleDestinationReady} onBack={returnToHub} />
-              : <CreateTripScreen active={navigation === 'create'} onReady={handleDestinationReady} onBack={returnToHub} />}
+              : <CreateTripFlow active={navigation === 'create'} onReady={handleDestinationReady} onBack={returnToHub} />}
           </div>}
           </div>
         </div>
