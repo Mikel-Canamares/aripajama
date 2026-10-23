@@ -131,7 +131,7 @@ test('habilita países y continentes sin mostrar el botón de tipo de viaje', as
   }
   await expect(page.getByRole('button', { name: 'Tipo de viaje', exact: true })).toHaveCount(0)
   await expect(page.locator('#library-pending')).toBeVisible()
-  await expect(page.locator('#library-pending')).toContainText('itinerarios detallados')
+  await expect(page.locator('#library-pending')).toContainText('itinerario de Tailandia')
   await expect(page.locator('.library a')).toHaveCount(0)
 })
 

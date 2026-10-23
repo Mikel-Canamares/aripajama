@@ -1,3 +1,5 @@
+import { TRIP_DETAILS } from './trip-details'
+
 export const CONTINENTS = [
   { id: 'europe', name: 'Europa' },
   { id: 'asia', name: 'Asia' },
@@ -94,12 +96,14 @@ export const TRIPS: readonly Trip[] = [
   { id: 'tunez', order: 39, title: 'Túnez', continent: 'africa', countries: ['TN'], days: 8, icon: 'TN', tone: 'blue' },
 ]
 
-export type LibraryView = { page: 'home' } | { page: 'countries' } | { page: 'trips'; country?: CountryCode; continent?: ContinentId } | { page: 'invalid' }
+export type LibraryView = { page: 'home' } | { page: 'countries' } | { page: 'trips'; country?: CountryCode; continent?: ContinentId } | { page: 'detail'; tripId: string } | { page: 'invalid' }
 
 export function readLibraryView(hash: string): LibraryView {
   if (hash === '#biblioteca' || !hash) return { page: 'home' }
   if (hash === '#biblioteca/paises') return { page: 'countries' }
   const [path, query = ''] = hash.split('?')
+  const detailId = path.match(/^#biblioteca\/viajes\/([a-z0-9-]+)$/)?.[1]
+  if (detailId && TRIP_DETAILS[detailId] && TRIPS.some(trip => trip.id === detailId) && !hash.includes('?')) return { page: 'detail', tripId: detailId }
   if (path !== '#biblioteca/viajes') return { page: 'invalid' }
   const params = new URLSearchParams(query)
   const country = params.get('pais')

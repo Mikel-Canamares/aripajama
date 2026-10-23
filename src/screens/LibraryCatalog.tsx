@@ -1,6 +1,7 @@
 import { useState, type RefObject } from 'react'
 import { CONTINENTS, COUNTRIES, illustratedIcon, selectTrips, type IconTone, type LibraryView } from '../data/library'
 import { LibraryIcon } from '../components/LibraryIcon'
+import { TRIP_DETAILS } from '../data/trip-details'
 
 function ArtIcon({ icon, tone }: { icon: string; tone: IconTone }) {
   const [failed, setFailed] = useState(false)
@@ -10,7 +11,7 @@ function ArtIcon({ icon, tone }: { icon: string; tone: IconTone }) {
 }
 
 export function LibraryCatalog({ view, titleRef, onNavigate }: {
-  view: Exclude<LibraryView, { page: 'home' }>
+  view: Exclude<LibraryView, { page: 'home' | 'detail' }>
   titleRef: RefObject<HTMLHeadingElement | null>
   onNavigate: (hash: string, sourceId?: string) => void
 }) {
@@ -45,15 +46,20 @@ export function LibraryCatalog({ view, titleRef, onNavigate }: {
         return <section key={group.id} className={`catalog__group catalog__group--${group.id}`} aria-labelledby={`group-${group.id}`}>
           <header className="catalog__group-heading"><div><h2 id={`group-${group.id}`}>{group.name}</h2><p>{items.length} {items.length === 1 ? 'viaje' : 'viajes'}</p></div><img src={`/media/library/${group.id}.svg`} width="360" height="360" alt="" /></header>
           <ol className="catalog__trips" aria-label={`Viajes de ${group.name}`}>
-            {items.map(trip => <li key={trip.id} className="catalog__trip" value={trip.order} data-trip={trip.id}>
+            {items.map(trip => <li key={trip.id} className={`catalog__trip${TRIP_DETAILS[trip.id] ? ' catalog__trip--available' : ''}`} value={trip.order} data-trip={trip.id}>
               <span className="catalog__number" aria-hidden="true">{String(trip.order).padStart(2, '0')}</span>
               <div className="catalog__trip-copy"><h3>{trip.title}</h3>{(trip.subtitle || trip.days) && <p>{trip.subtitle || `${trip.days} días`}</p>}</div>
               <ArtIcon icon={trip.icon} tone={trip.tone} />
+              {TRIP_DETAILS[trip.id] && <a id={`trip-${trip.id}`} className="catalog__trip-link" href={`#biblioteca/viajes/${trip.id}`} aria-label={`Descubrir ${trip.title}${trip.days ? `, ${trip.days} días` : ''}`} onClick={event => {
+                if (event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return
+                event.preventDefault()
+                onNavigate(`#biblioteca/viajes/${trip.id}`, `trip-${trip.id}`)
+              }}><span aria-hidden="true">↗</span></a>}
             </li>)}
           </ol>
         </section>
       })}
-      <p className="library__notice catalog__detail-notice">Los itinerarios detallados estarán disponibles próximamente.</p>
+      <p className="library__notice catalog__detail-notice">Descubre la ficha de Tailandia. Seguimos preparando los demás itinerarios.</p>
     </>}
   </>
 }

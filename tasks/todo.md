@@ -1,3 +1,19 @@
+## Ficha editorial de Tailandia · 23/10/2026
+
+- [x] Registrar el contenido completo separado del catálogo: 15 días, seis destinos y siete etapas.
+- [x] Conservar los cuatro PNG y preparar diez WebP con recortes reproducibles mediante sharp, sin nuevas dependencias.
+- [x] Conectar la fila de Tailandia desde todos los listados y añadir enlace directo, historial y regreso con filtros, foco y scroll.
+- [x] Crear la ficha reutilizable con índice fijo, texto HTML, mapa ampliable, etapas y cierre editorial responsive.
+- [x] Añadir visor modal de originales bajo demanda, zoom, teclado, contención del foco y devolución explícita al control de apertura en Safari táctil.
+- [x] Verificar compilación, pruebas y capturas de móvil, horizontal y escritorio; documentar la incorporación de nuevos viajes.
+
+### Review
+
+- **Problema y causa:** el catálogo solo disponía de resúmenes y sus filas eran informativas. Las láminas verticales contienen texto integrado que se reduce demasiado al adaptarlas directamente al ancho de un móvil.
+- **Cambios:** contenido tipado en `src/data/trip-details.ts`; ruta de detalle en `src/data/library.ts`; enlace disponible por registro en `LibraryCatalog.tsx`; integración y regreso en `LibraryScreen.tsx`; nueva ficha y visor en `TripDetailScreen.tsx`; estilos localizados en `src/trip-detail.css`; preparación reproducible en `scripts/prepare-trip-assets.mjs`; recursos, documentación y pruebas.
+- **Validación:** `npm run build` correcto. Primera ejecución de catálogo, biblioteca y detalle: 56 casos en Chromium/WebKit; se detectaron una expectativa antigua de texto y dos diferencias de foco entre navegadores. Tras corregirlas, la ejecución focalizada de ficha y aviso actualizado finalizó con **20/20 casos correctos**; el resto de casos de catálogo y biblioteca ya había pasado. Capturas revisadas a 280, 320, 390, 768, 844 horizontal y 1440 px; lectura al 200 %, controles ≥44 px, fallos gráficos, navegación, historial y carga bajo demanda comprobados. SHA-256 confirma que los cuatro PNG conservados son idénticos a los adjuntos.
+- **Riesgos pendientes:** las fotos de etapas proceden de recortes de 360 px y se limita su tamaño; el mapa mantiene etiquetas integradas y se complementa con texto cronológico. Los PNG completos pesan aproximadamente 9,4 MB y solo se cargan al abrir cada lámina. Queda la comprobación en un teléfono físico. Los otros 38 viajes seguirán informativos hasta disponer de sus detalles. Sin operaciones Git ni publicación.
+
 ## JourneyScreen adaptativa y responsive conservando el estilo visual · 22/10/2026
 
 - [x] Desacoplar las tarjetas del lienzo estático y estilizarlas en CSS con vidrio esmerilado cálido, borde dorado y botón circular SVG con flecha.

@@ -2,6 +2,8 @@ import { useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { CONTINENTS, TRIPS, readLibraryView } from '../data/library'
 import { useReducedMotion } from '../hooks/useReducedMotion'
 import { LibraryCatalog } from './LibraryCatalog'
+import { TripDetailScreen } from './TripDetailScreen'
+import { TRIP_DETAILS } from '../data/trip-details'
 import { LibraryIcon as Icon } from '../components/LibraryIcon'
 
 export function LibraryScreen({ active, onReady, onBack }: { active: boolean; onReady: () => void; onBack: () => void }) {
@@ -36,7 +38,7 @@ export function LibraryScreen({ active, onReady, onBack }: { active: boolean; on
     if (!active || stage !== 'idle') return
     if (view.page === 'home') { onBack(); return }
     if (history.state?.libraryDepth > 0) history.back()
-    else navigate(view.page === 'trips' && view.country ? '#biblioteca/paises' : '#biblioteca', undefined, true)
+    else navigate(view.page === 'detail' ? '#biblioteca/viajes' : view.page === 'trips' && view.country ? '#biblioteca/paises' : '#biblioteca', undefined, true)
   }
 
   useEffect(() => {
@@ -83,7 +85,7 @@ export function LibraryScreen({ active, onReady, onBack }: { active: boolean; on
   useEffect(() => {
     if (!active || stage !== 'idle') return
     const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.key !== 'Escape') return
+      if (event.key !== 'Escape' || event.defaultPrevented || document.querySelector('dialog[open]')) return
       event.preventDefault()
       back()
     }
@@ -103,7 +105,7 @@ export function LibraryScreen({ active, onReady, onBack }: { active: boolean; on
     <div className="library__content" ref={contentRef}>
     <div className="library__view" data-stage={stage} inert={stage !== 'idle'} aria-hidden={stage !== 'idle'}>
       <button className="library__back" onClick={back}><span aria-hidden="true">←</span> Volver</button>
-      {view.page !== 'home' ? <LibraryCatalog view={view} titleRef={titleRef} onNavigate={navigate} /> : <>
+      {view.page === 'detail' ? <TripDetailScreen key={view.tripId} trip={TRIPS.find(trip => trip.id === view.tripId)!} detail={TRIP_DETAILS[view.tripId]!} titleRef={titleRef} /> : view.page !== 'home' ? <LibraryCatalog view={view} titleRef={titleRef} onNavigate={navigate} /> : <>
       <header className="library__header">
         <h1 ref={titleRef} tabIndex={-1}>Biblioteca<br />de viajes</h1>
         <span className="library__rule" aria-hidden="true" />
@@ -130,7 +132,7 @@ export function LibraryScreen({ active, onReady, onBack }: { active: boolean; on
         <p><Icon name="leaf" /><span>Destinos con<br />sentido</span></p>
       </footer>
       <div className="library__notice">
-        <p id="library-pending">Próximamente: explora por tipo de viaje y descubre los itinerarios detallados.</p>
+        <p id="library-pending">Descubre el itinerario de Tailandia. Próximamente: más fichas y exploración por tipo de viaje.</p>
       </div>
       </>}
     </div>
