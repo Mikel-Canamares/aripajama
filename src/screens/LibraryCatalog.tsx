@@ -29,7 +29,6 @@ export function LibraryCatalog({ view, titleRef, onNavigate }: {
     <nav className="catalog__navigation" aria-label="Explorar la biblioteca">
       <button onClick={() => onNavigate('#biblioteca')}><LibraryIcon name="globe" />Continentes <LibraryIcon name="arrow" /></button>
       {view.page !== 'countries' && <button onClick={() => onNavigate('#biblioteca/paises')}><LibraryIcon name="globe" />Países <LibraryIcon name="arrow" /></button>}
-      <button disabled title="Próximamente"><LibraryIcon name="compass" /><span>Tipo de viaje<small className="catalog__soon">Próximamente</small></span></button>
     </nav>
     {view.page === 'countries' ? <ul className="catalog__countries" aria-label="Países de la biblioteca">
       {COUNTRIES.map(item => <li key={item.code}>

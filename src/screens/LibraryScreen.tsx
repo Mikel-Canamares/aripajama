@@ -111,7 +111,6 @@ export function LibraryScreen({ active, onReady, onBack }: { active: boolean; on
       </header>
       <section className="library__browse" aria-label="Otras formas de explorar">
         <button id="library-countries" className="library__browse-card" onClick={() => navigate('#biblioteca/paises', 'library-countries')}><Icon name="globe" /><span>Países</span><Icon name="arrow" /></button>
-        <button className="library__browse-card library__browse-card--type" disabled><Icon name="compass" /><span>Tipo de viaje</span><Icon name="arrow" /></button>
       </section>
       <div className="library__all"><button id="library-all" className="text-button" onClick={() => navigate('#biblioteca/viajes', 'library-all')}>Ver los {TRIPS.length} viajes <span aria-hidden="true">→</span></button></div>
       <section className="library__continents" aria-labelledby="library-continents">

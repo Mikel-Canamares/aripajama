@@ -124,12 +124,12 @@ test('entra desde el hub y restaura el foco al volver por botón o Escape', asyn
   await expect(page.locator('.experience')).toHaveAttribute('data-phase', 'intro')
 })
 
-test('habilita países y continentes y mantiene pendientes tipos e itinerarios', async ({ page }) => {
+test('habilita países y continentes sin mostrar el botón de tipo de viaje', async ({ page }) => {
   await openLibrary(page)
   for (const name of ['Países', 'Europa 27 viajes', 'Asia 5 viajes', 'América 5 viajes', 'África 2 viajes']) {
     await expect(page.getByRole('button', { name, exact: true })).toBeEnabled()
   }
-  await expect(page.getByRole('button', { name: 'Tipo de viaje', exact: true })).toBeDisabled()
+  await expect(page.getByRole('button', { name: 'Tipo de viaje', exact: true })).toHaveCount(0)
   await expect(page.locator('#library-pending')).toBeVisible()
   await expect(page.locator('#library-pending')).toContainText('itinerarios detallados')
   await expect(page.locator('.library a')).toHaveCount(0)
