@@ -1,5 +1,6 @@
 import { expect, test, type Page } from '@playwright/test'
 import { DRAFT_KEY, TRIP_QUESTIONS } from '../src/data/questionnaire'
+import { mockTripApi, seedFinalDraft } from './trip-request-helpers'
 
 const root = '#crear-mi-viaje/cuestionario/'
 const title = (page: Page) => page.locator('.questionnaire h1')
@@ -57,7 +58,7 @@ test('exige respuesta, permite varias selecciones y no avanza automáticamente',
   await expect(page.getByRole('progressbar')).toHaveAttribute('value', '1')
 })
 
-test('recorre las diez preguntas y 52 opciones, revisa y reinicia el borrador', async ({ page }) => {
+test('recorre las diez preguntas y 52 opciones y continúa a detalles sin perder respuestas', async ({ page }) => {
   test.slow()
   await open(page)
   let optionsSeen = 0
@@ -75,23 +76,20 @@ test('recorre las diez preguntas y 52 opciones, revisa y reinicia el borrador', 
     await next(page).click()
   }
   expect(optionsSeen).toBe(52)
-  await expect(title(page)).toHaveText('Has completado las 10 preguntas.')
-  await expect(page.locator('.questionnaire__complete')).toContainText('Tus respuestas se conservan en esta pestaña. La siguiente fase estará disponible próximamente.')
-  await page.getByRole('button', { name: 'Revisar respuestas' }).click()
+  await expect(title(page)).toHaveText('Cuéntame los detalles prácticos.')
   await expect(title(page)).toBeFocused()
+  await page.keyboard.press('Escape')
+  await expect(page.locator('.questionnaire')).toHaveAttribute('data-question', '10')
+  await expect(next(page)).toBeFocused()
+  for (let step = 9; step >= 1; step--) {
+    await page.keyboard.press('Escape')
+    await expect(page.locator('.questionnaire')).toHaveAttribute('data-question', String(step))
+    await expect(next(page)).toBeFocused()
+  }
   await expect(page.getByRole('checkbox').nth(0)).toBeChecked()
   await expect(page.getByRole('checkbox').nth(1)).toBeChecked()
-  await page.goBack()
-  await expect(page.getByRole('button', { name: 'Revisar respuestas' })).toBeFocused()
-  await page.getByRole('button', { name: 'Volver a Crear mi viaje', exact: true }).click()
-  await expect(page.locator('#create-trip-discover')).toBeFocused()
-  await page.locator('#create-trip-discover').click()
-  await expect(title(page)).toHaveText('Has completado las 10 preguntas.')
-  await page.getByRole('button', { name: 'Empezar de nuevo' }).click()
-  await expect(title(page)).toHaveText('¿Qué te mueve a viajar?')
-  await expect(page.locator('input:checked')).toHaveCount(0)
   await page.reload()
-  await expect(page.locator('input:checked')).toHaveCount(0)
+  await expect(page.getByRole('checkbox').nth(0)).toBeChecked()
   await expect(title(page)).toBeFocused()
 })
 
@@ -136,14 +134,15 @@ test('recupera scroll, foco, selecciones e historial entre preguntas', async ({ 
 })
 
 test('regresa al hub desde una presentación abierta después del cierre', async ({ page }) => {
-  await seed(page, 10)
+  await mockTripApi(page)
+  await seedFinalDraft(page, { receipt: 'accepted' })
   await page.emulateMedia({ reducedMotion: 'reduce' })
   await page.goto('/')
   await page.getByRole('button', { name: 'Comencemos' }).click()
   const hub = page.getByRole('button', { name: 'Crear mi viaje', exact: true })
   await hub.click()
   await page.locator('#create-trip-discover').click()
-  await expect(title(page)).toHaveText('Has completado las 10 preguntas.')
+  await expect(title(page)).toHaveText('Tu perfil está en camino.')
   await page.getByRole('button', { name: 'Volver a Crear mi viaje', exact: true }).click()
   await expect(page.locator('#create-trip-discover')).toBeFocused()
   await page.keyboard.press('Escape')

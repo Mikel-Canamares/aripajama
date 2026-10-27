@@ -8,7 +8,16 @@
   },
   "scripts": {
     "dev": "vite --host 0.0.0.0",
-    "build": "tsc -b && vite build",
+    "build": "tsc -b && tsc -p tsconfig.server.json && vite build",
+    "dev:api": "node scripts/wrangler.mjs dev --ip 127.0.0.1 --port 8787 --var ENVIRONMENT:development --var TURNSTILE_MODE:mock --var EMAIL_MODE:disabled --persist-to .wrangler/state",
+    "dev:api:mock": "node scripts/wrangler.mjs dev --ip 127.0.0.1 --port 8787 --var ENVIRONMENT:development --var TURNSTILE_MODE:mock --var EMAIL_MODE:mock --persist-to .wrangler/state",
+    "dev:api:test": "node scripts/test-api.mjs",
+    "db:local": "node scripts/wrangler.mjs d1 migrations apply aripajama-trip-requests --local --persist-to .wrangler/state",
+    "test:server": "node --experimental-strip-types --test server/tests/*.test.ts",
+    "emails:preview": "node --experimental-strip-types scripts/preview-emails.ts",
+    "emails:generate": "node --experimental-strip-types scripts/preview-emails.ts --generate",
+    "assets:profiles": "node scripts/prepare-profile-assets.mjs",
+    "worker:check": "node scripts/wrangler.mjs deploy --dry-run --outdir .wrangler/dry-run",
     "preview": "vite preview --host 0.0.0.0",
     "assets:prepare": "node scripts/prepare-assets.mjs",
     "assets:library-icons": "node --experimental-strip-types scripts/prepare-library-icons.mjs",
@@ -20,6 +29,7 @@
     "react": "^19.3.1",
     "react-dom": "^19.3.1"
   },
+  "overrides": { "undici": "7.30.1" },
   "devDependencies": {
     "@playwright/test": "^1.64.1",
     "@types/node": "^24.10.0",
@@ -28,6 +38,7 @@
     "@vitejs/plugin-react": "^6.0.0",
     "sharp": "^0.35.5",
     "typescript": "~5.9.3",
-    "vite": "^8.3.4"
+    "vite": "^8.3.4",
+    "wrangler": "4.152.0"
   }
 }

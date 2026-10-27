@@ -1,3 +1,16 @@
+## Perfiles viajeros y registro de solicitudes · 26/10/2026
+
+- [x] Conservar las diez preguntas, sus textos y opciones; conectar detalles, email y confirmación con la navegación existente.
+- [x] Implementar el algoritmo privado v1.0.0, mapeo estable, normalización, elegibilidad, desempates y avisos del PDF.
+- [x] Añadir Worker, migración D1, validación de servidor, Turnstile, límites, recibo privado e idempotencia de solicitud/correo.
+- [x] Preparar Resend con secretos, contenido inmutable, bloqueo de concurrencia, estado real de aceptación y reintento seguro.
+- [x] Preparar seis correos HTML/texto con recursos individuales, textos definitivos y visor exclusivo de desarrollo.
+- [x] Verificar build, 49 pruebas de servidor, empaquetado Worker y D1 local. Cubrir 132 casos de navegador entre regresión y repeticiones en Chromium/WebKit.
+- [x] Corregir los desbordamientos de email con recursos y sin ellos, y la carrera de simulación del reintento; revisar capturas y texto al 200 %.
+- [x] Documentar recursos, contratos, guardado temporal, variables, estados y activación en `docs/traveler-profiles.md`.
+- [ ] Configurar D1/Turnstile de producción y dominio verificado de Resend; autorizar publicación y primera prueba real.
+- [ ] Comprobar recepción en Gmail, Outlook y Apple Mail reales. No se han enviado correos reales ni realizado operaciones Git.
+
 ## Ficha editorial de Tailandia · 23/10/2026
 
 - [x] Registrar el contenido completo separado del catálogo: 15 días, seis destinos y siete etapas.

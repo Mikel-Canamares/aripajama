@@ -8,3 +8,5 @@
 [1023/111539.615:WARNING:media\filters\ffmpeg_demuxer.cc:1285] PipelineStatus::DEMUXER_ERROR_COULD_NOT_OPEN
 [1023/111547.299:WARNING:media\filters\ffmpeg_demuxer.cc:1285] PipelineStatus::DEMUXER_ERROR_COULD_NOT_OPEN
 [1023/125350.189:WARNING:media\filters\ffmpeg_demuxer.cc:1285] PipelineStatus::DEMUXER_ERROR_COULD_NOT_OPEN
+[1026/100131.654:ERROR:net\socket\tcp_socket_win.cc:1148] connect failed: 10055
+[1026/103000.222:WARNING:media\filters\ffmpeg_demuxer.cc:1285] PipelineStatus::DEMUXER_ERROR_COULD_NOT_OPEN

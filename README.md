@@ -18,7 +18,7 @@ npm run build     # TypeScript y compilación de producción → dist/
 npm run preview   # Previsualizar la compilación
 ```
 
-El contenido de `dist/` se puede publicar en un alojamiento estático. La configuración actual utiliza la raíz del dominio.
+El frontend de `dist/` utiliza la raíz del dominio. Para registrar solicitudes y enviar perfiles se publica junto al Worker y D1, según [la guía de perfiles viajeros](docs/traveler-profiles.md). Un alojamiento exclusivamente estático permite ver la web, pero no procesar solicitudes.
 
 ## Experiencia de entrada
 
@@ -130,13 +130,19 @@ npm run test:e2e -- --workers=1
 
 «Descubrir» abre el cuestionario de diez preguntas y retoma la primera pendiente. «Hablemos» continúa deshabilitado con su indicación de disponibilidad futura; no existe enlace de WhatsApp.
 
+#### Perfiles y registro de solicitudes
+
+El final conecta detalles prácticos y email con una API de **Cloudflare Workers + D1**. El servidor valida las respuestas y calcula los seis perfiles del PDF v1.0.0; guarda el resultado privado y prepara un email HTML/texto con Resend. La web distingue solicitud guardada, correo aceptado para entrega, fallo y configuración pendiente, y permite reintentar con idempotencia y verificación Turnstile. No expone puntuaciones al navegador.
+
+La [guía de perfiles viajeros](docs/traveler-profiles.md) documenta archivos, recursos, estados, pruebas, variables y preparación de Cloudflare/Resend. Para pruebas locales se utilizan `npm run db:local`, `npm run dev:api` (envío desactivado) o `npm run dev:api:mock` (simulado). `npm run emails:preview` abre los seis correos únicamente en `127.0.0.1:4321`; no publica una nueva página. La activación de envíos reales y el despliegue están pendientes de configuración y autorización.
+
 #### Cuestionario
 
-El flujo se coordina en `src/screens/CreateTripFlow.tsx`; `QuestionnaireScreen.tsx` presenta una pregunta por pantalla y el cierre provisional. Los textos, el orden y las 52 opciones de las referencias están en `src/data/questionnaire.ts`. Las preguntas 1–8 permiten seleccionar varias opciones; las preguntas 9 y 10 utilizan radios. Todas exigen al menos una respuesta. Las tarjetas completas son etiquetas de controles nativos, con marca, borde y fondo de selección. No hay avance automático.
+El flujo se coordina en `src/screens/CreateTripFlow.tsx`; `QuestionnaireScreen.tsx` presenta una pregunta por pantalla. Los textos, el orden y las 52 opciones de las referencias están en `src/data/questionnaire.ts`. Las preguntas 1–8 permiten seleccionar varias opciones; las preguntas 9 y 10 utilizan radios. Todas exigen al menos una respuesta. Las tarjetas completas son etiquetas de controles nativos, con marca, borde y fondo de selección. No hay avance automático. Al terminar se abren los detalles prácticos, el email y la confirmación real del registro.
 
 Las rutas `/#crear-mi-viaje/cuestionario/1` hasta `/10`, y `/completado`, permiten entrada directa y recarga sin portada. Si faltan respuestas anteriores, se abre la primera pendiente. «Volver» y Escape regresan a la pregunta anterior y, desde la primera, a la presentación con foco en «Descubrir». El historial conserva scroll, foco y apariciones ya vistas. Las transiciones internas bloquean la interacción durante 160 ms de salida y 420 ms de entrada; con movimiento reducido terminan inmediatamente. Los cambios de hash externos también se atienden, incluidos los navegadores que no emiten `popstate` para ellos.
 
-El borrador versionado `aripajama:create-trip:v1` guarda exclusivamente identificadores de respuestas y paso actual en `sessionStorage`, durante la sesión de la pestaña. Se valida al recuperarlo: un borrador corrupto se descarta; si el almacenamiento está bloqueado, el flujo funciona en memoria. «Empezar de nuevo» limpia únicamente este borrador. No se envían respuestas, ni se calculan perfiles, ni se incluyen los detalles prácticos: tras las diez preguntas aparece un cierre provisional con revisión y regreso a la presentación. El navegador puede restaurar sesiones de pestañas según su propia configuración.
+El borrador versionado `aripajama:create-trip:v2` guarda respuestas, paso, detalles, email y estado privado de recuperación en `sessionStorage`, durante la sesión de la pestaña; recupera también los borradores v1. Se valida al recuperarlo: un borrador corrupto se descarta; si el almacenamiento está bloqueado, el flujo funciona en memoria. «Empezar de nuevo» limpia únicamente este borrador, sin borrar solicitudes ya registradas. El navegador puede restaurar sesiones de pestañas según su propia configuración. Las respuestas solo se envían al confirmar el email y el consentimiento, tras la verificación antispam.
 
 `src/questionnaire.css` adapta las opciones circulares de la primera pregunta a una, dos o tres columnas. Las siguientes usan una columna hasta 960 px; las escenas laterales decorativas se ocultan por debajo de 600 px y con texto ampliado cuando falta espacio. La cascada compartida respeta scroll, teclado y movimiento reducido; las selecciones no la reinician. Los fallos de imágenes mantienen el formulario operativo con fondo claro.
 
@@ -147,7 +153,7 @@ node scripts/prepare-questionnaire-assets.mjs
 # Admite como argumento la carpeta de referencias.
 ```
 
-El origen por defecto es `../recursos/personalizados/crearmiviaje/`. El script recorta únicamente iconos, escenas y decoraciones de los diez PNG del cuestionario en `public/media/questionnaire/`. Los textos, fondos de tarjetas y controles se reconstruyen con HTML y CSS; la imagen adicional de detalles prácticos no se utiliza. La resolución de las referencias limita la nitidez al ampliar las ilustraciones.
+El origen por defecto es `../recursos/personalizados/crearmiviaje/`. El script recorta únicamente iconos, escenas y decoraciones de los diez PNG del cuestionario en `public/media/questionnaire/`. Los textos, fondos de tarjetas y controles se reconstruyen con HTML y CSS. La imagen adicional de detalles prácticos se prepara por separado con `npm run assets:profiles`. La resolución de las referencias limita la nitidez al ampliar las ilustraciones.
 
 `tests/questionnaire.spec.ts` cubre las diez preguntas, las 52 opciones, obligatoriedad, selección múltiple y única, cierre, revisión, reinicio, guardado, historial, foco, scroll, enlaces directos, recursos fallidos, animaciones y fallos de almacenamiento u observador. Incluye capturas desde 280 hasta 1440 px, horizontal y texto al 200 %. Ejecutar `npm run build` y `npm run test:e2e -- tests/questionnaire.spec.ts tests/create-trip.spec.ts tests/journey.spec.ts tests/library.spec.ts tests/reveal.spec.ts --workers=1`.
 

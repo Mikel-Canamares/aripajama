@@ -1,0 +1,19 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "aripajama",
+  "main": "server/index.ts",
+  "compatibility_date": "2026-10-26",
+  "assets": { "directory": "./dist", "binding": "ASSETS", "not_found_handling": "single-page-application", "run_worker_first": ["/api/*"] },
+  "d1_databases": [{ "binding": "DB", "database_name": "aripajama-trip-requests", "database_id": "a887b9c6-4b19-47a9-b2bb-5395e1d576e5", "migrations_dir": "migrations" }],
+  "ratelimits": [{ "name": "REQUEST_LIMITER", "namespace_id": "1001", "simple": { "limit": 20, "period": 60 } }],
+  "vars": {
+  "ENVIRONMENT": "production",
+  "EMAIL_MODE": "disabled",
+  "TURNSTILE_MODE": "live",
+  "TURNSTILE_SITE_KEY": "0x4AAAAAAFmm_QaRKMt7cbNY",
+  "EMAIL_FROM": "Aripajama <perfil@notificaciones.aripajama.com>",
+  "REPLY_TO": "hola@aripajama.com",
+  "PUBLIC_SITE_URL": "https://aripajama.com"
+},
+  "observability": { "enabled": false }
+}

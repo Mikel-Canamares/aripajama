@@ -1,0 +1,13 @@
+# Local development only. No real messages are sent from localhost.
+ENVIRONMENT=development
+EMAIL_MODE=disabled
+TURNSTILE_MODE=mock
+# For simulated email previews only, set EMAIL_MODE=mock.
+# Set production values through Cloudflare variables/secrets, not in this file.
+RESEND_API_KEY=
+EMAIL_FROM=
+REPLY_TO=
+PUBLIC_SITE_URL=
+TURNSTILE_SITE_KEY=
+TURNSTILE_SECRET_KEY=
+WHATSAPP_URL=
