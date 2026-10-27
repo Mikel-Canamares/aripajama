@@ -11,6 +11,8 @@ export interface Env {
   REQUEST_LIMITER?: { limit(options: { key: string }): Promise<{ success: boolean }> }
   ENVIRONMENT?: string
   EMAIL_MODE?: string
+  EMAIL_TEST_RESTRICTED?: string
+  EMAIL_TEST_RECIPIENTS?: string
   RESEND_API_KEY?: string
   EMAIL_FROM?: string
   REPLY_TO?: string

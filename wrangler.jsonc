@@ -8,7 +8,9 @@
   "ratelimits": [{ "name": "REQUEST_LIMITER", "namespace_id": "1001", "simple": { "limit": 20, "period": 60 } }],
   "vars": {
   "ENVIRONMENT": "production",
-  "EMAIL_MODE": "disabled",
+  "EMAIL_MODE": "resend",
+  "EMAIL_TEST_RESTRICTED": "true",
+  "EMAIL_TEST_RECIPIENTS": "mikel.canamares@gmail.com",
   "TURNSTILE_MODE": "live",
   "TURNSTILE_SITE_KEY": "0x4AAAAAAFmm_QaRKMt7cbNY",
   "EMAIL_FROM": "Aripajama <perfil@notificaciones.aripajama.com>",

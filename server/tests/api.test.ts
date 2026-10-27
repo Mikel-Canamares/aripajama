@@ -117,6 +117,7 @@ test('límite de frecuencia y límite global por email no producen envíos extra
 })
 test('mock local declara simulación y jamás llama al proveedor', async () => {
   const f = fixture(); f.env.ENVIRONMENT = 'development'; f.env.EMAIL_MODE = 'mock'; f.env.TURNSTILE_MODE = 'mock'
+  f.env.EMAIL_TEST_RECIPIENTS = ''
   const request = new Request('http://127.0.0.1:8787/api/trip-requests',{ method:'POST',headers:{ Origin:'http://127.0.0.1:4173','Content-Type':'application/json' },body:JSON.stringify({ ...f.payload(),turnstileToken:'local-test-token' }) })
   assert.equal((await (await f.handler(request,f.env)).json()).emailStatus,'simulated')
   assert.equal(f.sent.length,0)

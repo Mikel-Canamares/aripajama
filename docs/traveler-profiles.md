@@ -33,13 +33,23 @@ El recibo contiene `requestId`, `saved`, `emailStatus`, `canRetry` y, si procede
 | `pending` / `sending` | Solicitud guardada, operación aún pendiente o en comprobación. |
 | `accepted` | Resend aceptó el correo para su entrega. **No confirma entrega ni lectura.** |
 | `failed` | Registro conservado; envío fallido o incierto, recuperable con la misma clave. |
-| `unconfigured` | Registro conservado; envío desactivado o configuración incompleta. No se declara éxito. |
+| `unconfigured` | Registro conservado; envío desactivado, configuración incompleta o destinatario no autorizado en pruebas. No se declara éxito. |
 | `review_required` | Venció la ventana segura de reintento; requiere comprobación manual en Resend. |
 | `simulated` | Prueba local, expresamente identificada, sin correo real. |
 
 Una doble confirmación con el mismo identificador, token y contenido conserva una sola fila; otro contenido devuelve conflicto. Un bloqueo SQL atómico de 45 segundos excluye envíos simultáneos. El contenido completo se fija antes del primer intento y la clave `profile/<id>/v1` permanece estable, incluso si después cambia una plantilla o variable. Resend conserva sus claves 24 horas; esta aplicación deja de reintentar automáticamente o desde el botón tras **23 horas desde el primer intento**, con margen conservador. Ante aceptación seguida de fallo al guardar en D1, un nuevo intento dentro de esa ventana recupera la misma operación del proveedor. No se generan claves nuevas para sortear este límite.
 
 No hay tarea automática de reenvío, webhooks de entrega ni panel administrativo. Para un estado incierto fuera de plazo, comprobar el identificador o la clave en Resend antes de decidir manualmente. Un usuario que modifica el formulario inicia una intención nueva; revisar sin modificar conserva la identidad anterior.
+
+### Restricción temporal de destinatarios
+
+En producción con `EMAIL_MODE=resend`, la restricción está activa por defecto: solo el valor exacto `EMAIL_TEST_RESTRICTED=false` la desactiva. Si la variable falta, está vacía o contiene otro valor (incluidos `FALSE` o `false` con espacios), se mantiene activa. `EMAIL_TEST_RECIPIENTS` admite direcciones separadas por comas, sin distinguir mayúsculas y eliminando espacios exteriores; se ignoran entradas vacías o inválidas. La comparación exige la dirección completa y no equipara alias de Gmail. Una lista ausente, vacía o sin direcciones válidas bloquea todos los envíos reales.
+
+El control se aplica al envío inicial y al endpoint de reintento, comprobando todos los destinatarios del contenido persistido cuando existe. Un bloqueo conserva la solicitud con `unconfigured`, `EMAIL_RECIPIENT_NOT_ALLOWED`, `saved: true` y `canRetry: true`, sin llamadas a Resend, incrementar intentos ni iniciar la ventana segura. Después de autorizar la dirección puede reintentarse con el token y Turnstile habituales. No cambia claves ni contenido ya fijados, ni reinicia la ventana de 23 horas; respeta las esperas, las concesiones activas, las aceptaciones y la revisión manual existentes. La restricción no afecta al modo simulado local.
+
+Configuración inicial del proyecto: `EMAIL_MODE=disabled`, `EMAIL_TEST_RESTRICTED=true` y `EMAIL_TEST_RECIPIENTS=mikel.canamares@gmail.com`. Estos cambios locales no actualizan el Worker publicado ni sus variables remotas; la activación y la prueba real siguen pendientes de autorización.
+
+Validación local del 27/10/2026: `npm run test:server` pasa **75/75** pruebas (26 nuevas de restricción), `npm run build` termina correctamente y `npm run worker:check` empaqueta con `--dry-run`, confirmando las tres variables anteriores. Las pruebas usan SQLite en memoria y proveedor simulado; no se ha desplegado, modificado Git ni enviado correo real.
 
 Las escrituras comprueban origen, JSON y tamaño máximo de 16 KiB, campos permitidos, validación estricta y consentimiento explícito para recibir este correo. Turnstile se verifica en servidor con hostname y acción `trip_request`; el modo simulado exige desarrollo y petición local. Hay límite de 20 operaciones por minuto mediante binding de Cloudflare y un máximo SQL de cinco registros nuevos por email y hora. No se imprimen respuestas ni errores privados del proveedor en logs. Las respuestas API usan `no-store`. No hay secretos `VITE_*`.
 
@@ -124,6 +134,8 @@ node scripts/wrangler.mjs secret put TURNSTILE_SECRET_KEY
 | `REQUEST_LIMITER` | Binding de límite de frecuencia; configuración incluida en Wrangler. |
 | `ENVIRONMENT` | `production`. |
 | `EMAIL_MODE` | `disabled` hasta autorización; `resend` para envío real. `mock` es exclusivamente local. |
+| `EMAIL_TEST_RESTRICTED` | `true` inicialmente. Restricción activa por defecto para Resend; solo `false` exacto la desactiva. |
+| `EMAIL_TEST_RECIPIENTS` | Lista separada por comas; inicialmente `mikel.canamares@gmail.com`. Sin direcciones válidas, bloquea todo envío real mientras la restricción esté activa. |
 | `RESEND_API_KEY` | **Secreto** de Resend; obligatorio para envío real. |
 | `EMAIL_FROM` | Dirección verificada, p. ej. `Aripajama <perfil@dominio-verificado>`. |
 | `REPLY_TO` | Buzón real que recibirá las respuestas. |

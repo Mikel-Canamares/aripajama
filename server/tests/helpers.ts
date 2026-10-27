@@ -27,6 +27,8 @@ export class SqliteD1 implements Database {
 export function fixture() {
   const db = new SqliteD1()
   const env: Env = { DB: db, ENVIRONMENT:'production', EMAIL_MODE:'resend', RESEND_API_KEY:'test-key-never-used-on-network', EMAIL_FROM:'Aripajama <test@example.test>', REPLY_TO:'test@example.test', PUBLIC_SITE_URL:'https://aripajama.example', TURNSTILE_SITE_KEY:'test-site-key', TURNSTILE_SECRET_KEY:'test-secret', REQUEST_LIMITER: { limit: async () => ({ success: true }) } }
+  env.EMAIL_TEST_RESTRICTED = 'true'
+  env.EMAIL_TEST_RECIPIENTS = 'traveler@example.test'
   let now = 1800000000000
   const sent: { key: string; payload: Record<string, unknown> }[] = []
   const accepted = new Map<string, string>()

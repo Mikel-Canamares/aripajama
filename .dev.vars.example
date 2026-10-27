@@ -1,6 +1,8 @@
 # Local development only. No real messages are sent from localhost.
 ENVIRONMENT=development
 EMAIL_MODE=disabled
+EMAIL_TEST_RESTRICTED=true
+EMAIL_TEST_RECIPIENTS=mikel.canamares@gmail.com
 TURNSTILE_MODE=mock
 # For simulated email previews only, set EMAIL_MODE=mock.
 # Set production values through Cloudflare variables/secrets, not in this file.

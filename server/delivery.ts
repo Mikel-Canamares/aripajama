@@ -31,6 +31,13 @@ function preparePayload(row: RequestRow, env: Env): EmailPayload | null {
   } catch { return null }
 }
 
+function testRecipientsAllowed(payload: EmailPayload, env: Env): boolean {
+  const allowed = new Set((env.EMAIL_TEST_RECIPIENTS || '').split(',')
+    .map(email => email.trim().toLowerCase()).filter(validEmail))
+  return Array.isArray(payload.to) && payload.to.length > 0 && payload.to.every(email =>
+    typeof email === 'string' && allowed.has(email.trim().toLowerCase()))
+}
+
 export async function deliverProfile(request: Request, env: Env, id: string, io: Io): Promise<RequestRow> {
   let row = (await readRequest(env, id))!
   const now = io.now()
@@ -47,6 +54,11 @@ export async function deliverProfile(request: Request, env: Env, id: string, io:
   } : env)
   if ((!mock && !real) || !payload || (real && !env.RESEND_API_KEY)) {
     await env.DB.prepare("UPDATE trip_requests SET email_status = 'unconfigured', email_error_code = 'EMAIL_NOT_CONFIGURED', updated_at = ? WHERE id = ? AND email_status != 'accepted' AND (lease_until IS NULL OR lease_until <= ?)").bind(now, id, now).run()
+    return (await readRequest(env, id))!
+  }
+  // Fail closed for real sends unless restrictions are explicitly disabled.
+  if (real && env.EMAIL_TEST_RESTRICTED !== 'false' && !testRecipientsAllowed(payload, env)) {
+    await env.DB.prepare("UPDATE trip_requests SET email_status = 'unconfigured', email_error_code = 'EMAIL_RECIPIENT_NOT_ALLOWED', updated_at = ? WHERE id = ? AND email_status NOT IN ('accepted','review_required') AND (lease_until IS NULL OR lease_until <= ?)").bind(now, id, now).run()
     return (await readRequest(env, id))!
   }
   const lease = crypto.randomUUID()
