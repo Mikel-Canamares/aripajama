@@ -6,6 +6,9 @@ import { renderProfileEmail } from '../server/email-template.ts'
 
 // Development-only utility, outside public/ and dist/. It cannot send messages.
 const output = resolve('.email-preview')
+const portArgument = process.argv.find(argument => argument.startsWith('--port='))
+const port = portArgument ? Number(portArgument.slice('--port='.length)) : 4321
+if (!Number.isInteger(port) || port < 1024 || port > 65535) throw new Error('INVALID_PREVIEW_PORT')
 await mkdir(output, { recursive: true })
 for (const id of PROFILE_IDS) {
   const email = renderProfileEmail(id, 'https://preview.example.test')
@@ -16,7 +19,7 @@ if (process.argv.includes('--generate')) {
   console.log(`Seis emails ficticios (HTML + texto) en ${output}`)
 } else {
   const server = createServer(async (request, response) => {
-    const path = new URL(request.url || '/', 'http://127.0.0.1:4321').pathname
+    const path = new URL(request.url || '/', `http://127.0.0.1:${port}`).pathname
     if (path === '/') {
       response.setHeader('Content-Type', 'text/html; charset=utf-8')
       response.end(`<html lang="es"><meta charset="utf-8"><title>Emails · desarrollo</title><h1>Previsualización local · sin envío</h1><ul>${PROFILE_IDS.map(id => `<li><a href="/${id}">${id}</a> · <a href="/${id}.txt">texto plano</a></li>`).join('')}</ul></html>`)
@@ -40,5 +43,5 @@ if (process.argv.includes('--generate')) {
     } catch { /* Fall through to a plain 404, without filesystem details. */ }
     response.writeHead(404); response.end('Not found')
   })
-  server.listen(4321, '127.0.0.1', () => console.log('Emails de desarrollo: http://127.0.0.1:4321 (sin envío)'))
+  server.listen(port, '127.0.0.1', () => console.log(`Emails de desarrollo: http://127.0.0.1:${port} (sin envío)`))
 }
