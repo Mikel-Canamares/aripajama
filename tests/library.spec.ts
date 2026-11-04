@@ -1,8 +1,9 @@
 import { expect, test, type Page } from '@playwright/test'
+import { openIntroWithMediaError } from './intro-helpers'
 
 async function openLibrary(page: Page) {
   await page.emulateMedia({ reducedMotion: 'reduce' })
-  await page.goto('/')
+  await openIntroWithMediaError(page)
   await page.getByRole('button', { name: 'Comencemos' }).click()
   await page.getByRole('button', { name: 'Biblioteca de viajes', exact: true }).click()
   await expect(page.getByRole('heading', { name: 'Biblioteca de viajes', level: 1 })).toBeFocused()
@@ -10,7 +11,7 @@ async function openLibrary(page: Page) {
 
 async function openHubWithMotion(page: Page) {
   await page.emulateMedia({ reducedMotion: 'reduce' })
-  await page.goto('/')
+  await openIntroWithMediaError(page)
   await page.getByRole('button', { name: 'Comencemos' }).click()
   await expect(page.getByRole('heading', { name: 'Tu viaje, en tres formas' })).toBeFocused()
   await page.emulateMedia({ reducedMotion: 'no-preference' })

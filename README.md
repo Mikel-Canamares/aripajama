@@ -28,8 +28,8 @@ El frontend de `dist/` utiliza la raíz del dominio. Para registrar solicitudes 
 - Después aparecen **Travel Planner**, **El mundo,**, **a tu manera.**, **VIAJES DISEÑADOS CONTIGO** y, por último, **COMENCEMOS →**. La composición vertical sitúa la marca arriba a la derecha y el titular burdeos con su segunda línea en cursiva taupe a media altura, sobre el fondo blanco del globo y las cintas doradas.
 - El botón se habilita al finalizar su fundido o al terminar el vídeo, lo que ocurra primero. Con el vídeo actual, de **7,5 s**, el final completa la composición y la deja operativa, conservando el último fotograma.
 - «Comencemos» abre el hub con un fundido cruzado de **800 ms**; «Volver a la portada» regresa suavemente y vuelve a iniciar la introducción. Una recarga también la reinicia.
-- Si se bloquea el autoplay, se ofrece reproducción manual o acceso a la portada fija. Si falla el archivo, se muestra la imagen final con la composición lista.
-- Con **movimiento reducido** se muestra directamente la portada estática y no se solicita el vídeo.
+- Si el navegador bloquea la reproducción automática, aparece «Reproducir introducción». Si el vídeo falla al cargar o decodificar, se muestra el fotograma inicial y se habilita «Comencemos».
+- El vídeo y la secuencia de la portada se reproducen también con **movimiento reducido**. Esta preferencia sí se aplica al fundido hacia y desde el hub y a las pantallas interiores.
 
 ### Tiempos aproximados para el vídeo actual (7,5 s)
 
@@ -69,7 +69,7 @@ Las tarjetas se renderizan como componentes HTML/CSS independientes sobre el fon
 
 La portada permanece visible mientras se decodifica la imagen y se preparan las fuentes; después se aplica el fundido existente de 800 ms al conjunto de fondo y textos. Un fallo o una espera de 3 s permite entrar con fondo claro, siluetas de tarjetas y texto HTML. Una imagen que termine de cargar posteriormente recupera el diseño.
 
-El foco pasa al título al entrar. «Volver a la portada» aparece al recibir foco con Tab; también se puede volver con Escape. Con movimiento reducido no hay fundido ni solicitudes de vídeo.
+El foco pasa al título al entrar. «Volver a la portada» aparece al recibir foco con Tab; también se puede volver con Escape. Con movimiento reducido, el cambio entre portada y hub se completa sin fundido.
 
 El origen del recurso y el prompt de limpieza están documentados en [docs/hub-artwork.md](docs/hub-artwork.md).
 
@@ -86,8 +86,7 @@ src/
 public/
   brand/aripajama.webp        Nombre de marca con transparencia
   media/portada.mp4           Vídeo preparado para la web
-  media/portada-inicio.webp   Primer fotograma para la carga
-  media/portada-final.webp    Último fotograma para el respaldo
+  media/portada-inicio.webp   Primer fotograma para la carga y el respaldo
   media/hub-clean.webp        Fondo y tarjetas del hub sin texto
 scripts/prepare-assets.mjs    Generación reproducible de los recursos
 tests/intro.spec.ts           Comprobaciones en Chromium y WebKit

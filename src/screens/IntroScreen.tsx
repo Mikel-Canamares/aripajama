@@ -1,26 +1,23 @@
 import { useEffect, useRef, useState } from 'react'
 import { Brand } from '../components/Brand'
-import { useReducedMotion } from '../hooks/useReducedMotion'
 
 // Time relative to the actual media clock, not time since page load.
 const REVEAL_AT = 1
+const POSTER = '/media/portada-inicio.webp'
 
 export function IntroScreen({ onEnter }: { onEnter: () => void }) {
   const videoRef = useRef<HTMLVideoElement>(null)
-  const reducedMotion = useReducedMotion()
   const [revealed, setRevealed] = useState(false)
   const [videoFailed, setVideoFailed] = useState(false)
   const [videoEnded, setVideoEnded] = useState(false)
   const [blocked, setBlocked] = useState(false)
   const [buttonReady, setButtonReady] = useState(false)
-  const showStatic = reducedMotion || videoFailed
-  const showImmediately = showStatic || videoEnded
+  const showImmediately = videoFailed || videoEnded
   const showComposition = revealed || showImmediately
 
   const playVideo = () => {
     const video = videoRef.current
     if (!video) return
-    setBlocked(false)
     video.play().catch((error: unknown) => {
       if (!(error instanceof DOMException) || error.name !== 'AbortError') setBlocked(true)
     })
@@ -52,14 +49,14 @@ export function IntroScreen({ onEnter }: { onEnter: () => void }) {
       aria-label="Bienvenido a Aripajama"
     >
       <div className="intro__media" aria-hidden="true">
-        {showStatic ? (
-          <img className="intro__film" src="/media/portada-final.webp" width="1080" height="1920" alt="" />
+        {videoFailed ? (
+          <img className="intro__film" src={POSTER} width="1080" height="1920" alt="" />
         ) : (
           <video
             ref={videoRef}
             className="intro__film"
             src="/media/portada.mp4"
-            poster="/media/portada-inicio.webp"
+            poster={POSTER}
             autoPlay
             muted
             playsInline
@@ -106,7 +103,6 @@ export function IntroScreen({ onEnter }: { onEnter: () => void }) {
             <svg viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="m7 4 9 6-9 6V4Z" /></svg>
             Reproducir introducción
           </button>
-          <button className="text-button" onClick={() => setVideoFailed(true)}>Ir a la portada</button>
         </div>
       )}
     </main>

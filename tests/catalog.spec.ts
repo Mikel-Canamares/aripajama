@@ -2,6 +2,7 @@ import { expect, test } from '@playwright/test'
 import sharp from 'sharp'
 import { CONTINENTS, COUNTRIES, TRIPS, illustratedIcon, readLibraryView, selectTrips } from '../src/data/library'
 import { COUNTRY_ART, COMPOSITE_ART, REGIONAL_ART } from '../src/data/library-icons'
+import { openIntroWithMediaError } from './intro-helpers'
 
 test('catálogo íntegro: países, viajes, relaciones y contadores sin duplicados', () => {
   expect(COUNTRIES).toHaveLength(27)
@@ -163,7 +164,7 @@ test('los enlaces directos tienen regreso a países, biblioteca y hub sin bucles
 
 test('atrás y adelante del navegador recorren el catálogo y el hub', async ({ page }) => {
   await page.emulateMedia({ reducedMotion: 'reduce' })
-  await page.goto('/')
+  await openIntroWithMediaError(page)
   await page.getByRole('button', { name: 'Comencemos' }).click()
   await page.getByRole('button', { name: 'Biblioteca de viajes', exact: true }).click()
   await expect(page.getByRole('heading', { name: 'Biblioteca de viajes', level: 1 })).toBeFocused()

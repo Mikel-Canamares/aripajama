@@ -1,6 +1,7 @@
 import { expect, test, type Page } from '@playwright/test'
 import { DRAFT_KEY, TRIP_QUESTIONS } from '../src/data/questionnaire'
 import { mockTripApi, seedFinalDraft } from './trip-request-helpers'
+import { openIntroWithMediaError } from './intro-helpers'
 
 const root = '#crear-mi-viaje/cuestionario/'
 const title = (page: Page) => page.locator('.questionnaire h1')
@@ -137,7 +138,7 @@ test('regresa al hub desde una presentación abierta después del cierre', async
   await mockTripApi(page)
   await seedFinalDraft(page, { receipt: 'accepted' })
   await page.emulateMedia({ reducedMotion: 'reduce' })
-  await page.goto('/')
+  await openIntroWithMediaError(page)
   await page.getByRole('button', { name: 'Comencemos' }).click()
   const hub = page.getByRole('button', { name: 'Crear mi viaje', exact: true })
   await hub.click()
