@@ -700,9 +700,9 @@
   }
 
   @media (prefers-reduced-motion: reduce) {
-    *, *::before, *::after { animation: none !important; transition: none !important; }
-    .brand__stroke { stroke-dashoffset: 0; }
-    .brand__finish, .intro .reveal-item { opacity: 1; transform: none; }
+    :not(.intro, .intro *),
+    :not(.intro, .intro *)::before,
+    :not(.intro, .intro *)::after { animation: none !important; transition: none !important; }
     .journey__card, .journey__card-arrow-icon { transform: none !important; }
   }
 }

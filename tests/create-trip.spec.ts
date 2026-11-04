@@ -1,11 +1,12 @@
 import { expect, test, type Page } from '@playwright/test'
+import { openIntroWithMediaError } from './intro-helpers'
 
 const title = (page: Page) => page.locator('.create-trip h1')
 const hubButton = (page: Page) => page.getByRole('button', { name: 'Crear mi viaje', exact: true })
 
 async function openHub(page: Page) {
   await page.emulateMedia({ reducedMotion: 'reduce' })
-  await page.goto('/')
+  await openIntroWithMediaError(page)
   await page.getByRole('button', { name: 'Comencemos' }).click()
   await expect(page.getByRole('heading', { name: 'Tu viaje, en tres formas' })).toBeFocused()
 }

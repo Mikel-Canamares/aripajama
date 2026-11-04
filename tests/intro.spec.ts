@@ -1,4 +1,7 @@
 import { expect, test } from '@playwright/test'
+import { openIntroWithMediaError } from './intro-helpers'
+
+test.use({ reducedMotion: 'no-preference' })
 
 test('revela la composición y permite navegar al completar el nuevo vídeo', async ({ page }, testInfo) => {
   const errors: string[] = []
@@ -77,54 +80,71 @@ test('al terminar el vídeo completa la composición aunque la animación siga p
 })
 
 test('un fallo del vídeo ofrece una portada estática y navegable', async ({ page }) => {
-  await page.goto('/')
-  // Native WebKit media requests can bypass Playwright routing. An invalid
-  // media payload exercises the browser's real decoder error in both engines.
-  await page.locator('video').evaluate((video: HTMLVideoElement) => {
-    video.src = 'data:video/mp4;base64,AAAA'
-    video.load()
-  })
+  await openIntroWithMediaError(page)
   await expect(page.locator('.intro')).toHaveAttribute('data-immediate', 'true')
   await expect(page.locator('video')).toHaveCount(0)
-  await expect(page.locator('.intro__film')).toHaveAttribute('src', '/media/portada-final.webp')
+  const fallback = page.locator('img.intro__film')
+  await expect(fallback).toHaveAttribute('src', '/media/portada-inicio.webp')
+  await expect(fallback).toHaveJSProperty('naturalWidth', 1080)
   await page.getByRole('button', { name: 'Comencemos' }).click()
   await expect(page.getByRole('heading', { name: 'Tu viaje, en tres formas' })).toBeVisible()
 })
 
-test('permite continuar si el navegador bloquea la reproducción automática', async ({ page }) => {
+test('permite reproducir manualmente si el navegador bloquea el inicio automático', async ({ page }) => {
   await page.addInitScript(() => {
-    // Isolate autoplay denial from native decoder failures. Real media errors
-    // are exercised separately by the preceding fallback test.
+    let userRequestedPlayback = false
+    document.addEventListener('click', event => {
+      if (event.target instanceof Element && event.target.closest('.button--play')) userRequestedPlayback = true
+    }, true)
+    // Test the manual control independently of the engine's native MP4 decoder.
     document.addEventListener('error', event => {
       if (event.target instanceof HTMLMediaElement) event.stopImmediatePropagation()
     }, true)
     HTMLMediaElement.prototype.play = function () {
-      this.pause()
-      this.removeAttribute('autoplay')
-      return Promise.reject(new DOMException('Autoplay blocked', 'NotAllowedError'))
+      if (!userRequestedPlayback) {
+        this.autoplay = false
+        this.pause()
+        return Promise.reject(new DOMException('Autoplay blocked', 'NotAllowedError'))
+      }
+      this.dispatchEvent(new Event('playing'))
+      return Promise.resolve()
     }
   })
   await page.goto('/')
-  await expect(page.getByRole('button', { name: 'Reproducir introducción' })).toBeVisible()
-  await page.getByRole('button', { name: 'Ir a la portada' }).click()
-  await expect(page.getByRole('button', { name: 'Comencemos' })).toBeEnabled()
+  const play = page.getByRole('button', { name: 'Reproducir introducción' })
+  await expect(play).toBeVisible()
+  await expect(page.getByRole('button', { name: 'Comencemos', includeHidden: true })).toBeDisabled()
+  await play.click()
+  await expect(play).toHaveCount(0)
+  await expect(page.locator('.intro video')).toHaveAttribute('src', '/media/portada.mp4')
 })
 
-test('movimiento reducido evita el vídeo y conserva la composición y el foco', async ({ page }) => {
+test('el vídeo y la secuencia siguen activos con movimiento reducido y al cambiar la preferencia', async ({ page }) => {
   await page.emulateMedia({ reducedMotion: 'reduce' })
-  const videoRequests: string[] = []
-  page.on('request', (request) => { if (request.url().endsWith('.mp4')) videoRequests.push(request.url()) })
   await page.goto('/')
-  await expect(page.locator('video')).toHaveCount(0)
-  await expect(page.locator('.intro__action')).toHaveCSS('opacity', '1')
+  const video = page.locator('.intro video')
+  await expect(video).toHaveAttribute('src', '/media/portada.mp4')
+  const originalVideo = await video.elementHandle()
+  await expect(page.locator('.intro[data-immediate="false"] .brand__stroke').first()).toHaveCSS('animation-name', 'write-stroke')
+  const initialTime = await originalVideo.evaluate((element: HTMLVideoElement) => element.currentTime)
+  expect(initialTime).toBeGreaterThanOrEqual(1)
+  await page.emulateMedia({ reducedMotion: 'no-preference' })
+  await expect.poll(() => originalVideo.evaluate(
+    (element, time) => element.isConnected && (element as HTMLVideoElement).currentTime > time,
+    initialTime,
+  )).toBe(true)
+  await page.emulateMedia({ reducedMotion: 'reduce' })
+  await expect(page.locator('.intro[data-immediate="false"] .intro__action')).toHaveCSS('animation-name', 'reveal')
+  const button = page.getByRole('button', { name: 'Comencemos' })
+  await expect(button).toBeEnabled()
   await page.keyboard.press('Tab')
-  await expect(page.getByRole('button', { name: 'Comencemos' })).toBeFocused()
+  await expect(button).toBeFocused()
   await page.keyboard.press('Enter')
   await expect(page.getByRole('heading', { name: 'Tu viaje, en tres formas' })).toBeFocused()
-  expect(videoRequests).toEqual([])
 })
 
 test('la portada cabe en móvil pequeño, referencia, horizontal y escritorio', async ({ page }, testInfo) => {
+  test.slow()
   await page.emulateMedia({ reducedMotion: 'reduce' })
   for (const viewport of [
     { width: 320, height: 568 },
@@ -134,7 +154,7 @@ test('la portada cabe en móvil pequeño, referencia, horizontal y escritorio', 
     { width: 1440, height: 900 },
   ]) {
     await page.setViewportSize(viewport)
-    await page.goto('/')
+    await openIntroWithMediaError(page)
     await page.evaluate(() => document.fonts.ready)
     const button = page.getByRole('button', { name: 'Comencemos' })
     await expect(page.locator('.intro__headline')).toBeInViewport({ ratio: .99 })

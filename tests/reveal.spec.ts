@@ -1,9 +1,9 @@
 import { expect, test, type Page } from '@playwright/test'
+import { openIntroWithMediaError } from './intro-helpers'
 
 async function openHub(page: Page) {
   await page.emulateMedia({ reducedMotion: 'no-preference' })
-  await page.route('**/media/portada.mp4', route => route.abort())
-  await page.goto('/')
+  await openIntroWithMediaError(page)
   await page.getByRole('button', { name: 'Comencemos' }).click()
   await expect(page.locator('.journey__title')).toBeFocused()
 }

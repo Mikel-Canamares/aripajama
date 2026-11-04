@@ -1,13 +1,9 @@
 import { expect, test } from '@playwright/test'
+import { openIntroWithMediaError } from './intro-helpers'
 
 test('entra con el fondo preparado y regresa con el control de teclado', async ({ page }, testInfo) => {
-  await page.goto('/')
-  const video = page.locator('.intro video')
-  // Exercise the real crossfade independently of platform video codecs.
-  await video.evaluate((element: HTMLVideoElement) => {
-    element.src = 'data:video/mp4;base64,AAAA'
-    element.load()
-  })
+  await page.emulateMedia({ reducedMotion: 'no-preference' })
+  await openIntroWithMediaError(page)
   await page.getByRole('button', { name: 'Comencemos' }).click()
   await expect(page.getByRole('heading', { name: 'Tu viaje, en tres formas' })).toBeFocused()
   await expect(page.locator('.journey')).toHaveAttribute('data-artwork', 'ready')
@@ -30,8 +26,6 @@ test('entra con el fondo preparado y regresa con el control de teclado', async (
 test('conserva la composición completa en móvil, referencia y escritorio', async ({ page }, testInfo) => {
   test.slow()
   await page.emulateMedia({ reducedMotion: 'reduce' })
-  const videoRequests: string[] = []
-  page.on('request', request => { if (request.url().endsWith('.mp4')) videoRequests.push(request.url()) })
   for (const viewport of [
     { width: 280, height: 568 },
     { width: 320, height: 568 },
@@ -42,7 +36,7 @@ test('conserva la composición completa en móvil, referencia y escritorio', asy
     { width: 1440, height: 900 },
   ]) {
     await page.setViewportSize(viewport)
-    await page.goto('/')
+    await openIntroWithMediaError(page)
     await page.getByRole('button', { name: 'Comencemos' }).click()
     await expect(page.getByRole('heading', { name: 'Tu viaje, en tres formas' })).toBeFocused()
     await page.evaluate(() => document.fonts.ready)
@@ -95,7 +89,6 @@ test('conserva la composición completa en móvil, referencia y escritorio', asy
     await page.keyboard.press('Escape')
     await expect(page.locator('.experience')).toHaveAttribute('data-phase', 'intro')
   }
-  expect(videoRequests).toEqual([])
 })
 
 test('espera al recurso antes de empezar el fundido', async ({ page }) => {
@@ -106,7 +99,7 @@ test('espera al recurso antes de empezar el fundido', async ({ page }) => {
     await held
     await route.continue()
   })
-  await page.goto('/')
+  await openIntroWithMediaError(page)
   await page.getByRole('button', { name: 'Comencemos' }).click()
   await expect(page.locator('.experience')).toHaveAttribute('data-phase', 'preparing')
   await expect(page.locator('.journey')).toHaveAttribute('data-artwork', 'loading')
@@ -119,7 +112,7 @@ test('espera al recurso antes de empezar el fundido', async ({ page }) => {
 test('un error de imagen conserva textos y regreso accesibles', async ({ page }) => {
   await page.emulateMedia({ reducedMotion: 'reduce' })
   await page.route('**/media/hub-clean.webp', route => route.abort())
-  await page.goto('/')
+  await openIntroWithMediaError(page)
   await page.getByRole('button', { name: 'Comencemos' }).click()
   await expect(page.getByRole('heading', { name: 'Tu viaje, en tres formas' })).toBeFocused()
   await expect(page.locator('.journey')).toHaveAttribute('data-artwork', 'error')
@@ -136,7 +129,7 @@ test('una carga detenida permite entrar y se recupera al llegar la imagen', asyn
     await held
     await route.continue()
   })
-  await page.goto('/')
+  await openIntroWithMediaError(page)
   await page.getByRole('button', { name: 'Comencemos' }).click()
   await expect(page.getByRole('heading', { name: 'Tu viaje, en tres formas' })).toBeFocused()
   await expect(page.locator('.journey')).toHaveAttribute('data-artwork', 'error')
@@ -146,7 +139,7 @@ test('una carga detenida permite entrar y se recupera al llegar la imagen', asyn
 
 test('texto, tamaño y color se pueden cambiar sin sustituir el fondo', async ({ page }) => {
   await page.emulateMedia({ reducedMotion: 'reduce' })
-  await page.goto('/')
+  await openIntroWithMediaError(page)
   await page.getByRole('button', { name: 'Comencemos' }).click()
   await expect(page.getByRole('heading', { name: 'Tu viaje, en tres formas' })).toBeFocused()
   const title = page.locator('.journey__card-title').first()
