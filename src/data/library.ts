@@ -54,7 +54,7 @@ export type Trip = {
   tone: IconTone
 }
 
-export const TRIPS: readonly Trip[] = [
+const CATALOG: readonly Trip[] = [
   { id: 'galicia', order: 1, title: 'Galicia', subtitle: 'Ribadeo y Costa da Morte', continent: 'europe', countries: ['ES'], icon: 'ES', tone: 'sage' },
   { id: 'asturias', order: 2, title: 'Asturias', subtitle: 'y Picos de Europa', continent: 'europe', countries: ['ES'], icon: 'ES', tone: 'sage' },
   { id: 'cantabria', order: 3, title: 'Cantabria', continent: 'europe', countries: ['ES'], icon: 'ES', tone: 'rose' },
@@ -95,6 +95,8 @@ export const TRIPS: readonly Trip[] = [
   { id: 'marruecos', order: 38, title: 'Marrakech, Sáhara,', subtitle: 'Fez y Rabat', continent: 'africa', countries: ['MA'], icon: 'MA', tone: 'sand' },
   { id: 'tunez', order: 39, title: 'Túnez', continent: 'africa', countries: ['TN'], days: 8, icon: 'TN', tone: 'blue' },
 ]
+
+export const TRIPS: readonly Trip[] = CATALOG.map(trip => ({ ...trip, days: TRIP_DETAILS[trip.id]?.duration ?? trip.days }))
 
 export type LibraryView = { page: 'home' } | { page: 'countries' } | { page: 'trips'; country?: CountryCode; continent?: ContinentId } | { page: 'detail'; tripId: string } | { page: 'invalid' }
 

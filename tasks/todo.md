@@ -1,3 +1,41 @@
+## Carga completa de la biblioteca · 30/10/2026 · Plan aprobado
+
+- [x] Inventariar y revisar las láminas de los 38 viajes pendientes; utilizar la versión detallada `9AAA1F7D` de Cracovia.
+- [x] Incorporar textos, destinos, etapas y duraciones de los originales al formato editorial existente.
+- [x] Generar recortes específicos y WebP optimizados; conservar las láminas originales para el visor.
+- [x] Habilitar las 39 fichas desde el catálogo y actualizar los avisos de disponibilidad.
+- [x] Verificar contenido, recursos, navegación, responsive y compilación; completar Review.
+
+### Review
+
+#### Resumen de cambios
+
+- Los 39 viajes del catálogo tienen ficha editorial y enlace directo. Se han incorporado los 38 pendientes mediante `src/data/library-trip-details.ts`, con 244 tarjetas nuevas de itinerario, duraciones de las láminas, textos de ruta, temáticas y reflexión.
+- `scripts/trip-asset-manifest.mjs` y `scripts/prepare-library-trips.mjs` definen fuentes inequívocas, recortes específicos y generación reproducible; `src/data/trip-assets.ts` contiene las dimensiones generadas. La biblioteca completa conserva 153 PNG y utiliza 366 WebP. Verificados por SHA-256 los 153 originales contra los archivos aportados.
+- Ficha y visor adaptados a tres/cuatro originales, proporciones reales, itinerario ampliable cuando falta el mapa, subtítulos y cuatro temáticas de Ámsterdam. El plan de Linsoles es opcional y no incrementa las cinco etapas principales de Benasque.
+- Biblioteca y catálogo actualizados para anunciar y enlazar todos los itinerarios. Duraciones derivadas del contenido; enlaces accesibles distinguen Costa Este y Costa Oeste.
+- Documentación de regeneración y decisiones en `README.md` y `docs/library-trips.md`; nueva suite de los 39 viajes y configuración de pruebas de biblioteca independiente del backend.
+
+#### Verificación realizada
+
+- `npm run build`: correcto tras los últimos cambios y la regeneración final de imágenes.
+- 74 casos correctos en Chromium y 74 en WebKit: inventario, recursos, filtros, las 39 fichas, imágenes de cada viaje, carga bajo demanda, visor, teclado, foco, regreso, historial y recarga. La primera ejecución conjunta agotó los 120 segundos de la herramienta después de completar Chromium; se completó WebKit en una ejecución independiente con tiempo suficiente, sin fallos.
+- Tras afinar el recorte de cierre de Ámsterdam y las capturas completas (cargando las fotografías y situando la página arriba), repetición focalizada: **14/14 correctos** en ambos motores, con inventario/decodificación y responsive de seis fichas nuevas.
+- Revisión visual de las 157 láminas de origen, los recortes por destino y capturas móviles/escritorio. Encuadres de 280 a 1440 px, horizontal y texto al 200 %, sin desbordamientos. Las dimensiones originales no uniformes se conservan en el visor.
+- La configuración global no pudo arrancar su API por un Wrangler incompleto en `node_modules`. `npm run test:library -- --workers=4` permite reproducir las comprobaciones de este trabajo usando solo Vite y los navegadores existentes.
+- `git diff --check`: sin errores de espacios.
+
+#### Riesgos potenciales
+
+- Faltan las portadas correctas de Filipinas y Costa Este: se han usado sus propias imágenes de itinerario. El mapa recibido como Cantabria es de Asturias: se muestra su itinerario real ampliable. Las fichas utilizan las tres láminas pertinentes, sin atribuir recursos de otro viaje.
+- Bilbao (7 días/etapas 1–6), Islandia (12/1–11), Malasia y Singapur (15/1–14) y Marruecos (10/1–9) contienen diferencias en origen. Se conserva la duración de portada con una nota descriptiva y no se inventan jornadas.
+- Los originales suman aproximadamente 374 MiB, cargados individualmente bajo demanda; los WebP suman unos 25,8 MiB repartidos entre los 39 viajes. La resolución de las fotos de etapas está limitada por las láminas fuente.
+
+#### Siguientes pasos sugeridos
+
+- Revisar la biblioteca en un móvil físico y publicar la versión cuando corresponda.
+- Aportar las dos portadas y el mapa correcto de Cantabria para sustituir las adaptaciones, y completar las jornadas no detalladas si se desea.
+
 ## Perfiles viajeros y registro de solicitudes · 26/10/2026
 
 - [x] Conservar las diez preguntas, sus textos y opciones; conectar detalles, email y confirmación con la navegación existente.

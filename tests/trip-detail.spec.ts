@@ -7,7 +7,7 @@ const detailUrl = '/#biblioteca/viajes/tailandia'
 test('registro de detalle y rutas: solo se habilitan viajes con contenido', () => {
   const detail = TRIP_DETAILS.tailandia!
   expect(readLibraryView('#biblioteca/viajes/tailandia')).toEqual({ page: 'detail', tripId: 'tailandia' })
-  for (const hash of ['#biblioteca/viajes/japon', '#biblioteca/viajes/desconocido', '#biblioteca/viajes/tailandia?pais=TH', '#biblioteca/viajes/tailandia?', '#biblioteca/viajes/tailandia/extra']) expect(readLibraryView(hash)).toEqual({ page: 'invalid' })
+  for (const hash of ['#biblioteca/viajes/desconocido', '#biblioteca/viajes/tailandia?pais=TH', '#biblioteca/viajes/tailandia?', '#biblioteca/viajes/tailandia/extra']) expect(readLibraryView(hash)).toEqual({ page: 'invalid' })
   for (const id of Object.keys(TRIP_DETAILS)) expect(TRIPS.some(trip => trip.id === id)).toBe(true)
   expect(detail.stages.map(stage => [stage.destination, stage.days])).toEqual([
     ['Bangkok', 'Días 1–3'], ['Ayutthaya', 'Día 4'], ['Chiang Rai', 'Días 5–6'], ['Chiang Mai', 'Días 7–9'], ['Krabi', 'Días 10–11'], ['Koh Phangan', 'Días 12–14 · 3 noches'], ['Bangkok', 'Día 15'],

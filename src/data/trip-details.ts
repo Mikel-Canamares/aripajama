@@ -1,5 +1,12 @@
+import { LIBRARY_TRIP_DETAILS } from './library-trip-details'
+
 export type TripImage = { src: string; width: number; height: number; alt: string }
 export type TripDetail = {
+  duration?: number
+  destinationCount?: number
+  contentNote?: string
+  routeSheetIndex?: number
+  routeImageKind?: 'map' | 'itinerary'
   introduction: string
   routeIntroduction: string
   routeCaption: string
@@ -8,16 +15,17 @@ export type TripDetail = {
   cover: TripImage
   map: TripImage
   closingImage: TripImage
-  stages: readonly { destination: string; days: string; description: string; image: TripImage }[]
+  stages: readonly { destination: string; days: string; description: string; image: TripImage; optional?: boolean }[]
   themes: readonly { title: string; description: string; icon: 'culture' | 'nature' | 'experience' }[]
   reflection: string
-  sheets: readonly { title: string; src: string }[]
+  sheets: readonly { title: string; src: string; width?: number; height?: number }[]
 }
 
 const base = '/media/trips/tailandia'
 const photo = (name: string, alt: string, width: number, height: number): TripImage => ({ src: `${base}/${name}.webp`, alt, width, height })
 
 export const TRIP_DETAILS: Readonly<Partial<Record<string, TripDetail>>> = {
+  ...LIBRARY_TRIP_DETAILS,
   tailandia: {
     introduction: 'Templos, naturaleza y mares de ensueño en una ruta inolvidable.',
     routeIntroduction: 'Un viaje por el corazón de Tailandia, de sus templos a sus islas.',

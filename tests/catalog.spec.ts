@@ -89,11 +89,13 @@ test('los filtros multipaís no duplican viajes ni inventan duraciones', async (
     await page.goto(`/#biblioteca/viajes?pais=${country}`)
     await expect(page.getByRole('heading', { name: title, level: 1, exact: true })).toBeFocused()
     await expect(page.locator('.catalog__trip')).toHaveCount(expected)
-    await expect(page.locator('.catalog__trip button, .catalog__trip a')).toHaveCount(0)
+    await expect(page.locator('.catalog__trip a')).toHaveCount(expected)
+    await expect(page.locator('.catalog__trip button')).toHaveCount(0)
   }
   await page.goto('/#biblioteca/viajes?pais=ES')
   await expect(page.locator('.catalog__trip')).toHaveCount(9)
-  await expect(page.locator('.catalog__trips')).not.toContainText('días')
+  await expect(page.locator('[data-trip="cantabria"]')).toContainText('10 días')
+  await expect(page.locator('[data-trip="menorca"]')).toContainText('7 días')
 })
 
 test('filtra por continente desde la portada y elimina el filtro', async ({ page }) => {

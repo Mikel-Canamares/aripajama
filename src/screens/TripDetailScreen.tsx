@@ -73,7 +73,7 @@ function OriginalViewer({ sheets, initialIndex, opener, onClose }: { sheets: Tri
       <button disabled={index === sheets.length - 1} onClick={() => changeSheet(index + 1)} aria-label="Lámina siguiente"><span>Siguiente</span> →</button>
     </div>
     <div ref={viewportRef} className="trip-viewer__viewport" data-zoomed={zoomed} tabIndex={0} role="region" aria-label={zoomed ? 'Lámina ampliada; desplázate para explorar' : 'Lámina completa'}>
-      {failed ? <p data-reveal="" role="status">No se ha podido cargar esta lámina. Puedes consultar el contenido en la ficha del viaje.</p> : <img data-reveal="" key={sheet.src} src={sheet.src} alt={`Lámina original: ${sheet.title}`} width="941" height="1672" onError={() => setFailed(true)} />}
+      {failed ? <p data-reveal="" role="status">No se ha podido cargar esta lámina. Puedes consultar el contenido en la ficha del viaje.</p> : <img data-reveal="" key={sheet.src} src={sheet.src} alt={`Lámina original: ${sheet.title}`} width={sheet.width ?? 941} height={sheet.height ?? 1672} onError={() => setFailed(true)} />}
     </div>
   </dialog>
 }
@@ -85,7 +85,9 @@ export function TripDetailScreen({ trip, detail, titleRef }: { trip: Trip; detai
   const articleRef = useRef<HTMLElement>(null)
   const indexRef = useRef<HTMLElement>(null)
   const reducedMotion = useReducedMotion()
-  const destinations = new Set(detail.stages.map(stage => stage.destination)).size
+  const destinations = detail.destinationCount ?? new Set(detail.stages.map(stage => stage.destination)).size
+  const stages = detail.stages.filter(stage => !stage.optional).length
+  const routeLabel = detail.routeImageKind === 'itinerary' ? 'el itinerario' : 'el mapa de la ruta'
 
   useEffect(() => {
     const index = indexRef.current!
@@ -109,9 +111,10 @@ export function TripDetailScreen({ trip, detail, titleRef }: { trip: Trip; detai
       <div className="trip-hero__copy">
         <p data-reveal="" className="trip-eyebrow">{CONTINENTS.find(continent => continent.id === trip.continent)?.name} · Un viaje para recordar</p>
         <h1 data-reveal="" id="trip-inicio" ref={titleRef} tabIndex={-1}>{trip.title}</h1>
+        {trip.subtitle && <p data-reveal="" className="trip-hero__subtitle">{trip.subtitle}</p>}
         <span data-reveal="" className="trip-rule" aria-hidden="true" />
         <p data-reveal="" className="trip-hero__introduction">{detail.introduction}</p>
-        <ul className="trip-facts" aria-label="El viaje en cifras">{trip.days && <li data-reveal=""><strong>{trip.days}</strong> días</li>}<li data-reveal=""><strong>{destinations}</strong> destinos</li><li data-reveal=""><strong>{detail.stages.length}</strong> etapas</li></ul>
+        <ul className="trip-facts" aria-label="El viaje en cifras">{trip.days && <li data-reveal=""><strong>{trip.days}</strong> días</li>}<li data-reveal=""><strong>{destinations}</strong> destinos</li><li data-reveal=""><strong>{stages}</strong> etapas{detail.stages.some(stage => stage.optional) ? ' + plan opcional' : ''}</li></ul>
         <button data-reveal="" className="trip-originals" onClick={event => setViewer({ index: 0, opener: event.currentTarget })}>Ver las láminas originales <span aria-hidden="true">↗</span></button>
       </div>
       <Photograph image={detail.cover} eager className="trip-hero__image" />
@@ -120,22 +123,23 @@ export function TripDetailScreen({ trip, detail, titleRef }: { trip: Trip; detai
     <section className="trip-section" aria-labelledby="trip-ruta">
       <div data-reveal-group="" className="trip-section__heading"><p data-reveal="" className="trip-eyebrow">01 · El recorrido</p><h2 data-reveal="" id="trip-ruta" tabIndex={-1}>La ruta</h2><p data-reveal="">{detail.routeIntroduction}</p></div>
       <div className="trip-route">
-        <figure data-reveal-group="" className="trip-route__map"><button className="trip-route__enlarge" onClick={event => setViewer({ index: 1, opener: event.currentTarget })} aria-label="Ampliar el mapa de la ruta"><Photograph image={detail.map} /><span data-reveal="">Ampliar mapa <span aria-hidden="true">↗</span></span></button><figcaption data-reveal="">{detail.routeCaption}</figcaption></figure>
+        <figure data-reveal-group="" className="trip-route__map"><button className="trip-route__enlarge" onClick={event => setViewer({ index: detail.routeSheetIndex ?? 1, opener: event.currentTarget })} aria-label={`Ampliar ${routeLabel}`}><Photograph image={detail.map} /><span data-reveal="">{detail.routeImageKind === 'itinerary' ? 'Ampliar itinerario' : 'Ampliar mapa'} <span aria-hidden="true">↗</span></span></button><figcaption data-reveal="">{detail.routeCaption}</figcaption></figure>
         <div className="trip-route__summary"><p data-reveal="" className="trip-eyebrow">Tu viaje, paso a paso</p><ol className="trip-route__stops">{detail.stages.map((stage, index) => <li data-reveal-group="" key={index}><span data-reveal="" className="trip-route__number" aria-hidden="true">{String(index + 1).padStart(2, '0')}</span><div><h3 data-reveal="">{stage.destination}</h3><p data-reveal="">{stage.days}</p></div></li>)}</ol><p data-reveal="" className="trip-route__note">{detail.routeSummary}</p><p data-reveal="">{detail.routeClosing}</p></div>
       </div>
+      {detail.contentNote && <p data-reveal="" className="trip-route__note">{detail.contentNote}</p>}
     </section>
 
     <section className="trip-section" aria-labelledby="trip-etapas">
       <div data-reveal-group="" className="trip-section__heading"><p data-reveal="" className="trip-eyebrow">02 · Grandes momentos</p><h2 data-reveal="" id="trip-etapas" tabIndex={-1}>El viaje</h2><p data-reveal="">Grandes momentos, un mismo destino.</p></div>
       <ol className="trip-stages">{detail.stages.map((stage, index) => <li data-reveal="" data-reveal-frame="" data-reveal-group="" className="trip-stage" key={index}>
         <Photograph image={stage.image} />
-        <div className="trip-stage__copy"><p data-reveal="" className="trip-eyebrow">Etapa {String(index + 1).padStart(2, '0')}</p><h3 data-reveal="">{stage.destination}</h3><p data-reveal="" className="trip-stage__days">{stage.days}</p><p data-reveal="">{stage.description}</p></div>
+        <div className="trip-stage__copy"><p data-reveal="" className="trip-eyebrow">{stage.optional ? 'Plan opcional' : `Etapa ${String(index + 1).padStart(2, '0')}`}</p><h3 data-reveal="">{stage.destination}</h3><p data-reveal="" className="trip-stage__days">{stage.days}</p><p data-reveal="">{stage.description}</p></div>
       </li>)}</ol>
     </section>
 
     <section className="trip-section trip-essence" aria-labelledby="trip-esencia">
       <div data-reveal-group="" className="trip-section__heading"><p data-reveal="" className="trip-eyebrow">03 · La esencia</p><h2 data-reveal="" id="trip-esencia" tabIndex={-1}>Lo que me llevo</h2><p data-reveal="">Más que un destino, una forma de viajar.</p></div>
-      <div className="trip-themes">{detail.themes.map(theme => <div data-reveal-group="" className="trip-theme" key={theme.title}><span data-reveal="" className="trip-theme__icon"><ThemeIcon name={theme.icon} /></span><h3 data-reveal="">{theme.title}</h3><span data-reveal="" className="trip-rule" aria-hidden="true" /><p data-reveal="">{theme.description}</p></div>)}</div>
+      <div className="trip-themes" data-count={detail.themes.length}>{detail.themes.map(theme => <div data-reveal-group="" className="trip-theme" key={theme.title}><span data-reveal="" className="trip-theme__icon"><ThemeIcon name={theme.icon} /></span><h3 data-reveal="">{theme.title}</h3><span data-reveal="" className="trip-rule" aria-hidden="true" /><p data-reveal="">{theme.description}</p></div>)}</div>
       <blockquote data-reveal="" className="trip-reflection">{detail.reflection}</blockquote>
       <Photograph image={detail.closingImage} className="trip-closing" />
     </section>

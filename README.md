@@ -172,7 +172,7 @@ Por defecto se leen los dos PNG de `../recursos/`. La aplicación no necesita es
 
 `src/screens/LibraryScreen.tsx` implementa la pantalla principal con textos HTML, fondo independiente, accesos por país/tipo, cuatro continentes y el pie editorial. El diseño tiene dos columnas desde 360 px, una en móviles estrechos y cuatro en escritorio desde 1100 px. La pantalla permite scroll vertical natural y contempla zonas seguras.
 
-«Países», los cuatro continentes y «Ver los 39 viajes» abren listados dinámicos. Los contadores se calculan desde el catálogo local de 27 países y 39 viajes, incluidos los itinerarios multipaís sin duplicación de totales. Tailandia dispone de una ficha completa accesible desde cualquier listado; los demás viajes se habilitarán al añadir su contenido. «Tipo de viaje» sigue pendiente.
+«Países», los cuatro continentes y «Ver los 39 viajes» abren listados dinámicos. Los contadores se calculan desde el catálogo local de 27 países y 39 viajes, incluidos los itinerarios multipaís sin duplicación de totales. Los 39 viajes disponen de ficha editorial accesible desde cualquier listado y mediante `/#biblioteca/viajes/<id>`. «Tipo de viaje» sigue pendiente.
 
 El mismo fondo limpio `/media/library/background.webp` permanece montado al cambiar entre las vistas internas. Los países usan una columna en móvil, dos desde 600 px y tres desde 1100 px. Los viajes se agrupan por continente y se distribuyen en columnas verticales con el mismo orden editorial del DOM. Las transiciones internas duran 160 ms de salida y 420 ms de entrada; respetan movimiento reducido y restauran foco y scroll de origen al regresar.
 
@@ -203,13 +203,13 @@ Los contadores, filtros y listados se actualizan a partir de los datos. Las prue
 
 Los recursos web ya están incluidos. `scripts/prepare-assets.mjs` es un generador histórico para la portada que necesita sus fuentes originales en la raíz y FFmpeg; no es necesario ejecutarlo para arrancar, compilar o editar el hub.
 
-### Ficha editorial de Tailandia
+### Fichas editoriales de los 39 viajes
 
 `/#biblioteca/viajes/tailandia` abre directamente el viaje de 15 días: Inicio, Ruta, Etapas y Esencia. La ficha usa texto HTML, seis destinos y siete etapas (Bangkok aparece dos veces). El índice permanece accesible al hacer scroll, compensa su altura al saltar a un título y no añade entradas al historial. Al regresar a un listado se recuperan sus filtros, scroll y enlace de origen; una entrada directa regresa a todos los viajes.
 
-`TripDetailScreen.tsx` y `src/trip-detail.css` implementan el diseño de una columna en móvil, la cabecera y ruta en dos columnas desde 900 px, tarjetas cronológicas con fotografía lateral desde 600 px y un ancho máximo de 1200 px. Las fotos de las etapas no se amplían más allá de sus 360 px originales. Los controles tienen un mínimo de 44 px y la lectura principal usa al menos 16 px.
+`TripDetailScreen.tsx` y `src/trip-detail.css` implementan el diseño de una columna en móvil, la cabecera y ruta en dos columnas desde 900 px, tarjetas cronológicas con fotografía lateral desde 600 px y un ancho máximo de 1200 px. Las fotos de las etapas se presentan con un máximo de 360 px; las fuentes nuevas se preparan hasta 440 px sin ampliarlas. Los controles tienen un mínimo de 44 px y la lectura principal usa al menos 16 px. Los subtítulos distinguen rutas como Costa Este y Costa Oeste. Las cuatro temáticas de Ámsterdam usan una cuadrícula de dos columnas en escritorio.
 
-El visor de las cuatro láminas originales usa un diálogo modal nativo, con controles anterior/siguiente, ampliación y ajuste, desplazamiento de la lámina ampliada, teclado y devolución explícita de foco al control de apertura (también tras interacción táctil en Safari). Escape cierra primero el visor. Los PNG originales solo se solicitan al abrir cada lámina; el catálogo no carga fotografías del viaje y la ficha usa WebP con carga diferida salvo la portada.
+El visor de las láminas originales usa un diálogo modal nativo, con controles anterior/siguiente, ampliación y ajuste, desplazamiento de la lámina ampliada, teclado y devolución explícita de foco al control de apertura (también tras interacción táctil en Safari). Escape cierra primero el visor. Respeta las dimensiones reales de cada original y admite tres o cuatro láminas. Los PNG originales solo se solicitan al abrir cada lámina; el catálogo no carga fotografías del viaje y la ficha usa WebP con carga diferida salvo la portada.
 
 Los cuatro PNG se conservan sin modificar en `public/media/trips/tailandia/originals/`. Para reproducir los diez WebP y copiar las fuentes, ejecutar:
 
@@ -217,10 +217,18 @@ Los cuatro PNG se conservan sin modificar en `public/media/trips/tailandia/origi
 node scripts/prepare-trip-assets.mjs ruta/portada.png ruta/mapa.png ruta/itinerario.png ruta/esencia.png
 ```
 
-Los recortes proceden exclusivamente de los PNG aportados. El mapa es una ilustración y mantiene sus etiquetas integradas; la lista de etapas proporciona el orden cronológico en texto. No se infieren transportes ni duraciones de trayecto. Los originales pesan unos 9,4 MB en conjunto y se cargan individualmente bajo demanda. Las fotos recortadas tienen resolución limitada; para futuros encuadres más grandes conviene incorporar originales separados.
+Para regenerar los recursos de los otros 38 viajes desde las carpetas entregadas:
+
+```sh
+npm run assets:library-trips -- "D:\ARIPAJAMA\RECURSOS\WEB\WEB\Biblioteca de viajes\Viajes"
+```
+
+`scripts/trip-asset-manifest.mjs` identifica cada fuente por un prefijo de nombre único y define recortes específicos de portada, mapa, cierre y cada etapa. `scripts/prepare-library-trips.mjs` conserva los PNG byte por byte, genera WebP y escribe las dimensiones en `src/data/trip-assets.ts`. Este archivo es generado; los textos se editan en `src/data/library-trip-details.ts`. El detalle original de Tailandia permanece en `src/data/trip-details.ts`.
+
+Los recortes proceden exclusivamente de los PNG aportados. Los mapas son ilustraciones y mantienen sus etiquetas integradas; la lista de etapas proporciona el orden cronológico en HTML. No se infieren transportes ni duraciones de trayecto. La biblioteca contiene 153 PNG originales (374 MiB, bajo demanda) y 366 WebP (25,8 MiB en conjunto, repartidos entre las 39 fichas). Las fotos recortadas tienen resolución limitada; para futuros encuadres más grandes conviene incorporar originales separados. La selección de fuentes, las diferencias editoriales y los casos especiales están documentados en [`docs/library-trips.md`](docs/library-trips.md).
 
 Para habilitar otro viaje, añadir su detalle en `TRIP_DETAILS` usando el identificador existente del catálogo y preparar sus imágenes y láminas. La disponibilidad del enlace y la validación de su ruta se derivan de ese registro. No añadir enlaces a fichas incompletas ni inventar duraciones que no figuren en el contenido.
 
-Las pruebas relevantes son `tests/catalog.spec.ts`, `tests/library.spec.ts` y `tests/trip-detail.spec.ts`: incluyen filtros, historial, recarga, restauración de foco y scroll, carga bajo demanda, errores gráficos, visor, texto al 200 % y encuadres de 280 a 1440 px en Chromium y WebKit. La revisión emulada debe complementarse con un móvil físico.
+`npm run test:library -- --workers=4` ejecuta las 148 comprobaciones de biblioteca en Chromium y WebKit, sin necesitar la API de solicitudes ni el visor de correos. Incluye `tests/catalog.spec.ts`, `tests/library.spec.ts`, `tests/trip-detail.spec.ts` y `tests/library-trips.spec.ts`: inventario editorial, decodificación y dimensiones de todos los recursos, las 39 rutas, filtros, historial, recarga, restauración de foco y scroll, carga bajo demanda, errores gráficos, visor, texto al 200 % y encuadres de 280 a 1440 px. La revisión emulada debe complementarse con un móvil físico.
 
 Ejecuta `npm run build` y `npm run test:e2e`. Las pruebas del hub comprueban los encuadres de 280 × 568 a 1440 × 900, incluida la referencia de 942 × 1670; además verifican carga y recuperación, movimiento reducido, foco, regreso con teclado y personalización del texto. Las capturas se guardan en `test-results/`. Los navegadores emulados no sustituyen la revisión en un móvil físico.

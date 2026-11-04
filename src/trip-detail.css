@@ -19,6 +19,7 @@
   .trip-hero { display: grid; gap: 1.5rem; }
   .trip-hero__copy { padding-block: .5rem; }
   .trip-hero h1 { margin: .8rem 0; font-size: clamp(3rem, 10vw, 6.5rem); }
+  .trip-hero__subtitle { color: #745a40; font: 500 clamp(1.5rem, 4vw, 2.4rem)/1.2 var(--font-editorial); overflow-wrap: anywhere; }
   .trip-rule { display: block; width: 64px; height: 2px; background: #b98136; margin-block: 1.1rem; }
   .trip-hero__introduction { max-width: 27ch; color: #65442d; font: italic 400 clamp(1.6rem, 3vw, 2.4rem)/1.25 var(--font-editorial); }
   .trip-facts { display: flex; flex-wrap: wrap; gap: .7rem 1.4rem; list-style: none; margin: 1.5rem 0; padding: 0; }
@@ -37,7 +38,7 @@
   .trip-route__map { min-width: 0; margin: 0; }
   .trip-route__enlarge { display: block; position: relative; width: 100%; max-width: 800px; padding: 0; border: 1px solid #d6bf9f; border-radius: 12px; background: #f2e7d5; color: #613d25; text-align: center; overflow: hidden; }
   .trip-route__enlarge > span { display: flex; justify-content: space-between; align-items: center; padding: .7rem 1rem; background: #fffaf0; }
-  .trip-route__enlarge .trip-photo { border-radius: 0; aspect-ratio: 941 / 1140; }
+  .trip-route__enlarge .trip-photo { border-radius: 0; }
   .trip-route__map figcaption { margin-top: .6rem; font-size: 1rem; color: #7c654e; }
   .trip-route__stops { list-style: none; margin: 1.2rem 0; padding: 0; }
   .trip-route__stops li { position: relative; display: flex; align-items: center; gap: 1rem; padding-bottom: 1.3rem; }
@@ -89,6 +90,8 @@
     .trip-hero__copy { padding-block: 2rem; }
     .trip-route { grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr); gap: 4rem; align-items: center; }
     .trip-themes { grid-template-columns: repeat(3,minmax(0,1fr)); gap: 2rem; }
+    .trip-themes[data-count='4'] { grid-template-columns: repeat(2,minmax(0,1fr)); }
+    .trip-themes[data-count='4'] .trip-theme:nth-child(odd) { border-left: 0; padding-left: 0; }
     .trip-theme + .trip-theme { border-left: 1px solid #d6bf9f; padding-left: 2rem; }
     .trip-stage { grid-template-columns: 392px minmax(0,1fr); }
     .trip-stage > .trip-photo { width: 360px; }
