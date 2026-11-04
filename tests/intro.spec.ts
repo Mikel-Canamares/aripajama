@@ -47,6 +47,8 @@ test('revela la composición y permite navegar al completar el nuevo vídeo', as
   const nextHeading = page.getByRole('heading', { name: 'Tu viaje, en tres formas' })
   await expect(nextHeading).toBeFocused()
   await page.keyboard.press('Tab')
+  await expect(page.getByRole('button', { name: 'Quién soy', exact: true })).toBeFocused()
+  await page.keyboard.press('Tab')
   await expect(page.getByRole('button', { name: 'Biblioteca de viajes', exact: true })).toBeFocused()
   await page.keyboard.press('Tab')
   await expect(page.getByRole('button', { name: 'Crear mi viaje', exact: true })).toBeFocused()

@@ -25,6 +25,7 @@
     "assets:library-icons": "node --experimental-strip-types scripts/prepare-library-icons.mjs",
     "assets:library-trips": "node scripts/prepare-library-trips.mjs",
     "test:e2e": "playwright test",
+    "test:frontend": "playwright test --config playwright.frontend.config.ts",
     "test:library": "playwright test --config playwright.library.config.ts"
   },
   "dependencies": {

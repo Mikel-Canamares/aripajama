@@ -19,25 +19,27 @@ function Lines({ lines }: { lines: string[] }) {
   ))
 }
 
-export function JourneyScreen({ active, onReady, onBack, onOpenLibrary, onOpenCreate, restoreFocus }: {
+export function JourneyScreen({ active, onReady, onBack, onOpenLibrary, onOpenCreate, onOpenAbout, restoreFocus }: {
   active: boolean
   onReady: () => void
   onBack: () => void
   onOpenLibrary: () => void
   onOpenCreate: () => void
-  restoreFocus: 'library' | 'create' | null
+  onOpenAbout: () => void
+  restoreFocus: 'library' | 'create' | 'about' | null
 }) {
   const titleRef = useRef<HTMLHeadingElement>(null)
   const rootRef = useRef<HTMLElement>(null)
   const libraryRef = useRef<HTMLButtonElement>(null)
   const createRef = useRef<HTMLButtonElement>(null)
+  const aboutRef = useRef<HTMLButtonElement>(null)
   const [artwork, setArtwork] = useState<'loading' | 'ready' | 'error'>('loading')
   useRevealSequence(rootRef, active)
 
   useEffect(() => {
     if (active) {
       window.scrollTo(0, 0)
-      const target = restoreFocus === 'create' ? createRef.current : restoreFocus === 'library' ? libraryRef.current : titleRef.current
+      const target = restoreFocus === 'about' ? aboutRef.current : restoreFocus === 'create' ? createRef.current : restoreFocus === 'library' ? libraryRef.current : titleRef.current
       target?.focus({ preventScroll: true })
     }
   }, [active, restoreFocus])
@@ -98,6 +100,12 @@ export function JourneyScreen({ active, onReady, onBack, onOpenLibrary, onOpenCr
         <ol className="journey__cards" role="list">
           {CONTENT.cards.map(({ id, title, subtitle }) => (
             <li data-reveal="" data-reveal-frame="" data-reveal-group="" key={id} className={`journey__card journey__card--${id}`}>
+              {id === 'about' && <button
+                ref={aboutRef}
+                className="journey__card-link"
+                aria-label="Quién soy"
+                onClick={onOpenAbout}
+              />}
               {id === 'library' && <button
                 ref={libraryRef}
                 className="journey__card-link"

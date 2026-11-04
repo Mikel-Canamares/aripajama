@@ -1,3 +1,71 @@
+## Quién soy · Corrección a la referencia `quienSoy2.png` · 04/11/2026
+
+- [x] Incorporar la ilustración superior derecha, las cintas de cabecera y pie y las decoraciones originales de la nueva referencia.
+- [x] Sustituir el menú por «← Volver», recrear los medallones de acuarela y los separadores dorados.
+- [x] Adaptar tipografía, colores, fondos y composición editorial vertical a la referencia, manteniendo los quince marcos blancos independientes.
+- [x] Revisar capturas en móvil y escritorio, texto ampliado y navegación; actualizar las pruebas y la documentación y completar Review.
+
+### Review
+
+#### Resumen de cambios
+
+- La referencia definitiva es `quienSoy2.png`. `AboutScreen.tsx` sustituye el menú por «← Volver» en la esquina superior izquierda, incorpora la ilustración viajera y las cintas originales, las montañas y la cámara con su leyenda manuscrita.
+- `src/about.css` reproduce la composición vertical en todos los tamaños: títulos negros, texto serif, subrayados y trazos dorados, números negros en medallones de acuarela (melocotón y azul en el tercero), fondos suaves y frase final burdeos con corazón y cintas inferiores. Los collages se distribuyen debajo de los textos siguiendo las proporciones de la referencia.
+- Los quince marcos permanecen blancos y conservan sus fuentes independientes en `src/data/about-photos.ts`, preparadas para fotografías de buena definición.
+- `scripts/prepare-about-assets.mjs` prepara diez WebP: siete recortes de la referencia y tres recursos de acuarela generados desde SVG. Las máscaras excluyen contenido ajeno y eliminan o suavizan el fondo claro conectado al borde; los originales se conservan.
+- Actualizadas las pruebas de la pantalla para comprobar «Volver» y la nueva composición, y la documentación de diseño y recursos en `README.md`.
+
+#### Verificación realizada
+
+- `npm run build`: correcto, TypeScript y compilación de producción.
+- `npm run test:frontend -- tests/about.spec.ts --workers=2`: **16/16 correctas** en Chromium y WebKit después de los últimos ajustes de recursos.
+- Revisadas capturas de 280 a 1440 px, incluida la proporción de referencia de 941 px, móvil, horizontal y texto al 200 %. Verificados los huecos blancos, la composición, el regreso, foco, historial, enlace directo, recarga, movimiento reducido y recursos fallidos.
+- `git diff --check`: sin errores de espacios.
+
+#### Riesgos potenciales
+
+- La ilustración y los pequeños adornos proceden de una referencia rasterizada de resolución limitada. La definición de las fotografías futuras será independiente de estas decoraciones.
+
+#### Siguientes pasos sugeridos
+
+- Incorporar las fotografías individuales de buena definición en el registro preparado y revisar sus encuadres en los marcos definitivos.
+
+## Quién soy · 04/11/2026 · Plan aprobado
+
+- [x] Preparar las decoraciones de la referencia, con fotografías independientes y huecos blancos.
+- [x] Conectar la tarjeta del hub y `/#quien-soy`, con historial, recarga, regreso y restauración del foco.
+- [x] Crear los cuatro apartados, los collages y el menú de regreso e índice; integrar fuentes y apariciones compartidas.
+- [x] Revisar móvil, tablet, horizontal, escritorio, teclado, movimiento reducido y texto al 200 %; ejecutar compilación y pruebas pertinentes.
+- [x] Documentar la incorporación de fotos y completar Review.
+
+### Review
+
+#### Resumen de cambios
+
+- `src/App.tsx` y `src/screens/JourneyScreen.tsx`: tarjeta «Quién soy» operativa, ruta `/#quien-soy`, enlaces directos, recarga, historial y regreso con foco en su tarjeta; reutilización del fundido direccional existente.
+- `src/screens/AboutScreen.tsx` y `src/about.css`: cuatro apartados con los textos de la referencia, fuentes locales, numeración azul, separadores, papeles, cinta, dibujos SVG y cierre editorial. Composición vertical en móvil, columnas contiguas desde 900 px y reajuste por tamaño de texto. Apariciones mediante el hook compartido.
+- Menú de tres líneas persistente con regreso al hub e índice sin cambios de URL; teclado, Escape, cierre al salir con el foco o pulsar fuera, zonas seguras y área táctil de 44 px. El panel admite desplazamiento propio si la altura es reducida.
+- `src/data/about-photos.ts`: registro independiente de quince fotos pendientes. Los marcos blancos conservan sus giros y superposiciones; cada futuro archivo admite texto alternativo y ajuste de encuadre. Las fotos de collage se cargarán bajo demanda y los errores conservan el hueco blanco.
+- `scripts/prepare-about-assets.mjs` y tres WebP en `public/media/about/`: recortes decorativos de algodón, nota y firma procedentes de `quienSoy2.png`. La composición sigue `quienSoy.png`; los originales no se modifican.
+- `tests/about.spec.ts`, ajustes al orden de teclado de las pruebas existentes y `playwright.frontend.config.ts`: verificación frontend reproducible sin API ni visor de correos. `README.md` documenta la pantalla, los recursos, los identificadores de las fotos y su incorporación.
+
+#### Verificación realizada
+
+- `npm run build`: correcto, incluida la compilación final tras los ajustes del menú.
+- `npm run test:frontend -- tests/about.spec.ts tests/journey.spec.ts tests/create-trip.spec.ts tests/library.spec.ts tests/intro.spec.ts --workers=3`: **78/78 correctas** en Chromium y WebKit.
+- Tras limitar la altura del panel: `npm run test:frontend -- tests/about.spec.ts --workers=2`: **16/16 correctas** en los dos motores.
+- Revisadas capturas de móvil, tablet, horizontal y escritorio entre 280 y 1440 px, más texto al 200 %. Comprobados foco, índice, recarga, historial, movimiento reducido, fallos decorativos y los quince marcos sin fotografías.
+- `git diff --check`: sin errores de espacios.
+
+#### Riesgos potenciales
+
+- Las tres decoraciones recortadas están limitadas por la resolución de la maqueta, especialmente al ampliarlas en escritorio. Las futuras fotografías son archivos independientes y no heredan esa limitación.
+
+#### Siguientes pasos sugeridos
+
+- Incorporar las fotografías originales en `public/media/about/` y completar `src`, `alt` y, cuando sea necesario, `position` en `src/data/about-photos.ts`.
+- Revisar los encuadres con las fotografías definitivas en móvil y escritorio.
+
 ## Carga completa de la biblioteca · 30/10/2026 · Plan aprobado
 
 - [x] Inventariar y revisar las láminas de los 38 viajes pendientes; utilizar la versión detallada `9AAA1F7D` de Cracovia.

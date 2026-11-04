@@ -63,7 +63,7 @@ Las tarjetas se renderizan como componentes HTML/CSS independientes sobre el fon
 - Modifica las variables `--journey-heading-*`, `--journey-subheading-*`, `--journey-card-*` y `--journey-caption-*` dentro de `.journey` en `src/styles.css`.
 - Cada grupo permite cambiar fuente, tamaño, peso, color e interletraje. Los tamaños en `cqw` son porcentajes del ancho del lienzo: `1cqw` equivale a 9,42 px en la referencia a tamaño completo.
 - Las fuentes se sirven localmente. Si se cambia mucho el contenido o el tamaño, revisar que el texto siga dentro de las tarjetas y no alcance las flechas.
-- Las tarjetas «Biblioteca de viajes» y «Crear mi viaje» abren sus respectivas pantallas. «Quién soy» sigue pendiente.
+- Las tres tarjetas abren sus respectivas pantallas: «Quién soy», «Biblioteca de viajes» y «Crear mi viaje».
 
 ### Navegación, carga y accesibilidad
 
@@ -98,7 +98,7 @@ tasks/todo.md                Plan y revisión del trabajo
 - **Colores, posición, tamaños y tiempos entre elementos:** `src/styles.css`. Los retardos de `.reveal-item` son relativos al inicio de la escritura.
 - **Momento de inicio:** constante `REVEAL_AT` de `src/screens/IntroScreen.tsx`, en segundos de reproducción.
 - **Velocidad del trazo:** `start` y `duration` de las guías de `src/components/Brand.tsx`.
-- **Navegación del hub:** la biblioteca y «Crear mi viaje» están conectadas desde `src/App.tsx`; el destino «Quién soy» sigue pendiente.
+- **Navegación del hub:** los tres destinos están conectados desde `src/App.tsx`.
 
 En la portada, el vídeo llena el móvil y la composición se sitúa sobre el espacio claro. En horizontal y escritorio, el paisaje de la portada ocupa la zona izquierda, con un borde fundido, y la marca y los textos ocupan la derecha. El hub conserva siempre su lienzo vertical centrado. Se contemplan zonas seguras, teclado y objetivos táctiles de al menos 44 px.
 
@@ -106,7 +106,7 @@ En la portada, el vídeo llena el móvil y la composición se sitúa sobre el es
 
 ### Aparición progresiva en toda la web
 
-El hub, la biblioteca, países, listados, la ficha de viaje, el visor y «Crear mi viaje» comparten `src/hooks/useRevealSequence.ts` y `src/reveal.css`. Cada título, párrafo, ilustración, número, separador y acceso marcado aparece con opacidad y un desplazamiento vertical de 16 px durante 550 ms; el siguiente empieza 140 ms después. Las tarjetas funden su marco y sus contenidos aparecen por separado. No se insertan contenedores que alteren las cuadrículas o las columnas, y el desplazamiento usa `translate`, separado del `transform` de hover. La portada conserva su escritura y coreografía sincronizada con el vídeo.
+El hub, «Quién soy», la biblioteca, países, listados, la ficha de viaje, el visor y «Crear mi viaje» comparten `src/hooks/useRevealSequence.ts` y `src/reveal.css`. Cada título, párrafo, ilustración, número, separador y acceso marcado aparece con opacidad y un desplazamiento vertical de 16 px durante 550 ms; el siguiente empieza 140 ms después. Las tarjetas funden su marco y sus contenidos aparecen por separado. No se insertan contenedores que alteren las cuadrículas o las columnas, y el desplazamiento usa `translate`, separado del `transform` de hover. La portada conserva su escritura y coreografía sincronizada con el vídeo.
 
 `data-reveal` identifica los elementos; `data-reveal-group` conserva el orden de sus piezas dentro de una tarjeta o cabecera; `data-reveal-scope` delimita cada vista y el visor modal. Los grupos visibles se ordenan por filas y de izquierda a derecha según sus posiciones reales, también en los listados por columnas. `IntersectionObserver` inicia una cascada para cada tanda que llega a la zona visible, sin sumar los elementos que siguen fuera de pantalla. Si se abandona la zona antes de empezar, se cancela esa espera hasta volver a verla.
 
@@ -119,6 +119,31 @@ Los controles que reciben foco muestran su grupo inmediatamente, sin esperar a l
 ```sh
 npm run build
 npm run test:e2e -- --workers=1
+```
+
+### Quién soy
+
+`/#quien-soy` abre la presentación de Ariana desde el hub o mediante un enlace directo. La recarga conserva la pantalla sin reproducir la portada. Las transiciones, las apariciones progresivas y el movimiento reducido son los mismos del resto de pantallas. El regreso mediante «← Volver», Escape o historial recupera el foco en la tarjeta «Quién soy»; las visitas directas disponen de regreso local al hub.
+
+`src/screens/AboutScreen.tsx` contiene los cuatro apartados y sus textos HTML editables; `src/about.css` sigue la referencia definitiva `../RECURSOS/quienSoy2.png`. Mantiene una composición editorial vertical también en escritorio: ilustración viajera arriba a la derecha, cintas en cabecera y pie, medallones de acuarela melocotón (azul en el tercer apartado), trazos dorados, titulares negros, texto serif y cierre burdeos en cursiva. Los collages se sitúan debajo de sus textos y el contenido tiene un máximo de 1040 px. Las composiciones gráficas se amplían proporcionalmente en pantallas pequeñas y el texto fluye sin alturas fijas, incluido al 200 %. El único control de esta pantalla es «← Volver», en la esquina superior izquierda.
+
+#### Incorporar las fotografías
+
+Los **15 huecos** son marcos CSS blancos, sin imágenes de sustitución ni solicitudes de fotografías. Su registro independiente está en `src/data/about-photos.ts`. Para completar cada uno:
+
+1. Guardar la foto individual con buena definición en `public/media/about/`.
+2. Rellenar `src` con su URL (por ejemplo, `/media/about/retrato.webp`) y `alt` con una descripción pertinente. Mantener `src: null` en los huecos pendientes.
+3. Si hace falta ajustar el encuadre, añadir `position`, por ejemplo `'50% 30%'`. La foto se adapta a su marco mediante `object-fit: cover`, conservando la proporción original del archivo.
+
+`portrait` identifica el retrato inicial; los seis identificadores `photography-*` corresponden al primer collage y los ocho `travel-*` al collage final. Cada imagen se carga por separado y las de los collages utilizan carga diferida. Un fallo conserva el marco blanco. Las posiciones, proporciones, giros y superposiciones permanecen en CSS, independientes de los archivos que se incorporen.
+
+La ilustración superior con sus cintas, las cintas del pie, el algodón, la nota manuscrita, la firma, las montañas y la cámara con su leyenda son recortes de `../RECURSOS/quienSoy2.png`. Se conserva completa la ilustración viajera; las quince fotografías personales son los huecos blancos independientes. El generador enmascara las zonas de texto y fotos ajenas a cada decoración y elimina el fondo claro conectado al borde para integrar los recortes. Los medallones y las manchas de acuarela se generan a partir de SVG; sol y corazón son SVG en pantalla y la cinta adhesiva se reproduce en CSS. Las decoraciones recortadas tienen resolución limitada, independiente de la definición de las futuras fotos. Los originales no se modifican. Para regenerar los diez WebP: `node scripts/prepare-about-assets.mjs [ruta-a-quienSoy2.png]`.
+
+`tests/about.spec.ts` comprueba navegación, enlaces directos, recarga, historial, teclado, foco, composición vertical, ilustración, medallones, cintas, transiciones, huecos blancos, fallos gráficos, movimiento reducido, texto al 200 % y encuadres de 280 a 1440 px. La configuración de frontend permite ejecutar estas pruebas y la regresión sin arrancar la API ni el visor de correos:
+
+```sh
+npm run build
+npm run test:frontend -- tests/about.spec.ts tests/journey.spec.ts tests/create-trip.spec.ts tests/library.spec.ts tests/intro.spec.ts --workers=3
 ```
 
 ### Crear mi viaje

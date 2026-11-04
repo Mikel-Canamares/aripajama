@@ -4,12 +4,14 @@ import { IntroScreen } from './screens/IntroScreen'
 import { JourneyScreen } from './screens/JourneyScreen'
 import { LibraryScreen } from './screens/LibraryScreen'
 import { CreateTripFlow } from './screens/CreateTripFlow'
+import { AboutScreen } from './screens/AboutScreen'
 
-type Destination = 'library' | 'create'
+type Destination = 'library' | 'create' | 'about'
 
 function readDestination(): Destination | null {
   if (window.location.hash.startsWith('#biblioteca')) return 'library'
   if (/^#crear-mi-viaje(?:\/|$)/.test(window.location.hash)) return 'create'
+  if (/^#quien-soy\/?$/.test(window.location.hash)) return 'about'
   return null
 }
 
@@ -35,7 +37,7 @@ export function App() {
           setDestinationReady(false)
           setNavigation('preparing')
         } else if (navigation === 'returning') setNavigation(next)
-      } else if (navigation === 'library' || navigation === 'create' || navigation === 'preparing' || navigation === 'entering') {
+      } else if (navigation === 'library' || navigation === 'create' || navigation === 'about' || navigation === 'preparing' || navigation === 'entering') {
         setExitScroll(window.scrollY)
         setRestoreFocus(destination)
         setNavigation(navigation === 'preparing' ? 'hub' : 'returning')
@@ -93,7 +95,9 @@ export function App() {
     setDestination(next)
     setDestinationReady(false)
     setRestoreFocus(null)
-    history.pushState(next === 'library' ? { libraryDepth: 0 } : { createFromHub: true }, '', next === 'library' ? '#biblioteca' : '#crear-mi-viaje')
+    const state = next === 'library' ? { libraryDepth: 0 } : next === 'create' ? { createFromHub: true } : { aboutFromHub: true }
+    const hash = next === 'library' ? '#biblioteca' : next === 'create' ? '#crear-mi-viaje' : '#quien-soy'
+    history.pushState(state, '', hash)
     setNavigation('preparing')
   }
 
@@ -102,6 +106,10 @@ export function App() {
     // A hub entry belongs to this app; direct visits have a safe local fallback.
     if (destination === 'create' && history.state?.createFromHub) {
       history.go(-((history.state?.createDepth || 0) + 1))
+      return
+    }
+    if (destination === 'about' && history.state?.aboutFromHub) {
+      history.back()
       return
     }
     history.replaceState(null, '', window.location.pathname + window.location.search)
@@ -134,7 +142,7 @@ export function App() {
           <div className="navigation" data-navigation={navigation}>
           <div
             className="navigation__hub"
-            hidden={navigation === 'library' || navigation === 'create'}
+            hidden={navigation === 'library' || navigation === 'create' || navigation === 'about'}
             inert={navigation !== 'hub' && navigation !== 'preparing'}
             aria-hidden={navigation !== 'hub' && navigation !== 'preparing'}
             onAnimationEnd={event => {
@@ -154,6 +162,7 @@ export function App() {
               }}
               onOpenLibrary={() => openDestination('library')}
               onOpenCreate={() => openDestination('create')}
+              onOpenAbout={() => openDestination('about')}
             />
           </div>
           {navigation !== 'hub' && <div
@@ -169,6 +178,7 @@ export function App() {
           >
             {destination === 'library'
               ? <LibraryScreen active={navigation === 'library'} onReady={handleDestinationReady} onBack={returnToHub} />
+              : destination === 'about' ? <AboutScreen active={navigation === 'about'} onReady={handleDestinationReady} onBack={returnToHub} />
               : <CreateTripFlow active={navigation === 'create'} onReady={handleDestinationReady} onBack={returnToHub} />}
           </div>}
           </div>

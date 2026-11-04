@@ -14,6 +14,8 @@ async function openHub(page: Page) {
 test('entra desde el hub y restaura el foco con Volver, Escape e historial', async ({ page }) => {
   await openHub(page)
   await page.keyboard.press('Tab')
+  await expect(page.getByRole('button', { name: 'Quién soy', exact: true })).toBeFocused()
+  await page.keyboard.press('Tab')
   await expect(page.getByRole('button', { name: 'Biblioteca de viajes', exact: true })).toBeFocused()
   await page.keyboard.press('Tab')
   await expect(hubButton(page)).toBeFocused()
