@@ -1,7 +1,6 @@
 @layer components {
-  .catalog__trip--available { position: relative; padding-right: 2.4rem; border-color: #be9873; }
+  .catalog__trip--available { position: relative; border-color: #be9873; }
   .catalog__trip-link { position: absolute; inset: 0; border-radius: inherit; color: #824f2d; }
-  .catalog__trip-link > span { position: absolute; right: .6rem; top: 50%; transform: translateY(-50%); font-size: 1.4rem; }
   .catalog__trip-link:hover { background: #c7985b10; }
   .library[data-view='detail'] { background: #fbf6ee; padding-inline: max(16px, env(safe-area-inset-left)) max(16px, env(safe-area-inset-right)); }
   .library[data-view='detail'] .library__content { max-width: 1200px; }

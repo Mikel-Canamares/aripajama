@@ -53,7 +53,7 @@ export function LibraryCatalog({ view, titleRef, onNavigate }: {
                 if (event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return
                 event.preventDefault()
                 onNavigate(`#biblioteca/viajes/${trip.id}`, `trip-${trip.id}`)
-              }}><span data-reveal="" aria-hidden="true">↗</span></a>}
+              }} />}
             </li>)}
           </ul>
         </section>
