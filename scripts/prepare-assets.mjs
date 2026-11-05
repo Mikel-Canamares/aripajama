@@ -38,11 +38,11 @@ await sharp(rgba, { raw: { width: info.width, height: info.height, channels: 4 }
   .webp({ lossless: true })
   .toFile(path.join(brand, 'aripajama.webp'))
 
-const video = path.join(root, 'videoPortada.mp4')
+const video = path.join(root, 'videoPortadaNuevo.mov')
 const ffmpeg = (args) => execFileSync('ffmpeg', ['-hide_banner', '-loglevel', 'error', '-y', ...args], { stdio: 'inherit' })
 
-// Preserve the video stream, remove unused audio, and move metadata to the front.
-ffmpeg(['-i', video, '-map', '0:v:0', '-c:v', 'copy', '-an', '-movflags', '+faststart', path.join(media, 'portada.mp4')])
+// Convert HEVC to browser-compatible H.264, without audio or source metadata.
+ffmpeg(['-i', video, '-map', '0:v:0', '-map_metadata', '-1', '-c:v', 'libx264', '-preset', 'slow', '-crf', '18', '-pix_fmt', 'yuv420p', '-an', '-movflags', '+faststart', path.join(media, 'portada.mp4')])
 ffmpeg(['-i', video, '-frames:v', '1', '-c:v', 'libwebp', '-quality', '85', path.join(media, 'portada-inicio.webp')])
 ffmpeg(['-sseof', '-0.05', '-i', video, '-frames:v', '1', '-c:v', 'libwebp', '-quality', '90', path.join(media, 'portada-final.webp')])
 

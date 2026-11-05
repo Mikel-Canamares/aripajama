@@ -1,24 +1,23 @@
 import { useEffect, useRef, useState } from 'react'
 import { Brand } from '../components/Brand'
-import { useReducedMotion } from '../hooks/useReducedMotion'
 
 // Time relative to the actual media clock, not time since page load.
-const REVEAL_BEFORE_END = 2.5
+const REVEAL_AT = 1
+const POSTER = '/media/portada-inicio.webp'
 
 export function IntroScreen({ onEnter }: { onEnter: () => void }) {
   const videoRef = useRef<HTMLVideoElement>(null)
-  const reducedMotion = useReducedMotion()
   const [revealed, setRevealed] = useState(false)
   const [videoFailed, setVideoFailed] = useState(false)
+  const [videoEnded, setVideoEnded] = useState(false)
   const [blocked, setBlocked] = useState(false)
   const [buttonReady, setButtonReady] = useState(false)
-  const showImmediately = reducedMotion || videoFailed
+  const showImmediately = videoFailed || videoEnded
   const showComposition = revealed || showImmediately
 
   const playVideo = () => {
     const video = videoRef.current
     if (!video) return
-    setBlocked(false)
     video.play().catch((error: unknown) => {
       if (!(error instanceof DOMException) || error.name !== 'AbortError') setBlocked(true)
     })
@@ -37,7 +36,7 @@ export function IntroScreen({ onEnter }: { onEnter: () => void }) {
 
   const syncReveal = () => {
     const video = videoRef.current
-    if (video && Number.isFinite(video.duration) && video.currentTime >= Math.max(0, video.duration - REVEAL_BEFORE_END)) {
+    if (video && video.currentTime >= REVEAL_AT) {
       setRevealed(true)
     }
   }
@@ -50,14 +49,14 @@ export function IntroScreen({ onEnter }: { onEnter: () => void }) {
       aria-label="Bienvenido a Aripajama"
     >
       <div className="intro__media" aria-hidden="true">
-        {showImmediately ? (
-          <img className="intro__film" src="/media/portada-final.webp" width="720" height="1280" alt="" />
+        {videoFailed ? (
+          <img className="intro__film" src={POSTER} width="1080" height="1920" alt="" />
         ) : (
           <video
             ref={videoRef}
             className="intro__film"
             src="/media/portada.mp4"
-            poster="/media/portada-inicio.webp"
+            poster={POSTER}
             autoPlay
             muted
             playsInline
@@ -66,7 +65,7 @@ export function IntroScreen({ onEnter }: { onEnter: () => void }) {
             tabIndex={-1}
             onTimeUpdate={syncReveal}
             onPlaying={() => setBlocked(false)}
-            onEnded={() => setRevealed(true)}
+            onEnded={() => setVideoEnded(true)}
             onError={() => { setVideoFailed(true); setBlocked(false) }}
           />
         )}
@@ -78,7 +77,7 @@ export function IntroScreen({ onEnter }: { onEnter: () => void }) {
           <span className="intro__headline-first reveal-item">El mundo,</span>
           <span className="intro__headline-second reveal-item">a tu manera.</span>
         </h1>
-        <p className="intro__tagline reveal-item">Viajes diseñados contigo.</p>
+        <p className="intro__tagline reveal-item">Viajes diseñados contigo</p>
         <div
           className="intro__action reveal-item"
           onAnimationEnd={(event) => {
@@ -90,7 +89,7 @@ export function IntroScreen({ onEnter }: { onEnter: () => void }) {
             onClick={onEnter}
             disabled={!(buttonReady || showImmediately)}
           >
-            <span>Subir a bordo</span>
+            <span>Comencemos</span>
             <svg className="button__arrow" viewBox="0 0 32 16" fill="none" aria-hidden="true">
               <path d="M1 8h28M23 1l7 7-7 7" />
             </svg>
@@ -104,7 +103,6 @@ export function IntroScreen({ onEnter }: { onEnter: () => void }) {
             <svg viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="m7 4 9 6-9 6V4Z" /></svg>
             Reproducir introducción
           </button>
-          <button className="text-button" onClick={() => setVideoFailed(true)}>Ir a la portada</button>
         </div>
       )}
     </main>

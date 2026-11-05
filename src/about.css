@@ -1,0 +1,81 @@
+@layer components {
+  .about {
+    --about-bronze: #b77728;
+    --about-column-gap: clamp(1rem, 3.4cqw, 2rem);
+    position: relative;
+    isolation: isolate;
+    overflow: clip;
+    background: #fcf9f8;
+    color: #100e0c;
+    padding-inline: env(safe-area-inset-left) env(safe-area-inset-right);
+  }
+  .about__content { position: relative; max-width: 1040px; margin-inline: auto; padding-top: env(safe-area-inset-top); container-type: inline-size; }
+  .about__header-art { position: absolute; top: 0; right: 0; width: 71.3%; height: auto; pointer-events: none; mix-blend-mode: multiply; }
+  .about__back { position: relative; display: inline-flex; align-items: center; gap: .4em; margin-left: 3.8%; min-width: 44px; min-height: 44px; padding: .25rem 0; border: 0; background: transparent; color: #4c160f; font: 400 clamp(1.125rem, 2.1cqw, 1.35rem)/1.2 var(--font-editorial); z-index: 1; }
+  .about__back span { font-family: Georgia, serif; }
+
+  .about__section { display: grid; grid-template-columns: clamp(2rem, 5.1cqw, 3rem) minmax(0, 1fr); column-gap: var(--about-column-gap); padding-inline: clamp(.75rem, 3.6cqw, 2.25rem); }
+  .about__section--ariana { margin-top: clamp(1rem, 1.9cqw, 1.5rem); }
+  .about__section + .about__section { margin-top: clamp(1rem, 1.5cqw, 1.5rem); }
+  .about__copy { min-width: 0; grid-column: 2; width: min(100%, 26rem); }
+  .about__copy h1, .about__copy h2 { margin: 0; color: #080706; font: 700 clamp(1.8rem, 3.5cqw, 2.2rem)/.94 var(--font-editorial); letter-spacing: -.025em; overflow-wrap: anywhere; }
+  .about__copy h1 { font-size: clamp(2rem, 4.1cqw, 2.5rem); line-height: .9; }
+  .about__copy h1:focus, .about__copy h2:focus { outline: none; }
+  .about__copy p { margin: 0; font: 400 clamp(1rem, 1.7cqw, 1.125rem)/1.12 'Times New Roman', Times, serif; overflow-wrap: anywhere; }
+  .about__copy p + p { margin-top: .3em; }
+  .about__number { position: relative; display: grid; place-items: center; align-self: start; aspect-ratio: 1; color: #17120e; font: 400 italic clamp(1.25rem, 2.7cqw, 1.7rem)/1 var(--font-editorial); background: url('/media/about/number-peach.webp') center / contain no-repeat; }
+  .about__number::after { content: ''; position: absolute; top: 4%; left: calc(100% + var(--about-column-gap) / 2); width: 1px; height: clamp(2rem, 4.9cqw, 3rem); background: #af7b3b; }
+  .about__section--photography .about__number { background-image: url('/media/about/number-blue.webp'); }
+  .about__rule { display: block; width: clamp(30px, 4cqw, 38px); height: 2px; margin-block: .5rem .4rem; background: var(--about-bronze); }
+
+  .about__portrait { position: relative; grid-column: 1 / -1; justify-self: center; width: min(78%, 28rem); aspect-ratio: 2.1; margin-top: .2rem; }
+  .about__paper { position: absolute; background: url('/media/about/watercolor.webp') center / 100% 100% no-repeat; }
+  .about__portrait > .about__paper { left: 0; top: 1%; width: 93%; height: 100%; }
+  .about__tape { position: absolute; top: 5%; left: 39%; width: 14%; height: 6%; background: linear-gradient(95deg, #c9a68399, #d7b99ac9 55%, #c9a68399); transform: rotate(-5deg); z-index: 2; }
+  .about__photo { position: absolute; background: #fff; border: clamp(3px, .6cqw, 6px) solid #fff; box-shadow: 0 2px 5px #49352326, inset 0 0 0 1px #eee8e2; }
+  .about__photo img { width: 100%; height: 100%; object-fit: cover; }
+  .about__photo--portrait { left: 27%; top: 14%; width: 40%; height: 58%; transform: rotate(-2deg); }
+  .about__cotton { position: absolute; left: 13%; top: 32%; width: 18.5%; height: auto; z-index: 3; mix-blend-mode: multiply; }
+  .about__sun { position: absolute; top: 0; left: 76%; width: 15%; color: var(--about-bronze); }
+  .about__note { position: absolute; right: 0; top: 43%; width: 48%; height: auto; z-index: 4; mix-blend-mode: multiply; }
+  .about__signature { display: flex; align-items: center; justify-content: center; gap: 0; grid-column: 1 / -1; justify-self: center; width: min(70%, 19rem); margin-top: .1rem; }
+  .about__signature > img:first-child { width: 56%; height: auto; }
+  .about__mountains { width: 44%; height: auto; }
+  .about__signature img { mix-blend-mode: multiply; }
+  .about__section + .about__section--photography { margin-top: .25rem; }
+
+  .about__collage { position: relative; grid-column: 1 / -1; justify-self: center; width: min(75%, 35.5rem); aspect-ratio: 2.6; margin-top: .25rem; }
+  .about__collage > .about__paper { top: 6%; left: 0; width: 92%; height: 94%; }
+  .about__photo--photography-mountain { left: 19%; top: 3%; width: 24%; aspect-ratio: 1.13; transform: rotate(-11deg); z-index: 2; }
+  .about__photo--photography-desert { left: 9%; top: 26%; width: 15%; aspect-ratio: .7; transform: rotate(-15deg); z-index: 3; }
+  .about__photo--photography-road { left: 24%; top: 54%; width: 15%; aspect-ratio: 1; transform: rotate(12deg); z-index: 3; }
+  .about__photo--photography-snow { left: 54%; top: 15%; width: 17%; aspect-ratio: .78; transform: rotate(20deg); z-index: 1; }
+  .about__photo--photography-ocean { left: 39%; top: 30%; width: 16%; aspect-ratio: .63; transform: rotate(9deg); z-index: 4; }
+  .about__photo--photography-river { left: 69%; top: 57%; width: 14%; aspect-ratio: .82; transform: rotate(-12deg); z-index: 3; }
+  .about__camera-note { position: absolute; width: 28%; right: 0; top: 0; height: auto; mix-blend-mode: multiply; z-index: 5; }
+  .about__collage--travel { width: min(72%, 32rem); aspect-ratio: 2.15; margin-top: .5rem; }
+  .about__collage--travel > .about__paper { top: 10%; width: 99%; height: 90%; }
+  .about__photo--travel-hike { left: 5%; top: 17%; width: 14%; aspect-ratio: .65; transform: rotate(-16deg); }
+  .about__photo--travel-museum { left: 22%; top: 3%; width: 22%; aspect-ratio: 1.05; transform: rotate(-11deg); z-index: 1; }
+  .about__photo--travel-aurora { left: 50%; top: 0; width: 14%; aspect-ratio: .65; transform: rotate(15deg); }
+  .about__photo--travel-colosseum { left: 73%; top: 27%; width: 18%; aspect-ratio: 1.1; transform: rotate(14deg); }
+  .about__photo--travel-selfie { left: 40%; top: 35%; width: 24%; aspect-ratio: 1.5; transform: rotate(6deg); z-index: 3; }
+  .about__photo--travel-temple { left: 17%; top: 52%; width: 13%; aspect-ratio: .6; transform: rotate(13deg); z-index: 4; }
+  .about__photo--travel-summit { left: 33%; top: 61%; width: 20%; aspect-ratio: 1.05; transform: rotate(-11deg); z-index: 4; }
+  .about__photo--travel-morocco { left: 61%; top: 54%; width: 13%; aspect-ratio: .65; transform: rotate(9deg); z-index: 2; }
+  .about__closing { position: relative; z-index: 1; margin-top: .75rem; padding: 0 5% max(2.75rem, env(safe-area-inset-bottom)); color: #45130f; text-align: center; }
+  .about__closing p { margin: 0; font: 400 italic clamp(1.6rem, 3.8cqw, 2.4rem)/1.05 var(--font-editorial); }
+  .about__heart { width: 18px; height: 18px; margin: 1rem auto 0; color: var(--about-bronze); }
+  .about__footer-ribbons { position: absolute; bottom: 0; left: 0; width: 100%; height: auto; pointer-events: none; mix-blend-mode: multiply; }
+}
+
+@layer responsive {
+  @container (max-width: 36rem) {
+    .about__portrait { width: min(95%, 28rem); margin-top: .75rem; }
+    .about__collage, .about__collage--travel { width: 100%; margin-top: 1rem; }
+    .about__section + .about__section { margin-top: 1.5rem; }
+    .about__section + .about__section--photography { margin-top: .5rem; }
+    .about__signature { width: min(90%, 19rem); }
+    .about__closing { margin-top: 1.5rem; padding-bottom: max(3rem, env(safe-area-inset-bottom)); }
+  }
+}

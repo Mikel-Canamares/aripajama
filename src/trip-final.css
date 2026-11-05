@@ -1,0 +1,34 @@
+@layer components {
+  .trip-final__header { max-width: 850px; margin-block: clamp(3rem, 9cqw, 6rem) 1.5rem; }
+  .trip-final__header h1 { margin: 0; font: 600 clamp(2.5rem, 7cqw, 5rem)/.98 var(--font-editorial); letter-spacing: -.04em; overflow-wrap: anywhere; }
+  .trip-final__intro { margin-bottom: 2rem; max-width: 32em; color: #8b6244; font: 400 clamp(1.4rem, 3.5cqw, 2.2rem)/1.2 var(--font-editorial); overflow-wrap: anywhere; }
+  .trip-final__fields { display: grid; gap: 1rem; margin-block: 2.5rem; }
+  .trip-final__field { border: 1px solid #e9d6c5; border-radius: 18px; background: #fffaf5c9; min-width: 0; }
+  .trip-final__field summary { display: grid; grid-template-columns: clamp(52px, 14cqw, 106px) minmax(0,1fr) 24px; align-items: center; gap: clamp(.7rem, 3cqw, 2rem); padding: 1rem; min-height: 90px; list-style: none; cursor: pointer; }
+  .trip-final__field summary::-webkit-details-marker { display: none; }
+  .trip-final__field summary > img { width: 100%; height: auto; border-radius: 50%; mix-blend-mode: multiply; }
+  .trip-final__field summary > span:last-child { color: #865020; font: 2.5rem/1 Georgia,serif; }
+  .trip-final__field[open] summary > span:last-child { rotate: 90deg; }
+  .trip-final__field-title { display: block; font: 600 clamp(1.4rem, 3.7cqw, 2.2rem)/1.05 var(--font-editorial); letter-spacing: -.03em; overflow-wrap: anywhere; }
+  .trip-final__field-hint { display: block; margin-top: .4rem; color: #8b6244; font: 400 clamp(1.15rem, 2.8cqw, 1.7rem)/1.15 var(--font-editorial); overflow-wrap: anywhere; }
+  .trip-final__panel { padding: 0 clamp(1rem, 4cqw, 2rem) 1.5rem; }
+  .trip-final__label { display: block; margin-bottom: .65rem; font: 600 1.3rem/1.2 var(--font-editorial); }
+  .trip-final input:not([type='checkbox']), .trip-final select, .trip-final textarea { width: 100%; min-width: 0; min-height: 48px; padding: .65rem .8rem; border: 1px solid #b89478; border-radius: 9px; background: #fff; color: #25374a; font: 400 1rem/1.5 'Manrope',sans-serif; }
+  .trip-final input:disabled { background: #eee8df; }
+  .trip-final__check { display: flex; gap: .7rem; align-items: flex-start; min-height: 44px; padding-block: .7rem; font: 400 1rem/1.5 'Manrope',sans-serif; overflow-wrap: anywhere; }
+  .trip-final__check input { flex: 0 0 22px; width: 22px; height: 22px; margin: .1rem 0 0; accent-color: #a44a25; }
+  .trip-final__error { color: #973b20; min-height: 1.5em; margin-block: 1rem; font-size: .95rem; overflow-wrap: anywhere; }
+  .trip-final__contact { border: 0; min-width: 0; padding: 0; margin: 0; max-width: 720px; }
+  .trip-final__contact > p:not(.trip-final__error) { margin-block: 1rem; font: 400 1rem/1.5 'Manrope',sans-serif; color: #4b5159; }
+  .trip-final__verification { min-height: 44px; margin-block: 1rem; max-width: 100%; }
+  .trip-final__verification p { font: 400 .85rem/1.5 'Manrope',sans-serif; color: #4b5159; overflow-wrap: anywhere; }
+  .trip-final button:disabled { cursor: default; opacity: .65; }
+  .trip-final__retry { max-width: 720px; }
+}
+@layer responsive {
+  @container (max-width: 16rem) {
+    .trip-final__field summary { grid-template-columns: 48px minmax(0,1fr) 16px; padding: .65rem; gap: .5rem; }
+    .trip-final__field-title { font-size: 1.25rem; }
+    .trip-final__field-hint { font-size: 1.1rem; }
+  }
+}
