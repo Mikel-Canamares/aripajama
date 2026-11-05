@@ -7,7 +7,9 @@ import { renderProfileEmail } from '../email-template.ts'
 for (const id of PROFILE_IDS) test(`email ${id}: textos definitivos, imágenes HTTPS y alternativa de texto`, () => {
   const result = renderProfileEmail(id,'https://aripajama.example')
   assert.ok(result.html.includes(PROFILE_TITLES[id])); assert.ok(result.text.includes(EMAIL_PROFILES[id].description))
-  assert.ok(result.html.includes('24–48h')); assert.ok(result.text.includes('carpeta de spam'))
+  assert.ok(!result.html.includes('24–48h')); assert.ok(result.text.includes('carpeta de spam'))
+  assert.ok(result.html.includes('40 €')); assert.ok(result.text.includes('La reserva requiere pago.'))
+  assert.ok(result.text.includes('La reserva online estará disponible próximamente.'))
   assert.ok(result.html.includes('<!--[if mso]>'))
   for (const match of result.html.matchAll(/<img[^>]+src="([^"]+)"/g)) assert.ok(match[1].startsWith('https://aripajama.example/media/email/'))
   assert.ok(!/<script|display:\s*grid|display:\s*flex|data:image|puntuaciones|resultadoOrientativo/i.test(result.html))

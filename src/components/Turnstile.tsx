@@ -34,17 +34,22 @@ export function Turnstile({ generation, onToken }: { generation: number; onToken
     const timeout = setTimeout(() => { abort.abort(); if (!cancelled) setMessage('No se ha podido preparar la verificación. Vuelve a intentarlo.') }, 15000)
     void fetch('/api/trip-config', { signal: abort.signal }).then(async response => {
       if (!response.ok) throw new Error()
-      const config = await response.json() as { localVerification: boolean; turnstileSiteKey: string | null }
+      const config = await response.json() as { localVerification: boolean; turnstileSiteKey: string | null; phaseOneTest?: boolean }
       if (cancelled) return
       if (config.localVerification) { callback.current('local-test-token'); setMessage('Verificación preparada.'); return }
+      if (config.phaseOneTest) {
+        callback.current('XXXX.DUMMY.TOKEN.XXXX')
+        setMessage('Verificación de prueba preparada. Solo se permite el correo autorizado; no hay reservas ni cobros reales.')
+        return
+      }
       if (!config.turnstileSiteKey) { setMessage('La verificación aún no está disponible. Tus datos siguen guardados en esta pestaña.'); return }
       await loadTurnstile()
       if (cancelled || !container.current || !window.turnstile) return
       setMessage('Completa la verificación para continuar.')
       widget = window.turnstile.render(container.current, { sitekey: config.turnstileSiteKey, action: 'trip_request', size: container.current.clientWidth < 300 ? 'compact' : 'flexible',
-        callback: (token: string) => { callback.current(token); setMessage('Verificación completada.') },
+        callback: (token: string) => { callback.current(token); setMessage(config.phaseOneTest ? 'Verificación de prueba completada. No se realizan reservas ni cobros reales.' : 'Verificación completada.') },
         'expired-callback': () => { callback.current(''); setMessage('La verificación ha caducado. Vuelve a completarla.') },
-        'error-callback': () => { callback.current(''); setMessage('No se ha podido completar la verificación. Vuelve a intentarlo.') },
+        'error-callback': (code?: string) => { callback.current(''); setMessage(`No se ha podido completar la verificación${code && /^\d{6}$/.test(code) ? ` (Cloudflare ${code})` : ''}. Vuelve a intentarlo.`) },
       })
     }).catch(() => { if (!cancelled) setMessage('No se ha podido preparar la verificación. Vuelve a intentarlo.') }).finally(() => clearTimeout(timeout))
     return () => { cancelled = true; clearTimeout(timeout); abort.abort(); if (widget) window.turnstile?.remove(widget) }

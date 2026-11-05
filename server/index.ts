@@ -2,6 +2,10 @@ import { normalizeTripDetails, validEmail } from '../src/data/trip-request.ts'
 import { ALGORITHM_VERSION, calcularPerfil, InvalidAnswers, mapCurrentAnswers } from './profiles.ts'
 import { deliverProfile, readRequest, receipt } from './delivery.ts'
 import { ApiError, defaultIo, digest, localDevelopment, type Env, type Io } from './platform.ts'
+import { newBookingReference } from './booking-link.ts'
+import { processSessionNotifications } from './session-delivery.ts'
+import { phaseOneTestMode, restrictTestOwner, TEST_SITE_KEY, TEST_SECRET_KEY } from './test-mode.ts'
+import { sessionTestPage } from './session-test.ts'
 
 const ID = /^[a-zA-Z0-9_-]{20,80}$/
 const TOKEN = /^[a-zA-Z0-9_-]{40,128}$/
@@ -38,15 +42,17 @@ async function verifyTurnstile(request: Request, env: Env, token: unknown, io: I
     if (token !== 'local-test-token') throw new ApiError(403, 'VERIFICATION_FAILED')
     return
   }
-  if (!env.TURNSTILE_SECRET_KEY || !env.TURNSTILE_SITE_KEY || (env.ENVIRONMENT === 'production' && /^[123]x0+/.test(env.TURNSTILE_SITE_KEY))) throw new ApiError(503, 'VERIFICATION_NOT_CONFIGURED')
+  const testing = phaseOneTestMode(env)
+  if (!testing && (!env.TURNSTILE_SECRET_KEY || !env.TURNSTILE_SITE_KEY || (env.ENVIRONMENT === 'production' && /^[123]x0+/.test(env.TURNSTILE_SITE_KEY)))) throw new ApiError(503, 'VERIFICATION_NOT_CONFIGURED')
   if (typeof token !== 'string' || token.length < 1 || token.length > 2048) throw new ApiError(403, 'VERIFICATION_REQUIRED')
+  if (testing && token !== 'XXXX.DUMMY.TOKEN.XXXX') throw new ApiError(403, 'VERIFICATION_FAILED')
   let valid = false
   try {
     const response = await io.fetch('https://challenges.cloudflare.com/turnstile/v0/siteverify', {
-      method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ secret: env.TURNSTILE_SECRET_KEY, response: token }), signal: AbortSignal.timeout(10000),
+      method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ secret: testing ? TEST_SECRET_KEY : env.TURNSTILE_SECRET_KEY, response: token }), signal: AbortSignal.timeout(10000),
     })
     const result = await response.json() as { success?: boolean; hostname?: string; action?: string }
-    valid = response.ok && result.success === true && result.hostname === new URL(env.PUBLIC_SITE_URL || request.url).hostname && result.action === 'trip_request'
+    valid = response.ok && result.success === true && (testing || (result.hostname === new URL(env.PUBLIC_SITE_URL || request.url).hostname && result.action === 'trip_request'))
   } catch { throw new ApiError(503, 'VERIFICATION_UNAVAILABLE') }
   if (!valid) throw new ApiError(403, 'VERIFICATION_FAILED')
 }
@@ -71,13 +77,20 @@ export function createHandler(io: Io = defaultIo) {
     const url = new URL(request.url)
     if (!url.pathname.startsWith('/api/')) return env.ASSETS ? env.ASSETS.fetch(request) : new Response('Not found', { status: 404 })
     try {
-      if (url.pathname === '/api/trip-config' && request.method === 'GET') return json({ turnstileSiteKey: env.TURNSTILE_SITE_KEY || null, localVerification: env.TURNSTILE_MODE === 'mock' && localDevelopment(request, env) })
+      const testMode = phaseOneTestMode(env)
+      if (url.pathname === '/api/trip-config' && request.method === 'GET') return json({ turnstileSiteKey: testMode ? TEST_SITE_KEY : env.TURNSTILE_SITE_KEY || null, localVerification: env.TURNSTILE_MODE === 'mock' && localDevelopment(request, env), ...(testMode ? { phaseOneTest: true } : {}) })
+      const testSession = url.pathname.match(/^\/api\/session-test\/([a-f0-9]{64})$/)
+      if (testSession) {
+        if (request.method === 'POST') { checkOrigin(request, env); await limit(request, env) }
+        return await sessionTestPage(request, env, testSession[1], io)
+      }
       const match = url.pathname.match(/^\/api\/trip-requests\/([a-zA-Z0-9_-]{20,80})(\/retry-email)?$/)
       if (match && !match[2] && request.method === 'GET') return json(receipt(await authorize(request, env, match[1]), io.now()))
       if (match?.[2] && request.method === 'POST') {
         checkOrigin(request, env)
         await limit(request, env)
         const row = await authorize(request, env, match[1])
+        restrictTestOwner(env, row.email)
         if (row.email_status === 'accepted') return json(receipt(row, io.now()))
         const data = await body(request)
         await verifyTurnstile(request, env, data.turnstileToken, io)
@@ -93,6 +106,7 @@ export function createHandler(io: Io = defaultIo) {
       if (typeof data.requestId !== 'string' || !ID.test(data.requestId) || typeof data.retryToken !== 'string' || !TOKEN.test(data.retryToken) || data.consent !== true) throw new ApiError(422, 'INVALID_REQUEST')
       if (typeof data.email !== 'string' || !validEmail(data.email.trim())) throw new ApiError(422, 'INVALID_EMAIL')
       const email = data.email.trim().toLowerCase()
+      restrictTestOwner(env, email)
       const answers = mapCurrentAnswers(data.answers)
       const details = normalizeTripDetails(data.details)
       const hash = await digest(JSON.stringify({ answers, details, email, consent: true }))
@@ -106,9 +120,9 @@ export function createHandler(io: Io = defaultIo) {
       const profile = calcularPerfil(answers)
       const now = io.now()
       const inserted = await env.DB.prepare(`INSERT OR IGNORE INTO trip_requests
-        (id,request_hash,retry_token_hash,email,answers_json,details_json,profile_json,algorithm_version,created_at,updated_at,email_key)
-        SELECT ?,?,?,?,?,?,?,?,?,?,? WHERE (SELECT COUNT(*) FROM trip_requests WHERE email = ? AND created_at > ?) < 5`)
-        .bind(data.requestId, hash, tokenHash, email, JSON.stringify(answers), JSON.stringify(details), JSON.stringify(profile), ALGORITHM_VERSION, now, now, `profile/${data.requestId}/v1`, email, now - 3600000).run()
+        (id,request_hash,retry_token_hash,email,answers_json,details_json,profile_json,algorithm_version,created_at,updated_at,email_key,booking_reference)
+        SELECT ?,?,?,?,?,?,?,?,?,?,?,? WHERE (SELECT COUNT(*) FROM trip_requests WHERE email = ? AND created_at > ?) < 5`)
+        .bind(data.requestId, hash, tokenHash, email, JSON.stringify(answers), JSON.stringify(details), JSON.stringify(profile), ALGORITHM_VERSION, now, now, `profile/${data.requestId}/v1`, newBookingReference(), email, now - 3600000).run()
       if (!inserted.meta.changes) {
         const duplicate = await readRequest(env, data.requestId)
         if (!duplicate) throw new ApiError(429, 'TOO_MANY_REQUESTS')
@@ -126,4 +140,9 @@ export function createHandler(io: Io = defaultIo) {
     }
   }
 }
-export default { fetch: createHandler() }
+export default {
+  fetch: createHandler(),
+  scheduled: (_event: unknown, env: Env, context: { waitUntil(promise: Promise<unknown>): void }) => {
+    context.waitUntil(processSessionNotifications(env))
+  },
+}

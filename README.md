@@ -156,6 +156,8 @@ npm run test:frontend -- tests/about.spec.ts tests/journey.spec.ts tests/create-
 
 #### Perfiles y registro de solicitudes
 
+La [fase 1 de primera sesión](docs/first-session.md) incorpora la referencia opaca, reservas/pagos normalizados y aviso interno recuperable con formulario completo, solo tras cita confirmada y pago verificado de 40 €. El dominio de producción admite ahora la prueba personal completa, con enlace firmado y correos restringidos al titular; el enlace real de Cal.com y los cobros siguen reservados a la fase 2. `npm run sessions:simulate` demuestra el flujo sin envíos ni cobros reales.
+
 El final conecta detalles prácticos y email con una API de **Cloudflare Workers + D1**. El servidor valida las respuestas y calcula los seis perfiles del PDF v1.0.0; guarda el resultado privado y prepara un email HTML/texto con Resend. La web distingue solicitud guardada, correo aceptado para entrega, fallo y configuración pendiente, y permite reintentar con idempotencia y verificación Turnstile. No expone puntuaciones al navegador.
 
 La [guía de perfiles viajeros](docs/traveler-profiles.md) documenta archivos, recursos, estados, pruebas, variables y preparación de Cloudflare/Resend. Para pruebas locales se utilizan `npm run db:local`, `npm run dev:api` (envío desactivado) o `npm run dev:api:mock` (simulado). `npm run emails:preview` abre los seis correos únicamente en `127.0.0.1:4321`; no publica una nueva página. La activación de envíos reales y el despliegue están pendientes de configuración y autorización.

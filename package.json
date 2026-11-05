@@ -16,6 +16,7 @@
     "test:server": "node --experimental-strip-types --test server/tests/*.test.ts",
     "emails:preview": "node --experimental-strip-types scripts/preview-emails.ts",
     "emails:generate": "node --experimental-strip-types scripts/preview-emails.ts --generate",
+    "sessions:simulate": "node --experimental-strip-types scripts/simulate-first-session.ts",
     "emails:compare": "node --experimental-strip-types scripts/compare-emails.ts",
     "test:emails": "playwright test --config playwright.emails.config.ts",
     "assets:profiles": "node scripts/prepare-profile-assets.mjs",

@@ -3,8 +3,12 @@ export interface DbStatement {
   bind(...values: unknown[]): DbStatement
   first<T = Record<string, unknown>>(): Promise<T | null>
   run(): Promise<{ meta: { changes: number } }>
+  all<T = Record<string, unknown>>(): Promise<{ results: T[] }>
 }
-export interface Database { prepare(sql: string): DbStatement }
+export interface Database {
+  prepare(sql: string): DbStatement
+  batch(statements: DbStatement[]): Promise<{ meta: { changes: number } }[]>
+}
 export interface Env {
   DB: Database
   ASSETS?: { fetch(request: Request): Promise<Response> }
@@ -21,6 +25,12 @@ export interface Env {
   TURNSTILE_SITE_KEY?: string
   TURNSTILE_SECRET_KEY?: string
   WHATSAPP_URL?: string
+  BOOKING_ENABLED?: string
+  CAL_BOOKING_URL?: string
+  ARIANA_EMAIL?: string
+  BOOKING_NOTIFICATIONS_ENABLED?: string
+  PHASE1_TEST_MODE?: string
+  SESSION_TEST_SIGNING_KEY?: string
 }
 export type Io = { fetch: typeof fetch; now: () => number }
 export const defaultIo: Io = { fetch: (...args) => fetch(...args), now: () => Date.now() }

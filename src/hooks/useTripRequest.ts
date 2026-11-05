@@ -17,6 +17,7 @@ async function api(url: string, options: RequestInit): Promise<TripReceipt> {
   } finally { clearTimeout(timer) }
 }
 function message(code: string) {
+  if (code === 'TEST_RECIPIENT_NOT_ALLOWED') return 'Durante las pruebas solo se permite el correo autorizado.'
   if (code === 'TOO_MANY_REQUESTS') return 'Se han realizado varios intentos. Espera un momento antes de volver a intentarlo.'
   if (code.startsWith('VERIFICATION')) return 'No se ha podido completar la verificación. Vuelve a intentarlo; tus datos siguen en esta pestaña.'
   if (code === 'REQUEST_CONFLICT') return 'Estos datos no coinciden con el intento anterior. Revisa el formulario antes de continuar.'

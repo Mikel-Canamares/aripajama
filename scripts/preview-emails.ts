@@ -3,6 +3,7 @@ import { readFile, mkdir, writeFile } from 'node:fs/promises'
 import { resolve, extname } from 'node:path'
 import { PROFILE_IDS } from '../server/profiles.ts'
 import { renderProfileEmail } from '../server/email-template.ts'
+import { previewBookingLink, sessionPreview } from './email-fixtures.ts'
 
 // Development-only utility, outside public/ and dist/. It cannot send messages.
 const output = resolve('.email-preview')
@@ -14,20 +15,27 @@ for (const id of PROFILE_IDS) {
   const email = renderProfileEmail(id, 'https://preview.example.test')
   await writeFile(`${output}/${id}.html`, email.html)
   await writeFile(`${output}/${id}.txt`, email.text)
+  const enabled = renderProfileEmail(id, 'https://preview.example.test', undefined, previewBookingLink)
+  await writeFile(`${output}/${id}-booking.html`, enabled.html)
+  await writeFile(`${output}/${id}-booking.txt`, enabled.text)
 }
+const session = sessionPreview()
+await writeFile(`${output}/paid-session.html`, session.html)
+await writeFile(`${output}/paid-session.txt`, session.text)
+const previewIds = [...PROFILE_IDS, ...PROFILE_IDS.map(id => `${id}-booking`), 'paid-session']
 if (process.argv.includes('--generate')) {
-  console.log(`Seis emails ficticios (HTML + texto) en ${output}`)
+  console.log(`Perfiles con/sin enlace y aviso pagado ficticios (HTML + texto) en ${output}`)
 } else {
   const server = createServer(async (request, response) => {
     const path = new URL(request.url || '/', `http://127.0.0.1:${port}`).pathname
     if (path === '/') {
       response.setHeader('Content-Type', 'text/html; charset=utf-8')
-      response.end(`<html lang="es"><meta charset="utf-8"><title>Emails · desarrollo</title><h1>Previsualización local · sin envío</h1><ul>${PROFILE_IDS.map(id => `<li><a href="/${id}">${id}</a> · <a href="/${id}.txt">texto plano</a></li>`).join('')}</ul></html>`)
+      response.end(`<html lang="es"><meta charset="utf-8"><title>Emails · desarrollo</title><h1>Previsualización local · sin envío</h1><p>Los enlaces de reserva son ficticios y no deben utilizarse para reservar.</p><ul>${previewIds.map(id => `<li><a href="/${id}">${id}</a> · <a href="/${id}.txt">texto plano</a></li>`).join('')}</ul></html>`)
       return
     }
     const profile = path.slice(1).replace(/\.txt$/, '')
     try {
-      if (PROFILE_IDS.includes(profile as typeof PROFILE_IDS[number])) {
+      if (previewIds.includes(profile)) {
         const plain = path.endsWith('.txt')
         response.setHeader('Content-Type', plain ? 'text/plain; charset=utf-8' : 'text/html; charset=utf-8')
         const file = await readFile(`${output}/${profile}.${plain ? 'txt' : 'html'}`, 'utf8')

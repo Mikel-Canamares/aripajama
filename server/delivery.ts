@@ -2,6 +2,8 @@ import { validEmail, type EmailStatus, type TripReceipt } from '../src/data/trip
 import { renderProfileEmail, EMAIL_TEMPLATE_VERSION } from './email-template.ts'
 import type { ProfileId } from './profiles.ts'
 import { localDevelopment, type Env, type Io } from './platform.ts'
+import { bookingLink } from './booking-link.ts'
+import { phaseOneTestMode, restrictTestOwner, sessionTestLink } from './test-mode.ts'
 
 export type RequestRow = {
   id: string; request_hash: string; retry_token_hash: string; email: string
@@ -9,8 +11,10 @@ export type RequestRow = {
   email_payload_json: string | null; first_attempt_at: number | null
   lease_until: number | null; lease_token: string | null; next_retry_at: number | null
   resend_id: string | null; email_error_code: string | null
+  booking_reference: string | null; answers_json: string; details_json: string
+  created_at: number
 }
-type EmailPayload = { from: string; to: string[]; reply_to: string; subject: string; html: string; text: string; tags: { name: string; value: string }[] }
+export type EmailPayload = { from: string; to: string[]; reply_to: string; subject: string; html: string; text: string; tags: { name: string; value: string }[] }
 export const readRequest = (env: Env, id: string) => env.DB.prepare('SELECT * FROM trip_requests WHERE id = ?').bind(id).first<RequestRow>()
 const RETRY_WINDOW = 23 * 60 * 60 * 1000
 export function receipt(row: RequestRow, now: number): TripReceipt {
@@ -20,18 +24,20 @@ export function receipt(row: RequestRow, now: number): TripReceipt {
     ...(row.email_error_code ? { errorCode: row.email_error_code } : {}), ...(retryAfterSeconds > 0 ? { retryAfterSeconds } : {}) }
 }
 
-function preparePayload(row: RequestRow, env: Env): EmailPayload | null {
+async function preparePayload(row: RequestRow, env: Env): Promise<EmailPayload | null> {
   if (!env.RESEND_API_KEY || !env.EMAIL_FROM || !env.REPLY_TO || !env.PUBLIC_SITE_URL || /[\r\n]/.test(env.EMAIL_FROM + env.REPLY_TO)) return null
   const from = env.EMAIL_FROM.match(/^(?:[^<>]+<([^<>]+)>|([^<>\s]+))$/)
   if (!validEmail(env.REPLY_TO.trim()) || !validEmail((from?.[1] || from?.[2] || '').trim())) return null
   try {
     const profile = (JSON.parse(row.profile_json) as { principal: ProfileId }).principal
-    const email = renderProfileEmail(profile, env.PUBLIC_SITE_URL, env.WHATSAPP_URL)
+    restrictTestOwner(env, row.email)
+    const testLink = await sessionTestLink(env, row.booking_reference, row.created_at)
+    const email = renderProfileEmail(profile, env.PUBLIC_SITE_URL, env.WHATSAPP_URL, testLink || bookingLink(env, row.booking_reference))
     return { from: env.EMAIL_FROM, to: [row.email], reply_to: env.REPLY_TO, ...email, tags: [{ name: 'trip_request', value: row.id }, { name: 'template_version', value: EMAIL_TEMPLATE_VERSION }] }
   } catch { return null }
 }
 
-function testRecipientsAllowed(payload: EmailPayload, env: Env): boolean {
+export function testRecipientsAllowed(payload: EmailPayload, env: Pick<Env, 'EMAIL_TEST_RECIPIENTS'>): boolean {
   const allowed = new Set((env.EMAIL_TEST_RECIPIENTS || '').split(',')
     .map(email => email.trim().toLowerCase()).filter(validEmail))
   return Array.isArray(payload.to) && payload.to.length > 0 && payload.to.every(email =>
@@ -47,9 +53,10 @@ export async function deliverProfile(request: Request, env: Env, id: string, io:
     return (await readRequest(env, id))!
   }
   const mode = env.EMAIL_MODE || 'disabled'
+  if (phaseOneTestMode(env)) restrictTestOwner(env, row.email)
   const mock = mode === 'mock' && localDevelopment(request, env)
   const real = mode === 'resend' && env.ENVIRONMENT === 'production' && !localDevelopment(request, { ...env, ENVIRONMENT: 'development' })
-  const payload = row.email_payload_json ? JSON.parse(row.email_payload_json) as EmailPayload : preparePayload(row, mock ? {
+  const payload = row.email_payload_json ? JSON.parse(row.email_payload_json) as EmailPayload : await preparePayload(row, mock ? {
     ...env, RESEND_API_KEY: 'local-mock-not-a-key', EMAIL_FROM: 'Aripajama <preview@example.test>', REPLY_TO: 'preview@example.test', PUBLIC_SITE_URL: 'https://preview.example.test',
   } : env)
   if ((!mock && !real) || !payload || (real && !env.RESEND_API_KEY)) {

@@ -11,8 +11,8 @@ export const EMAIL_PROFILES: Record<ProfileId, { title: string; description: str
 }
 export const EMAIL_STEPS = [
   { title: 'Confirmación', text: 'Has completado tu perfil viajero.' },
-  { title: 'Análisis', text: 'Reviso tus respuestas y preparo una propuesta personalizada.' },
-  { title: 'Propuesta y presupuesto', text: 'En un plazo de 24–48h recibirás una propuesta con la cual podremos comenzar a trabajar y el presupuesto total de todo el proceso.' },
+  { title: 'Primera sesión · 40 €', text: 'El siguiente paso es reservar tu primera sesión. La reserva requiere el pago de 40 €.' },
+  { title: 'Diseñamos contigo', text: 'En la sesión revisaremos tus respuestas y las ideas para tu viaje antes de preparar una propuesta personalizada.' },
   { title: 'Hablemos', text: 'Si tienes cualquier duda, podremos resolverla por WhatsApp antes de continuar.' },
 ]
 export const EMAIL_INTRO = 'Gracias por completar el cuestionario y compartir tu forma de viajar. Con tus respuestas he podido conocer mejor qué te inspira, qué disfrutas y cómo te gusta descubrir el mundo.'

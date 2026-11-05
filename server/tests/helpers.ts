@@ -1,5 +1,5 @@
 import { DatabaseSync } from 'node:sqlite'
-import { readFileSync } from 'node:fs'
+import { readFileSync, readdirSync } from 'node:fs'
 import type { Database, DbStatement, Env, Io } from '../platform.ts'
 import { createHandler } from '../index.ts'
 
@@ -9,18 +9,36 @@ export const details = () => ({ destination:'Japón', destinationUnknown:false, 
 export class SqliteD1 implements Database {
   db = new DatabaseSync(':memory:')
   failAcceptedWrite = false
-  constructor() { this.db.exec(readFileSync(new URL('../../migrations/0001_trip_requests.sql', import.meta.url), 'utf8')) }
+  failBatchAt: number | null = null
+  private executions = new WeakMap<DbStatement, () => { meta: { changes: number } }>()
+  constructor(migrations = readdirSync(new URL('../../migrations/', import.meta.url)).filter(file => /^\d+.*\.sql$/.test(file)).sort()) {
+    this.db.exec('PRAGMA foreign_keys = ON')
+    for (const file of migrations) this.db.exec(readFileSync(new URL(`../../migrations/${file}`, import.meta.url), 'utf8'))
+  }
+  async batch(statements: DbStatement[]) {
+    this.db.exec('BEGIN')
+    try {
+      const results = statements.map((statement, index) => {
+        if (this.failBatchAt === index) { this.failBatchAt = null; throw new Error('Simulated atomic batch failure') }
+        return this.executions.get(statement)!()
+      })
+      this.db.exec('COMMIT'); return results
+    } catch (error) { this.db.exec('ROLLBACK'); throw error }
+  }
   prepare(sql: string): DbStatement {
     let values: unknown[] = []
+    const execute = () => {
+      if (this.failAcceptedWrite && sql.includes('resend_id =') && values[0] === 'accepted') { this.failAcceptedWrite = false; throw new Error('Simulated D1 write failure after provider acceptance') }
+      const result = this.db.prepare(sql).run(...values as never[])
+      return { meta: { changes: Number(result.changes) } }
+    }
     const wrapper: DbStatement = {
       bind: (...parameters) => { values = parameters; return wrapper },
       first: async <T>() => (this.db.prepare(sql).get(...values as never[]) as T | undefined) || null,
-      run: async () => {
-        if (this.failAcceptedWrite && sql.includes('resend_id =') && values[0] === 'accepted') { this.failAcceptedWrite = false; throw new Error('Simulated D1 write failure after provider acceptance') }
-        const result = this.db.prepare(sql).run(...values as never[])
-        return { meta: { changes: Number(result.changes) } }
-      },
+      all: async <T>() => ({ results: this.db.prepare(sql).all(...values as never[]) as T[] }),
+      run: async () => execute(),
     }
+    this.executions.set(wrapper, execute)
     return wrapper
   }
 }

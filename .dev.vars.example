@@ -1,4 +1,5 @@
-# Local development only. No real messages are sent from localhost.
+# Local web development never sends real messages.
+# Complete personal reception tests use the production Worker and its own secrets.
 ENVIRONMENT=development
 EMAIL_MODE=disabled
 EMAIL_TEST_RESTRICTED=true
@@ -7,9 +8,14 @@ TURNSTILE_MODE=mock
 # For simulated email previews only, set EMAIL_MODE=mock.
 # Set production values through Cloudflare variables/secrets, not in this file.
 RESEND_API_KEY=
-EMAIL_FROM=
-REPLY_TO=
+EMAIL_FROM=Aripajama <perfil@notificaciones.aripajama.com>
+REPLY_TO=hola@aripajama.com
 PUBLIC_SITE_URL=
 TURNSTILE_SITE_KEY=
 TURNSTILE_SECRET_KEY=
 WHATSAPP_URL=
+# Local automated-development defaults; personal tests use the production Worker.
+BOOKING_ENABLED=false
+CAL_BOOKING_URL=
+BOOKING_NOTIFICATIONS_ENABLED=false
+ARIANA_EMAIL=mikel.canamares@gmail.com

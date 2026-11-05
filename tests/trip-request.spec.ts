@@ -2,6 +2,25 @@ import { expect, test } from '@playwright/test'
 import { DRAFT_KEY } from '../src/data/questionnaire'
 import { emptyTripDetails, enterEmail, filledDetails, finishUnknownDetails, mockTripApi, seedFinalDraft } from './trip-request-helpers'
 
+test('prueba personal de producción prepara verificación sin depender del widget externo', async ({ page }) => {
+  const state = await mockTripApi(page)
+  let externalWidgetRequests = 0
+  await page.route('**/api/trip-config', route => route.fulfill({ json: {
+    turnstileSiteKey: '1x00000000000000000000AA', localVerification: false, phaseOneTest: true,
+  } }))
+  await page.route(url => url.hostname === 'challenges.cloudflare.com', route => { externalWidgetRequests++; return route.abort() })
+  await seedFinalDraft(page)
+  await page.emulateMedia({ reducedMotion: 'reduce' })
+  await page.goto('/#crear-mi-viaje/cuestionario/email')
+  await expect(page.getByRole('status')).toContainText('Verificación de prueba preparada.')
+  await page.locator('#trip-email').fill('mikel.canamares@gmail.com')
+  await page.locator('#trip-consent').check()
+  await page.locator('#trip-email-submit').click()
+  await expect(page.locator('.trip-final h1')).toHaveText('Tu perfil está en camino.')
+  expect(externalWidgetRequests).toBe(0)
+  expect(state.posts[0].turnstileToken).toBe('XXXX.DUMMY.TOKEN.XXXX')
+})
+
 test('detalles prácticos obligatorios, alternativas por definir y email validado', async ({ page }) => {
   const state = await mockTripApi(page)
   await seedFinalDraft(page,{ details:emptyTripDetails() })

@@ -11,11 +11,16 @@
   "EMAIL_MODE": "resend",
   "EMAIL_TEST_RESTRICTED": "true",
   "EMAIL_TEST_RECIPIENTS": "mikel.canamares@gmail.com",
+  "ARIANA_EMAIL": "mikel.canamares@gmail.com",
   "TURNSTILE_MODE": "live",
   "TURNSTILE_SITE_KEY": "0x4AAAAAAFmm_QaRKMt7cbNY",
   "EMAIL_FROM": "Aripajama <perfil@notificaciones.aripajama.com>",
   "REPLY_TO": "hola@aripajama.com",
-  "PUBLIC_SITE_URL": "https://aripajama.com"
+  "PUBLIC_SITE_URL": "https://aripajama.com",
+  "BOOKING_ENABLED": "false",
+  "BOOKING_NOTIFICATIONS_ENABLED": "true",
+  "PHASE1_TEST_MODE": "true"
 },
+  "triggers": { "crons": ["*/5 * * * *"] },
   "observability": { "enabled": false }
 }
