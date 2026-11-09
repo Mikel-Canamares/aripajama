@@ -1,3 +1,225 @@
+## Cantabria · Incorporar la lámina de ruta indicada · 09/11/2026
+
+- [x] Revisar los recursos de Cantabria y el formato de ruta de los otros viajes.
+- [x] Incorporar la lámina indicada, generar el mapa optimizado y conectar el visor compartido.
+- [x] Actualizar las expectativas y documentación vigentes, verificar y completar Review.
+
+### Review
+
+- **Resumen de cambios:** `scripts/trip-asset-manifest.mjs` incorpora `BEDEDD88…`, la lámina indicada por el usuario, y define el recorte del mapa. Generados `public/media/trips/cantabria/ruta.webp`, el original `originals/ruta.png` y su registro en `src/data/trip-assets.ts`. `src/data/library-trip-details.ts` utiliza el formato compartido de mapa ampliable; Cantabria dispone de cuatro originales y abre «La ruta». Actualizadas las expectativas existentes y la documentación vigente.
+- **Verificación:** `npm run build` correcto. Pruebas focalizadas de inventario/decodificación de los 39 viajes y navegación, visor y encuadres de Cantabria: 6/6 correctas en Chromium y WebKit, cuatro tamaños por navegador y texto al 200 %. Revisados visualmente el mapa generado y la captura móvil de Cantabria. `git diff --check`: sin errores de espacios.
+- **Riesgos potenciales:** la lámina incorporada por indicación expresa contiene nombres y textos de Asturias; se conserva tal como se ha entregado.
+- **Siguientes pasos sugeridos:** revisar la ruta en el dispositivo habitual.
+
+## Biblioteca · Ocultar subtítulos de duración en las tarjetas · 09/11/2026
+
+- [x] Localizar cómo se generan los subtítulos de duración y revisar las pruebas existentes.
+- [x] Mostrar únicamente los subtítulos descriptivos de las tarjetas.
+- [x] Actualizar las expectativas existentes, verificar el catálogo y completar Review.
+
+### Review
+
+- **Resumen de cambios:** `src/screens/LibraryCatalog.tsx` muestra el subtítulo solo cuando hay un texto descriptivo, eliminando la duración que se añadía automáticamente como segunda línea. `tests/catalog.spec.ts` actualiza las expectativas de Perú, Cantabria, Menorca y Japón y comprueba que Galicia y Navarra conservan sus subtítulos.
+- **Verificación:** pruebas de catálogo, filtros y encuadres responsive: 8/8 correctas en Chromium y WebKit, con cuatro tamaños de pantalla por navegador. `git diff --check`: sin errores de espacios.
+- **Riesgos potenciales:** las tarjetas que solo tenían duración pasan a mostrar una única línea de texto.
+- **Siguientes pasos sugeridos:** revisar visualmente el catálogo en el dispositivo habitual.
+
+## Biblioteca · Conectores entre las etapas del viaje · 09/11/2026
+
+- [x] Revisar la causa del solapamiento y los estilos compartidos por todos los viajes.
+- [x] Alinear los círculos y hacer que cada línea nazca en su base y termine 6 px antes del siguiente.
+- [x] Verificar móvil, escritorio y destinos de varias líneas; completar Review.
+
+### Review
+
+- **Resumen de cambios:** `src/trip-detail.css` alinea los círculos al inicio de cada etapa, centra el conector en su eje y lo extiende desde su base hasta 6 px antes del siguiente círculo. El estilo compartido se aplica a todos los viajes y adapta la longitud a los textos de varias líneas.
+- **Verificación:** prueba responsive existente de detalle: 2/2 correctas en Chromium y WebKit, seis encuadres por navegador y texto al 200 %. Comprobación temporal en navegador: 114 conectores de Galicia, Estados Unidos (Costa Este) y Perú en ambos motores a 280, 390 y 1440 px; inicio exacto, separación de 6 px, centrado y ausencia de conector final, incluidos cuatro casos con títulos de varias líneas. Capturas de Galicia revisadas en móvil y escritorio. `git diff --check`: sin errores de espacios.
+- **Riesgos potenciales:** los círculos quedan alineados al inicio del texto en lugar de centrados respecto al bloque completo de destino y días.
+- **Siguientes pasos sugeridos:** comprobar el resultado en el dispositivo habitual.
+
+## Hub · Más separación en los subtítulos de las tres tarjetas · 09/11/2026
+
+- [x] Revisar el margen compartido de los subtítulos de las tarjetas.
+- [x] Duplicar el margen superior manteniendo su adaptación al tamaño de pantalla.
+- [x] Verificar encuadres y completar Review.
+
+### Review
+
+- **Resumen de cambios:** `src/styles.css` duplica el margen superior compartido de los subtítulos de las tres tarjetas, de `clamp(.35em, .6svh, .55em)` a `clamp(.7em, 1.2svh, 1.1em)`.
+- **Verificación:** prueba responsive del hub: 2/2 correctas en Chromium y WebKit, siete tamaños por navegador, con textos dentro de las tarjetas. `git diff --check`: sin errores de espacios.
+- **Riesgos potenciales:** el espacio adicional aumenta la altura del bloque de texto; los encuadres comprobados pasan.
+- **Siguientes pasos sugeridos:** revisar la separación en el dispositivo habitual.
+
+## Hub · Más margen superior del subtítulo · 09/11/2026
+
+- [x] Revisar el margen superior actual de «en tres formas».
+- [x] Ampliar el margen superior de 0,05 a 0,25 em.
+- [x] Comprobar los encuadres responsive y completar Review.
+
+### Review
+
+- **Resumen de cambios:** `src/styles.css` amplía el margen superior de «en tres formas» de 0,05 a 0,25 em, adaptando la separación al tamaño de la fuente.
+- **Verificación:** prueba responsive del hub: 2/2 correctas en Chromium y WebKit, siete tamaños por navegador. `git diff --check`: sin errores de espacios.
+- **Riesgos potenciales:** la separación adicional aumenta la altura de la cabecera; los encuadres comprobados pasan.
+- **Siguientes pasos sugeridos:** revisar visualmente la separación en el dispositivo habitual.
+
+## Hub · Subtítulo ligeramente a la derecha · 09/11/2026
+
+- [x] Revisar la posición del subtítulo y los ajustes responsive.
+- [x] Desplazar «en tres formas» entre 8 y 18 px a la derecha según el ancho disponible.
+- [x] Verificar encuadres y completar Review.
+
+### Review
+
+- **Resumen de cambios:** `src/styles.css` desplaza el subtítulo a la derecha mediante posición relativa y `left: clamp(8px, 2cqw, 18px)`, proporcional al ancho del lienzo.
+- **Verificación:** prueba responsive del hub: 2/2 correctas en Chromium y WebKit, con siete tamaños por navegador. `git diff --check`: sin errores de espacios.
+- **Riesgos potenciales:** ajuste visual localizado; sin desbordamientos de página en los tamaños comprobados.
+- **Siguientes pasos sugeridos:** valorar la nueva alineación en el dispositivo habitual.
+
+## Hub · Sparkling Valentine y doble espacio · 09/11/2026
+
+- [x] Localizar la fuente original y revisar los estilos del subtítulo.
+- [x] Incorporar Sparkling Valentine y mostrar dos espacios entre las palabras de «en tres formas».
+- [x] Verificar compilación y encuadres; completar Review.
+
+### Review
+
+- **Resumen de cambios:** fuente original de Cat.B en `public/fonts/sparkling-valentine.ttf`, declarada localmente con `@font-face` y aplicada al subtítulo en su peso regular. `JourneyScreen.tsx` contiene dos espacios entre palabras y `white-space: pre-wrap` los conserva visualmente. Retirada la dependencia de WindSong.
+- **Verificación:** `npm run build` correcto. Prueba responsive existente del hub: 2/2 correctas en Chromium y WebKit, siete tamaños por navegador y sin desbordamientos de página. `git diff --check` sin errores de espacios.
+- **Riesgos potenciales:** la distribución de la autora indica «FREE FOR PERSONAL USE»; el aviso y la procedencia se conservan en `public/fonts/sparkling-valentine-LICENSE.txt`.
+- **Siguientes pasos sugeridos:** revisar el aspecto en el dispositivo habitual y disponer de la licencia correspondiente para uso comercial.
+
+## Hub · WindSong Medium en «en tres formas» · 09/11/2026
+
+- [x] Revisar los estilos del subtítulo y la carga de fuentes del proyecto.
+- [x] Incorporar WindSong 500 localmente y aplicarla al subtítulo con su estilo normal.
+- [x] Verificar compilación y encuadres del hub; completar Review.
+
+### Review
+
+- **Resumen de cambios:** WindSong de Google Fonts incorporada mediante `@fontsource/windsong`, con carga local de la variante latina 500 en `src/main.tsx`. `src/styles.css` aplica la fuente al texto «en tres formas», con peso 500 y estilo normal para usar su dibujo manuscrito original.
+- **Verificación:** `npm run build` correcto. `npm run test:frontend -- tests/journey.spec.ts --grep "conserva la composición completa" --workers=2`: 2/2 correctas en Chromium y WebKit, con siete tamaños de pantalla por navegador y sin desbordamiento de página. `git diff --check`: sin errores de espacios.
+- **Riesgos potenciales:** las métricas y el trazo del subtítulo cambian respecto a la fuente anterior; los encuadres responsive comprobados pasan.
+- **Siguientes pasos sugeridos:** revisar el aspecto de la nueva caligrafía en el dispositivo habitual.
+
+## Portada · Recuperar la altura original de los textos · 09/11/2026
+
+- [x] Confirmar la posición original del titular y la separación actual del botón.
+- [x] Restablecer el margen superior del titular a 22,5 svh, conservando los 6 svh antes del botón.
+- [x] Verificar los encuadres y completar Review.
+
+### Review
+
+- **Resumen de cambios:** `src/styles.css` restablece el margen superior del titular a 22,5 svh, recuperando la altura original del bloque de textos. El margen antes de «Comencemos» sigue en 6 svh.
+- **Verificación:** `npm run test:frontend -- tests/intro.spec.ts --grep "la portada cabe" --workers=2`: 2/2 correctas, seis tamaños por navegador en Chromium y WebKit, sin desbordamientos.
+- **Riesgos potenciales:** la distribución vertical depende de la altura disponible de pantalla.
+- **Siguientes pasos sugeridos:** revisar la composición en el dispositivo habitual.
+
+## Portada · Más margen superior de «Comencemos» · 09/11/2026
+
+- [x] Revisar el margen actual del botón.
+- [x] Aumentar el margen superior de 4,5 a 6 svh.
+- [x] Comprobar los encuadres y completar Review.
+
+### Review
+
+- **Resumen de cambios:** `src/styles.css` amplía el margen superior del botón de 4,5 a 6 svh, unos 11–13 px adicionales en las pantallas de referencia.
+- **Verificación:** `npm run test:frontend -- tests/intro.spec.ts --grep "la portada cabe" --workers=2`: 2/2 correctas, seis encuadres por navegador en Chromium y WebKit.
+- **Riesgos potenciales:** el espacio añadido varía proporcionalmente a la altura de pantalla.
+- **Siguientes pasos sugeridos:** revisar la separación en el dispositivo habitual.
+
+## Portada · Altura del texto y espacio del botón · 09/11/2026
+
+- [x] Revisar la referencia con la línea roja y los márgenes actuales.
+- [x] Subir el titular y su subtítulo unos 12 % del alto de pantalla en vertical y ampliar la separación del botón.
+- [x] Verificar encuadres y compilación; completar Review.
+
+### Review
+
+#### Resumen de cambios
+
+- `src/styles.css`: margen superior del titular en vertical de 22,5 a 10,5 svh, desplazando el bloque hacia la línea marcada (aproximadamente 91 px en una pantalla de 762 px de alto).
+- Separación entre el subtítulo y el botón ampliada de 2,9 a 4,5 svh (unos 12 px adicionales a esa altura).
+- `tests/intro.spec.ts`: añadido el encuadre de 632 × 762 px a la comprobación responsive existente.
+
+#### Verificación realizada
+
+- `npm run build`: correcto.
+- `npm run test:frontend -- tests/intro.spec.ts --grep "la portada cabe" --workers=2`: **2/2 correctas**, con seis encuadres por navegador en Chromium y WebKit; sin desbordamientos y con todos los elementos dentro de la pantalla.
+- Revisada la captura de 632 × 762 px y comprobada la nueva separación del botón.
+- `git diff --check`: sin errores de espacios.
+
+#### Riesgos potenciales
+
+- La posición se adapta proporcionalmente a la altura disponible; puede variar con las barras del navegador móvil.
+
+#### Siguientes pasos sugeridos
+
+- Comprobar la nueva altura en el dispositivo de la referencia.
+
+## Portada · Secuencia fluida dentro de los 7 segundos · 09/11/2026
+
+- [x] Revisar los tiempos y sustituir la pausa anterior por una cascada continua según la nueva indicación.
+- [x] Acercar las entradas de los textos y el botón con fundidos suavemente solapados; completar todo antes del segundo 7.
+- [x] Actualizar las pruebas de secuencia en móvil/escritorio y los tiempos del README.
+- [x] Verificar compilación y pruebas de portada; completar Review.
+
+### Review
+
+#### Resumen de cambios
+
+- Este ajuste sustituye la pausa de 0,7 s solicitada anteriormente por una cascada continua dentro de los primeros 7 segundos.
+- `src/styles.css`: entradas separadas 0,5–0,55 s con fundidos de 1 s suavemente solapados, curva de aceleración progresiva y desplazamiento reducido de 10 a 6 px. «Comencemos» aparece el último, desde 5,6 s, y completa su entrada hacia 6,6 s.
+- `src/screens/IntroScreen.tsx`: compensación del retraso del primer evento de reproducción mediante el tiempo real del vídeo; evita que WebKit desplace toda la secuencia fuera del plazo.
+- `tests/intro.spec.ts`: verifica orden, solapamiento y finalización antes del segundo 7 en móvil y escritorio, registrando el tiempo del vídeo en el navegador al finalizar la animación del botón.
+- `README.md`: tiempos y sincronización actualizados.
+
+#### Verificación realizada
+
+- `npm run build`: correcto tras el ajuste de sincronización.
+- `npm run test:frontend -- tests/intro.spec.ts --workers=2`: **12/12 correctas** en Chromium y WebKit. Comprobados secuencia antes del segundo 7, permanencia al finalizar el vídeo, navegación, teclado, reinicio, encuadres, movimiento reducido y recuperación del vídeo.
+- Las ejecuciones iniciales detectaron un inicio tardío de la secuencia en WebKit de escritorio; se corrigió compensando los retardos, sin ampliar el límite de 7 s de las pruebas.
+- `git diff --check`: sin errores de espacios.
+
+#### Riesgos potenciales
+
+- La fluidez final depende de la capacidad de renderizado del dispositivo; los tiempos de entrada y el solapamiento se mantienen coordinados en CSS.
+
+#### Siguientes pasos sugeridos
+
+- Valorar el nuevo ritmo visual en el dispositivo habitual.
+
+## Portada · Pausa antes de «Comencemos» · 09/11/2026 · Plan aprobado
+
+- [x] Revisar la secuencia actual y localizar la falta de retardo del subtítulo y el adelanto al finalizar el vídeo.
+- [x] Dar a «Viajes diseñados contigo» su retardo propio y dejar 0,7 s desde el final de su fundido hasta el inicio del botón.
+- [x] Mantener la secuencia sobre el último fotograma y actualizar las pruebas y los tiempos documentados.
+- [x] Verificar compilación y pruebas de portada en Chromium y WebKit; completar Review.
+
+### Review
+
+#### Resumen de cambios
+
+- `src/styles.css`: retardo explícito del subtítulo (5,25 s desde el inicio de la secuencia) y botón a los 7,2 s; quedan 0,7 s entre el final del fundido del texto y el inicio del botón.
+- `src/screens/IntroScreen.tsx`: el final del vídeo conserva las animaciones pendientes sobre el último fotograma. El botón se habilita al terminar su fundido.
+- `README.md`: tiempos actualizados; el botón aparece aproximadamente a los 8,2 s de reproducción y queda disponible a los 9,3 s.
+- `tests/intro.spec.ts`: comprobaciones de la pausa en la línea temporal del navegador, texto visible con botón aún oculto, final anticipado del vídeo en escritorio y navegación posterior.
+
+#### Verificación realizada
+
+- `npm run build`: correcto.
+- `npm run test:frontend -- tests/intro.spec.ts --workers=2`: **12/12 correctas** en Chromium y WebKit, con secuencia móvil/escritorio, encuadres, regreso, teclado, movimiento reducido, error de vídeo y reproducción manual.
+- La primera ejecución detectó diferencias de entrega de eventos de animación en WebKit; la medición de la pausa utiliza ahora la línea temporal real de las animaciones, sin depender del instante de entrega del evento.
+- `git diff --check`: sin errores de espacios.
+
+#### Riesgos potenciales
+
+- Los tiempos absolutos pueden variar ligeramente con la carga del vídeo y los eventos de reproducción; la pausa relativa queda definida por las animaciones CSS.
+
+#### Siguientes pasos sugeridos
+
+- Revisar el ritmo de la pausa en el móvil habitual.
+
 ## Quién soy · Corrección a la referencia `quienSoy2.png` · 04/11/2026
 
 - [x] Incorporar la ilustración superior derecha, las cintas de cabecera y pie y las decoraciones originales de la nueva referencia.

@@ -26,7 +26,7 @@ El frontend de `dist/` utiliza la raíz del dominio. Para registrar solicitudes 
 - La secuencia empieza **en el primer segundo del vídeo**, según el tiempo real de reproducción, no según el tiempo de carga de la página.
 - Primero se dibuja **Aripajama**: una máscara SVG sigue los trazos de la imagen original, ya preparada con fondo transparente. No se usa una fuente de sustitución.
 - Después aparecen **Travel Planner**, **El mundo,**, **a tu manera.**, **VIAJES DISEÑADOS CONTIGO** y, por último, **COMENCEMOS →**. La composición vertical sitúa la marca arriba a la derecha y el titular burdeos con su segunda línea en cursiva taupe a media altura, sobre el fondo blanco del globo y las cintas doradas.
-- El botón se habilita al finalizar su fundido o al terminar el vídeo, lo que ocurra primero. Con el vídeo actual, de **7,5 s**, el final completa la composición y la deja operativa, conservando el último fotograma.
+- Los textos y el botón entran en una **cascada continua**, con fundidos de 1 s que se solapan suavemente y entradas separadas aproximadamente medio segundo. «Comencemos» aparece al final y queda completamente visible y operativo hacia el **segundo 6,6**, antes del segundo 7 y del final del vídeo.
 - «Comencemos» abre el hub con un fundido cruzado de **800 ms**; «Volver a la portada» regresa suavemente y vuelve a iniciar la introducción. Una recarga también la reinicia.
 - Si el navegador bloquea la reproducción automática, aparece «Reproducir introducción». Si el vídeo falla al cargar o decodificar, se muestra el fotograma inicial y se habilita «Comencemos».
 - El vídeo y la secuencia de la portada se reproducen también con **movimiento reducido**. Esta preferencia sí se aplica al fundido hacia y desde el hub y a las pantallas interiores.
@@ -36,13 +36,13 @@ El frontend de `dist/` utiliza la raíz del dominio. Para registrar solicitudes 
 | Elemento | Inicio desde el comienzo del vídeo |
 | --- | --- |
 | Escritura del logo | 1 s |
-| Travel Planner | 4 s |
-| El mundo, | 4,65 s |
-| a tu manera. | 5,35 s |
-| Viajes diseñados contigo | 6,25 s |
-| Comencemos | 7,2 s; disponible al terminar el vídeo (7,5 s) |
+| Travel Planner | 3,55 s |
+| El mundo, | 4,05 s |
+| a tu manera. | 4,55 s |
+| Viajes diseñados contigo | 5,05 s |
+| Comencemos | 5,6 s; disponible al completar su fundido (6,6 s) |
 
-La frecuencia de eventos del navegador puede desplazar ligeramente el inicio. El contenido sigue siendo texto HTML salvo el nombre de marca; las fuentes se sirven localmente, sin peticiones a Google Fonts.
+Si el primer evento de reproducción llega tarde, sus retardos se compensan con el tiempo real del vídeo para mantener la secuencia alineada. El contenido sigue siendo texto HTML salvo el nombre de marca; las fuentes se sirven localmente, sin peticiones a Google Fonts.
 
 ## Diseño del hub
 
@@ -251,7 +251,7 @@ npm run assets:library-trips -- "D:\ARIPAJAMA\RECURSOS\WEB\WEB\Biblioteca de via
 
 `scripts/trip-asset-manifest.mjs` identifica cada fuente por un prefijo de nombre único y define recortes específicos de portada, mapa, cierre y cada etapa. `scripts/prepare-library-trips.mjs` conserva los PNG byte por byte, genera WebP y escribe las dimensiones en `src/data/trip-assets.ts`. Este archivo es generado; los textos se editan en `src/data/library-trip-details.ts`. El detalle original de Tailandia permanece en `src/data/trip-details.ts`.
 
-Los recortes proceden exclusivamente de los PNG aportados. Los mapas son ilustraciones y mantienen sus etiquetas integradas; la lista de etapas proporciona el orden cronológico en HTML. No se infieren transportes ni duraciones de trayecto. La biblioteca contiene 153 PNG originales (374 MiB, bajo demanda) y 366 WebP (25,8 MiB en conjunto, repartidos entre las 39 fichas). Las fotos recortadas tienen resolución limitada; para futuros encuadres más grandes conviene incorporar originales separados. La selección de fuentes, las diferencias editoriales y los casos especiales están documentados en [`docs/library-trips.md`](docs/library-trips.md).
+Los recortes proceden exclusivamente de los PNG aportados. Los mapas son ilustraciones y mantienen sus etiquetas integradas; la lista de etapas proporciona el orden cronológico en HTML. No se infieren transportes ni duraciones de trayecto. La biblioteca contiene 154 PNG originales, bajo demanda, y 366 WebP repartidos entre las 39 fichas. Las fotos recortadas tienen resolución limitada; para futuros encuadres más grandes conviene incorporar originales separados. La selección de fuentes, las diferencias editoriales y los casos especiales están documentados en [`docs/library-trips.md`](docs/library-trips.md).
 
 Para habilitar otro viaje, añadir su detalle en `TRIP_DETAILS` usando el identificador existente del catálogo y preparar sus imágenes y láminas. La disponibilidad del enlace y la validación de su ruta se derivan de ese registro. No añadir enlaces a fichas incompletas ni inventar duraciones que no figuren en el contenido.
 

@@ -597,7 +597,7 @@ export const TRIP_ASSETS = {
     "map": {
       "src": "/media/trips/cantabria/ruta.webp",
       "width": 800,
-      "height": 1640
+      "height": 758
     },
     "closingImage": {
       "src": "/media/trips/cantabria/esencia.webp",
@@ -660,6 +660,12 @@ export const TRIP_ASSETS = {
       {
         "title": "Portada",
         "src": "/media/trips/cantabria/originals/portada.png",
+        "width": 941,
+        "height": 1672
+      },
+      {
+        "title": "La ruta",
+        "src": "/media/trips/cantabria/originals/ruta.png",
         "width": 941,
         "height": 1672
       },

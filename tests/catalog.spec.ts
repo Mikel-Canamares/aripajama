@@ -69,7 +69,7 @@ test('abre países directamente, filtra y restaura foco y scroll al volver', asy
   await expect(page.getByRole('button', { name: /Tipo de viaje/ })).toHaveCount(0)
   await expect(page.locator('.catalog__total')).toHaveText('1 viaje')
   await expect(page.locator('.catalog__trip')).toHaveCount(1)
-  await expect(page.locator('.catalog__trip')).toContainText('18 días')
+  await expect(page.locator('.catalog__trip-copy')).toHaveText('Perú')
   await expect(page).toHaveURL(/pais=PE/)
   await page.keyboard.press('Escape')
   await expect(peru).toBeFocused()
@@ -95,8 +95,10 @@ test('los filtros multipaís no duplican viajes ni inventan duraciones', async (
   }
   await page.goto('/#biblioteca/viajes?pais=ES')
   await expect(page.locator('.catalog__trip')).toHaveCount(9)
-  await expect(page.locator('[data-trip="cantabria"]')).toContainText('10 días')
-  await expect(page.locator('[data-trip="menorca"]')).toContainText('7 días')
+  await expect(page.locator('[data-trip="cantabria"] .catalog__trip-copy')).toHaveText('Cantabria')
+  await expect(page.locator('[data-trip="menorca"] .catalog__trip-copy')).toHaveText('Menorca')
+  await expect(page.locator('[data-trip="galicia"] .catalog__trip-copy p')).toHaveText('Ribadeo y Costa da Morte')
+  await expect(page.locator('[data-trip="navarra"] .catalog__trip-copy p')).toHaveText('Selva de Irati')
 })
 
 test('filtra por continente desde la portada y elimina el filtro', async ({ page }) => {
@@ -107,7 +109,7 @@ test('filtra por continente desde la portada y elimina el filtro', async ({ page
   await expect(page.getByRole('button', { name: /Tipo de viaje/ })).toHaveCount(0)
   await expect(page.locator('.catalog__trip')).toHaveCount(5)
   await expect(page.locator('.catalog__number, .catalog__trip[value], ol.catalog__trips')).toHaveCount(0)
-  await expect(page.locator('[data-trip="japon"] .catalog__trip-copy')).toHaveText('Japón18 días')
+  await expect(page.locator('[data-trip="japon"] .catalog__trip-copy')).toHaveText('Japón')
   await expect(page.locator('.catalog__group')).toHaveCount(1)
   await page.getByRole('button', { name: 'Ver todos los viajes', exact: true }).click()
   await expect(page.getByRole('heading', { level: 1, name: 'Biblioteca de viajes' })).toBeFocused()

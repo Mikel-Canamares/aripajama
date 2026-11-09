@@ -819,20 +819,19 @@ const entries: readonly Entry[] = [
 export const LIBRARY_TRIP_DETAILS: Readonly<Partial<Record<string, TripDetail>>> = Object.fromEntries(entries.map(entry => {
   const assets = TRIP_ASSETS[entry.id]
   const image = (asset: { src: string; width: number; height: number }, alt: string): TripImage => ({ ...asset, alt })
-  const isItinerary = entry.id === 'cantabria'
   if (entry.stages.length !== assets.stages.length) throw new Error(`Fotografías y etapas no coinciden: ${entry.id}`)
   const detail: TripDetail = {
     duration: entry.duration,
     destinationCount: DESTINATION_COUNTS[entry.id],
     introduction: entry.introduction,
     routeIntroduction: entry.routeIntroduction,
-    routeCaption: isItinerary ? 'El recorrido de Cantabria, día a día.' : entry.routeIntroduction,
+    routeCaption: entry.routeIntroduction,
     routeSummary: entry.routeSummary,
     routeClosing: entry.routeClosing,
     routeSheetIndex: assets.routeSheetIndex,
-    routeImageKind: isItinerary ? 'itinerary' : 'map',
+    routeImageKind: 'map',
     cover: image(assets.cover, `Ilustración del viaje: ${entry.introduction}`),
-    map: image(assets.map, isItinerary ? 'Lámina del itinerario de Cantabria en diez jornadas' : `Mapa ilustrado: ${entry.routeIntroduction}`),
+    map: image(assets.map, `Mapa ilustrado: ${entry.routeIntroduction}`),
     closingImage: image(assets.closingImage, `Paisaje ilustrado del viaje: ${entry.reflection}`),
     stages: entry.stages.map(([destination, days, description], index) => ({ destination, days, description, image: image(assets.stages[index], `Ilustración de ${destination} en la lámina del itinerario`), optional: days === 'Si queda tiempo' })),
     themes: entry.themes.map(([title, description, icon]) => ({ title, description, icon })),

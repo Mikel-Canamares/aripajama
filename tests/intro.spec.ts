@@ -3,7 +3,19 @@ import { openIntroWithMediaError } from './intro-helpers'
 
 test.use({ reducedMotion: 'no-preference' })
 
-test('revela la composición y permite navegar al completar el nuevo vídeo', async ({ page }, testInfo) => {
+test.beforeEach(async ({ page }) => {
+  await page.addInitScript(() => {
+    document.addEventListener('animationend', event => {
+      const element = event.target
+      if (!(element instanceof HTMLElement) || !element.matches('.intro__action')) return
+      const video = document.querySelector<HTMLVideoElement>('.intro video')!
+      element.dataset.readyAt = String(video.currentTime)
+      element.dataset.videoEndedAtReady = String(video.ended)
+    })
+  })
+})
+
+test('revela los elementos en cascada continua y completa el botón antes del segundo 7', async ({ page }, testInfo) => {
   const errors: string[] = []
   page.on('pageerror', (error) => errors.push(error.message))
   await page.goto('/')
@@ -24,18 +36,29 @@ test('revela la composición y permite navegar al completar el nuevo vídeo', as
   await expect(page.locator('.brand__descriptor')).toHaveCSS('opacity', '0')
   await page.waitForTimeout(1400)
   await page.screenshot({ path: testInfo.outputPath('logo-escribiendose.png') })
-
-  await expect.poll(() => page.locator('.brand__descriptor').evaluate((el) => Number(getComputedStyle(el).opacity))).toBeGreaterThan(.8)
-  await expect(button).toBeDisabled()
-  await expect(button).toBeEnabled()
-  const readyAt = await video.evaluate((element: HTMLVideoElement) => ({
-    time: element.currentTime,
-    ended: element.ended,
-    paused: element.paused,
+  // Read the browser's animation timeline: event delivery can be throttled in WebKit.
+  const sequence = await page.locator('.reveal-item').evaluateAll(elements => elements.map(element => {
+    const animation = element.getAnimations()[0]
+    const timing = animation.effect!.getComputedTiming()
+    return {
+      start: Number(animation.startTime) + Number(timing.delay),
+      end: Number(animation.startTime) + Number(timing.endTime),
+    }
   }))
-  expect(readyAt.time).toBeCloseTo(7.5, 1)
-  expect(readyAt.ended).toBe(true)
-  expect(readyAt.paused).toBe(true)
+  for (let index = 1; index < sequence.length; index++) {
+    const previous = sequence[index - 1]
+    const current = sequence[index]
+    expect(current.start - previous.start).toBeGreaterThanOrEqual(400)
+    expect(current.start - previous.start).toBeLessThanOrEqual(650)
+    expect(current.start).toBeLessThan(previous.end)
+    expect(current.end).toBeGreaterThan(previous.end)
+  }
+
+  await expect.poll(() => button.isEnabled(), { intervals: [50] }).toBe(true)
+  const readyAt = Number(await page.locator('.intro__action').getAttribute('data-ready-at'))
+  expect(readyAt).toBeGreaterThan(6)
+  expect(readyAt).toBeLessThan(7)
+  await expect(page.locator('.intro__action')).toHaveAttribute('data-video-ended-at-ready', 'false')
   await expect(page.locator('.brand__finish')).toHaveCSS('opacity', '1')
   for (const item of await page.locator('.reveal-item').all()) {
     await expect(item).toHaveCSS('opacity', '1')
@@ -64,19 +87,26 @@ test('revela la composición y permite navegar al completar el nuevo vídeo', as
   expect(errors).toEqual([])
 })
 
-test('al terminar el vídeo completa la composición aunque la animación siga pendiente', async ({ page }) => {
+test('en escritorio toda la composición está visible antes del segundo 7 y permanece al terminar el vídeo', async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 900 })
   await page.goto('/')
   const video = page.locator('video')
-  await expect.poll(() => video.evaluate((element: HTMLVideoElement) => Number.isFinite(element.duration)), { intervals: [50] }).toBe(true)
-  await expect(page.getByRole('button', { name: 'Comencemos', includeHidden: true })).toBeDisabled()
-  await video.evaluate((element: HTMLVideoElement) => { element.currentTime = element.duration - .1 })
-  await expect.poll(() => video.evaluate((element: HTMLVideoElement) => element.ended)).toBe(true)
-  await expect(page.locator('.intro')).toHaveAttribute('data-immediate', 'true')
+  const button = page.getByRole('button', { name: 'Comencemos', includeHidden: true })
+  await expect(button).toBeDisabled()
+  await expect.poll(() => button.isEnabled(), { intervals: [50] }).toBe(true)
+  const readyAt = Number(await page.locator('.intro__action').getAttribute('data-ready-at'))
+  expect(readyAt).toBeGreaterThan(6)
+  expect(readyAt).toBeLessThan(7)
+  await expect(page.locator('.intro__action')).toHaveAttribute('data-video-ended-at-ready', 'false')
+  await expect(page.locator('.intro')).toHaveAttribute('data-immediate', 'false')
+  await expect(page.locator('.intro')).toHaveAttribute('data-revealed', 'true')
   await expect(page.locator('.brand__stroke').first()).toHaveCSS('stroke-dashoffset', '0px')
   await expect(page.locator('.brand__finish')).toHaveCSS('opacity', '1')
   for (const item of await page.locator('.reveal-item').all()) {
     await expect(item).toHaveCSS('opacity', '1')
   }
+  await expect.poll(() => video.evaluate((element: HTMLVideoElement) => element.ended)).toBe(true)
+  await expect(button).toBeEnabled()
   await page.getByRole('button', { name: 'Comencemos' }).click()
   await expect(page.getByRole('heading', { name: 'Tu viaje, en tres formas' })).toBeFocused()
 })
@@ -151,6 +181,7 @@ test('la portada cabe en móvil pequeño, referencia, horizontal y escritorio', 
   for (const viewport of [
     { width: 320, height: 568 },
     { width: 390, height: 844 },
+    { width: 632, height: 762 },
     { width: 941, height: 1672 },
     { width: 844, height: 390 },
     { width: 1440, height: 900 },

@@ -4,7 +4,7 @@ Los 39 registros del catálogo tienen una ficha con Inicio, Ruta, Etapas y Esenc
 
 ## Contenido y reproducción
 
-- `src/data/library-trip-details.ts`: transcripción editorial de las láminas de los 38 viajes incorporados. Conserva las visitas repetidas, las opciones condicionadas al tiempo y las actividades opcionales. Los contadores de destinos reproducen los totales editoriales de la lámina de ruta; Cantabria utiliza sus diez jornadas porque no se ha entregado su mapa correcto.
+- `src/data/library-trip-details.ts`: transcripción editorial de las láminas de los 38 viajes incorporados. Conserva las visitas repetidas, las opciones condicionadas al tiempo y las actividades opcionales. Los contadores de destinos reproducen los totales editoriales de la lámina de ruta; Cantabria utiliza los diez destinos de su itinerario.
 - `src/data/trip-details.ts`: contrato compartido, ficha original de Tailandia y registro completo. Las duraciones del contenido se aplican al catálogo sin duplicarlas.
 - `scripts/trip-asset-manifest.mjs`: correspondencia entre identificadores del catálogo y carpetas, prefijos únicos de los archivos y recortes en un lienzo de referencia 300 × 534. Los recortes se escalan a las dimensiones reales de cada lámina, también las de proporciones distintas.
 - `scripts/prepare-library-trips.mjs`: preparación reproducible con `sharp`, sin dependencias nuevas. Copia originales sin recomprimir, prepara WebP y genera `src/data/trip-assets.ts` con las dimensiones y el índice del original que debe abrir el mapa/itinerario.
@@ -20,16 +20,16 @@ El script requiere la estructura de carpetas entregada, incluidos los nombres co
 
 ## Selección de fuentes e incidencias reales
 
-Se revisaron los 157 PNG de origen. Se incorporaron 153: cuatro de Tailandia y 149 de los otros viajes. Se verificó por SHA-256 que cada original incorporado es idéntico a su fuente.
+Se revisaron los 157 PNG de origen. Se incorporaron 154: cuatro de Tailandia y 150 de los otros viajes. Los originales se copian sin recomprimir.
 
 | Viaje | Incidencia de origen | Tratamiento |
 | --- | --- | --- |
 | Cracovia en Navidad | Hay dos versiones del itinerario. | Se utiliza la detallada `9AAA1F7D-4DA8-4301-B25C-DCE6844E7A13.PNG`, aprobada por el usuario; la breve `21FE163F…` permanece en la carpeta fuente. |
-| Cantabria | `BEDEDD88…` es un mapa de Asturias (Cudillero, Oviedo, Ribadesella, etc.). | Se incorpora el itinerario real `F03995FC…` como recorrido ampliable. La ficha tiene tres originales y el botón abre «El viaje». |
+| Cantabria | `BEDEDD88…` es la lámina indicada expresamente por el usuario el 09/11/2026; contiene un mapa de Asturias. | Se incorpora como «La ruta», con mapa recortado y ampliación del original completo, igual que en los otros viajes. La ficha tiene cuatro originales y conserva las diez etapas de su itinerario. |
 | Filipinas | `BCBAB19D…` es «Lo que me llevo» de La Palma; falta la portada de Filipinas. | Se utilizan las tres láminas correctas. La imagen de cabecera procede de El Nido en su itinerario. El mapa abre el primer original («La ruta»), sin suponer que siempre está en el índice 1. |
 | Estados Unidos · Costa Este | `F75610CC…` es «Lo que me llevo» de Escocia; falta la portada de Costa Este. | Se utilizan las tres láminas correctas. La imagen de cabecera procede de Nueva York en su itinerario. Los 12 días se obtienen del itinerario y el mapa. |
 
-Los tres archivos de otros destinos y la versión breve de Cracovia se conservan en los recursos de origen; no se muestran como láminas del viaje equivocado.
+Los dos archivos descartados de Filipinas y Costa Este y la versión breve de Cracovia se conservan en los recursos de origen.
 
 ### Duraciones y particularidades editoriales
 
@@ -58,4 +58,4 @@ La configuración `playwright.library.config.ts` reutiliza los dos navegadores d
 
 ## Siguientes ajustes de contenido
 
-Para sustituir los tres recursos ausentes/incorrectos, añadir los originales correctos a sus carpetas, actualizar el manifiesto y regenerar. Para completar las jornadas no detalladas, editar los textos y aportar los recortes de sus etapas. Los recursos actuales tienen resolución limitada por las láminas entregadas; originales gráficos independientes permitirían aumentar la calidad de las fotografías de las etapas.
+Para incorporar las portadas pendientes de Filipinas y Costa Este, añadir los originales correctos a sus carpetas, actualizar el manifiesto y regenerar. Para completar las jornadas no detalladas, editar los textos y aportar los recortes de sus etapas. Los recursos actuales tienen resolución limitada por las láminas entregadas; originales gráficos independientes permitirían aumentar la calidad de las fotografías de las etapas.

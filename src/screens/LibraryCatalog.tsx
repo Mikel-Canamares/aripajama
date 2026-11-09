@@ -47,7 +47,7 @@ export function LibraryCatalog({ view, titleRef, onNavigate }: {
           <header data-reveal-group="" className="catalog__group-heading"><div><h2 data-reveal="" id={`group-${group.id}`}>{group.name}</h2><p data-reveal="">{items.length} {items.length === 1 ? 'viaje' : 'viajes'}</p></div><img data-reveal="" src={`/media/library/${group.id}.svg`} width="360" height="360" alt="" /></header>
           <ul className="catalog__trips" aria-label={`Viajes de ${group.name}`}>
             {items.map(trip => <li data-reveal="" data-reveal-frame="" data-reveal-group="" key={trip.id} className={`catalog__trip${TRIP_DETAILS[trip.id] ? ' catalog__trip--available' : ''}`} data-trip={trip.id}>
-              <div className="catalog__trip-copy"><h3 data-reveal="">{trip.title}</h3>{(trip.subtitle || trip.days) && <p data-reveal="">{trip.subtitle || `${trip.days} días`}</p>}</div>
+              <div className="catalog__trip-copy"><h3 data-reveal="">{trip.title}</h3>{trip.subtitle && <p data-reveal="">{trip.subtitle}</p>}</div>
               <ArtIcon icon={trip.icon} tone={trip.tone} />
               {TRIP_DETAILS[trip.id] && <a id={`trip-${trip.id}`} className="catalog__trip-link" href={`#biblioteca/viajes/${trip.id}`} aria-label={`Descubrir ${trip.title}${trip.subtitle ? `, ${trip.subtitle}` : ''}${trip.days ? `, ${trip.days} días` : ''}`} onClick={event => {
                 if (event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return

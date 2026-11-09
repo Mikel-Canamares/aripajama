@@ -40,8 +40,8 @@
   .trip-route__enlarge .trip-photo { border-radius: 0; }
   .trip-route__map figcaption { margin-top: .6rem; font-size: 1rem; color: #7c654e; }
   .trip-route__stops { list-style: none; margin: 1.2rem 0; padding: 0; }
-  .trip-route__stops li { position: relative; display: flex; align-items: center; gap: 1rem; padding-bottom: 1.3rem; }
-  .trip-route__stops li:not(:last-child)::after { content: ''; position: absolute; width: 1px; left: 1.2rem; top: 2.5rem; bottom: .1rem; background: #c8ac87; }
+  .trip-route__stops li { position: relative; display: flex; align-items: flex-start; gap: 1rem; padding-bottom: 1.3rem; }
+  .trip-route__stops li:not(:last-child)::after { content: ''; position: absolute; width: 1px; left: calc(1.25rem - .5px); top: 2.5rem; bottom: 6px; background: #c8ac87; }
   .trip-route__number { display: grid; place-items: center; flex: 0 0 2.5rem; height: 2.5rem; border: 1px solid #c9ad86; border-radius: 50%; font-family: var(--font-editorial); font-size: 1.3rem; color: #785331; }
   .trip-route__stops h3 { margin: 0; font-size: 1.8rem; }
   .trip-route__stops p { font-size: 1rem; color: #89663e; }

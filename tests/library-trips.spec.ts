@@ -43,7 +43,7 @@ test('los 39 viajes coinciden con el inventario editorial y todos sus recursos s
       if (sheet.width) expect([metadata.width, metadata.height]).toEqual([sheet.width, sheet.height])
     }
     const routeSheet = detail.sheets[detail.routeSheetIndex ?? 1]
-    expect(routeSheet.title).toBe(trip.id === 'cantabria' ? 'El viaje' : 'La ruta')
+    expect(routeSheet.title).toBe('La ruta')
   }
   expect(TRIP_DETAILS['cracovia-navidad']!.stages[1].description).toContain('Santa María y la Barbacana')
   expect(TRIP_DETAILS['pirineo-aragones']!.stages.at(-1)).toMatchObject({ days: 'Si queda tiempo', optional: true })
@@ -69,10 +69,10 @@ for (const trip of TRIPS) {
     await page.locator('.trip-detail img').evaluateAll(images => images.forEach(image => (image as HTMLImageElement).loading = 'eager'))
     await expect.poll(() => page.locator('.trip-detail img').evaluateAll(images => images.every(image => (image as HTMLImageElement).complete && (image as HTMLImageElement).naturalWidth > 0))).toBe(true)
     await expect(page.locator('.trip-photo--missing')).toHaveCount(0)
-    const route = page.getByRole('button', { name: trip.id === 'cantabria' ? 'Ampliar el itinerario' : 'Ampliar el mapa de la ruta', exact: true })
+    const route = page.getByRole('button', { name: 'Ampliar el mapa de la ruta', exact: true })
     await route.click()
     const dialog = page.getByRole('dialog')
-    await expect(dialog.getByRole('heading', { name: trip.id === 'cantabria' ? 'El viaje' : 'La ruta', exact: true })).toBeVisible()
+    await expect(dialog.getByRole('heading', { name: 'La ruta', exact: true })).toBeVisible()
     await expect.poll(() => dialog.locator('img').evaluate((image: HTMLImageElement) => image.complete && image.naturalWidth > 0)).toBe(true)
     await page.keyboard.press('Escape')
     await expect(route).toBeFocused()

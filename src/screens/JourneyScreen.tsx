@@ -4,7 +4,7 @@ import { useRevealSequence } from '../hooks/useRevealSequence'
 // Copy stays independent of the artwork. Arrays define the reference's line breaks.
 const CONTENT = {
   title: 'Tu viaje,',
-  subtitle: 'en tres formas',
+  subtitle: 'en  tres  formas',
   description: 'Conóceme, inspírate y empieza a crear tu próxima historia.',
   cards: [
     { id: 'about', title: ['Quién soy'], subtitle: ['Conóceme'] },
