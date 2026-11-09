@@ -1,3 +1,29 @@
+## Biblioteca · Países sin flechas junto a los mapas · 09/11/2026
+
+- [x] Comparar las tarjetas de países con las de continentes y todos los viajes.
+- [x] Retirar las flechas y su columna de las tarjetas de países.
+- [x] Verificar navegación y encuadres responsive; completar Review.
+
+### Review
+
+- **Resumen de cambios:** `src/screens/LibraryCatalog.tsx` elimina las flechas junto a los mapas de países. `src/styles.css` deja dos columnas (nombre y mapa) y retira los estilos y animaciones de esas flechas, igualando la presentación sin flechas del resto del catálogo.
+- **Verificación:** pruebas existentes de navegación por países y continentes y listados responsive: 6/6 correctas en Chromium y WebKit, con cuatro tamaños de pantalla por navegador (280, 390, 941 y 1440 px), sin desbordamientos. `git diff --check`: sin errores de espacios.
+- **Riesgos potenciales:** el mapa queda al extremo derecho y el nombre dispone de más espacio; los encuadres comprobados pasan.
+- **Siguientes pasos sugeridos:** revisar la vista de países en el dispositivo habitual.
+
+## Biblioteca · Botón Países más compacto · 09/11/2026
+
+- [x] Revisar el botón y sus estilos responsive.
+- [x] Reducir el ancho, relleno, texto e iconos de forma proporcionada.
+- [x] Verificar los encuadres existentes y completar Review.
+
+### Review
+
+- **Resumen de cambios:** `src/styles.css` reduce aproximadamente un 20 % el ancho del botón Países, ajusta el relleno y el texto y escala los iconos con el botón. En pantallas inferiores a 360 px limita el ancho a 220 px y reduce los iconos a 28 px. Mantiene una altura táctil mínima de 44 px.
+- **Verificación:** prueba responsive existente de biblioteca: 2/2 correctas en Chromium y WebKit, siete tamaños por navegador, sin desbordamientos y con controles de al menos 44 px de altura. `git diff --check`: sin errores de espacios.
+- **Riesgos potenciales:** el texto dispone de menos espacio horizontal; los encuadres comprobados pasan.
+- **Siguientes pasos sugeridos:** revisar el tamaño en el dispositivo habitual.
+
 ## Cantabria · Incorporar la lámina de ruta indicada · 09/11/2026
 
 - [x] Revisar los recursos de Cantabria y el formato de ruta de los otros viajes.
@@ -287,6 +313,56 @@
 
 - Incorporar las fotografías originales en `public/media/about/` y completar `src`, `alt` y, cuando sea necesario, `position` en `src/data/about-photos.ts`.
 - Revisar los encuadres con las fotografías definitivas en móvil y escritorio.
+
+## Recorte de la imagen final de Japón · 09/11/2026
+
+- [x] Revisar el original y localizar el texto negro incluido en el recorte superior.
+- [x] Ajustar el recorte reproducible, regenerar únicamente la imagen final de Japón y actualizar sus dimensiones.
+- [x] Verificar visualmente el resultado y comprobar los recursos.
+
+### Review
+
+- **Resumen de cambios:** el recorte final de Japón comienza ahora en el píxel 1209 del original, por debajo del texto. Actualizados el manifiesto reproducible, `public/media/trips/japon/esencia.webp` y sus dimensiones declaradas (941 × 463).
+- **Verificación:** imagen resultante revisada visualmente, sin texto negro; inventario y decodificación de recursos correctos en Chromium y WebKit (2/2).
+- **Riesgos potenciales:** se eliminan 35 píxeles superiores del recorte anterior; el torii y su reflejo siguen completos.
+- **Siguientes pasos sugeridos:** ninguno para este ajuste.
+
+## Corrección de duración y portada de Islandia · 09/11/2026
+
+- [x] Localizar y revisar `C:\Users\Mikel\Downloads\islandia.png`, con la duración de 11 días.
+- [x] Corregir la duración a 11 días, retirar la nota de discrepancia y actualizar inventario y documentación.
+- [x] Sustituir la primera lámina original y verificar duración, carga y dimensiones.
+
+### Review
+
+- **Resumen de cambios:** Islandia pasa de 12 a 11 días en los datos compartidos por catálogo y ficha; retirada la nota de discrepancia y actualizados inventario y documentación. Sustituida `public/media/trips/islandia/originals/portada.png` por la imagen aportada de 941 × 1672.
+- **Verificación:** inventario editorial y recursos correctos en Chromium y WebKit (2/2); comprobación del visor en ambos motores con duración visible de 11 días y primera lámina idéntica al archivo aportado mediante SHA-256.
+- **Riesgos potenciales:** regenerar desde la carpeta antigua de recursos restauraría la portada de 12 días.
+- **Siguientes pasos sugeridos:** usar la portada corregida también en los recursos fuente antes de regenerar las imágenes de la biblioteca.
+
+## Sustitución de la portada original de Bilbao · 09/11/2026
+
+- [x] Localizar y revisar la nueva lámina de 6 días: `C:\Users\Mikel\Downloads\bilbao.png`.
+- [x] Sustituir la primera lámina del visor de originales y verificar su carga y dimensiones.
+
+### Review
+
+- **Resumen de cambios:** sustituido `public/media/trips/bilbao/originals/portada.png` por el PNG aportado de 6 días, conservando sus dimensiones de 941 × 1672 y su posición inicial en el visor.
+- **Verificación:** apertura de «Ver las láminas originales» en Chromium y WebKit; primera lámina «Portada» cargada y SHA-256 del recurso servido idéntico al archivo aportado.
+- **Riesgos potenciales:** una regeneración desde la carpeta antigua de recursos restauraría la portada de 7 días.
+- **Siguientes pasos sugeridos:** usar también la portada corregida en los recursos fuente antes de regenerar las imágenes de la biblioteca.
+
+## Corrección de duración de Bilbao · 09/11/2026
+
+- [x] Corregir la duración de Bilbao a 6 días y retirar la nota de discrepancia.
+- [x] Actualizar el inventario editorial y la documentación; verificar el cambio.
+
+### Review
+
+- **Resumen de cambios:** duración de Bilbao corregida a 6 días en los datos compartidos por catálogo y ficha; retirada la nota de discrepancia y actualizados el inventario de pruebas y la documentación.
+- **Verificación:** prueba existente de inventario editorial y recursos superada en Chromium y WebKit (2/2).
+- **Riesgos potenciales:** las láminas originales conservan el texto integrado de origen.
+- **Siguientes pasos sugeridos:** ninguno para esta corrección de texto.
 
 ## Carga completa de la biblioteca · 30/10/2026 · Plan aprobado
 

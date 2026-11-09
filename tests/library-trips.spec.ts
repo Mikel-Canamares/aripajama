@@ -8,13 +8,13 @@ import { TRIP_DETAILS } from '../src/data/trip-details'
 // Independent editorial inventory: [duration on cover, itinerary cards].
 const inventory: Record<string, [number, number]> = {
   galicia: [9,6], asturias: [8,8], cantabria: [10,10], navarra: [6,6],
-  'pirineo-aragones': [5,6], ordesa: [8,8], bilbao: [7,6], menorca: [7,7],
+  'pirineo-aragones': [5,6], ordesa: [8,8], bilbao: [6,6], menorca: [7,7],
   'la-palma': [7,7], 'toulouse-carcasona': [3,3], paris: [4,4], londres: [4,4],
   escocia: [13,11], berlin: [5,5], 'austria-tirol-baviera': [9,5], amsterdam: [4,4],
   belgica: [6,5], budapest: [4,4], 'cracovia-navidad': [5,5], 'atenas-santorini': [7,7],
   'croacia-venecia': [15,13], roma: [5,5], 'milan-verona': [3,3],
   'toscana-cinque-terre': [7,7], oporto: [3,3], 'suiza-navidad': [5,5],
-  islandia: [12,9], japon: [18,7], tailandia: [15,7], vietnam: [17,7],
+  islandia: [11,9], japon: [18,7], tailandia: [15,7], vietnam: [17,7],
   filipinas: [18,6], 'malasia-singapur': [15,7], peru: [18,13], colombia: [18,6],
   'estados-unidos-este': [12,3], 'estados-unidos-oeste': [22,9],
   'riviera-maya': [9,8], marruecos: [10,7], tunez: [8,5],

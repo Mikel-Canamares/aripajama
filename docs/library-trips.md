@@ -35,12 +35,10 @@ Los dos archivos descartados de Filipinas y Costa Este y la versión breve de Cr
 
 | Viaje | Duración de portada | Etapas detalladas |
 | --- | --- | --- |
-| Bilbao y Costa Vasca | 7 días | Días 1–6 |
-| Islandia | 12 días | Días 1–11 |
 | Malasia y Singapur | 15 días | Días 1–14 |
 | Marruecos | 10 días | Días 1–9 |
 
-Estas fichas conservan la duración de portada y explican la diferencia en la sección Ruta. No se inventa una jornada adicional. Budapest conserva cuatro días según portada e itinerario; el mapa original menciona tres en su introducción. Se usa «Cuatro días, una misma ciudad» de la lámina del itinerario para el texto HTML.
+Estas fichas conservan la duración de portada y explican la diferencia en la sección Ruta. No se inventa una jornada adicional. Bilbao y Costa Vasca e Islandia tienen duraciones corregidas de 6 y 11 días respectivamente, confirmadas por el usuario y coherentes con sus etapas; sus portadas originales del visor también se han sustituido por las versiones corregidas. Budapest conserva cuatro días según portada e itinerario; el mapa original menciona tres en su introducción. Se usa «Cuatro días, una misma ciudad» de la lámina del itinerario para el texto HTML.
 
 El embalse de Linsoles aparece como «Si queda tiempo» en Benasque: se conserva como plan opcional y no aumenta las cinco etapas principales. Jaca y Valle de Tena comparten días 1–2; Kuala Lumpur y Batu Caves/Kuala Selangor también comparten días 1–2, tal como figura en los originales. Ámsterdam conserva sus cuatro temáticas en Esencia. Los subtítulos visibles y los nombres accesibles de los enlaces distinguen las dos costas de Estados Unidos.
 

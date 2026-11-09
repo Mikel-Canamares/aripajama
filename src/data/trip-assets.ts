@@ -1440,7 +1440,7 @@ export const TRIP_ASSETS = {
     "closingImage": {
       "src": "/media/trips/japon/esencia.webp",
       "width": 941,
-      "height": 498
+      "height": 463
     },
     "stages": [
       {

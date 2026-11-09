@@ -34,7 +34,7 @@ export function LibraryCatalog({ view, titleRef, onNavigate }: {
     {view.page === 'countries' ? <ul className="catalog__countries" aria-label="Países de la biblioteca">
       {COUNTRIES.map(item => <li key={item.code}>
         <button data-reveal="" data-reveal-frame="" data-reveal-group="" id={`country-${item.code}`} className="catalog__country" onClick={() => onNavigate(`#biblioteca/viajes?pais=${item.code}`, `country-${item.code}`)}>
-          <span data-reveal="">{item.name}</span><ArtIcon icon={item.code} tone={item.tone} /><span data-reveal="" className="catalog__arrow" aria-hidden="true">→</span>
+          <span data-reveal="">{item.name}</span><ArtIcon icon={item.code} tone={item.tone} />
         </button>
       </li>)}
     </ul> : view.page === 'invalid' ? <div className="catalog__empty" role="status"><p data-reveal="">Este enlace no corresponde a un país o filtro de la biblioteca.</p><button data-reveal="" className="text-button" onClick={() => onNavigate('#biblioteca/viajes')}>Ver todos los viajes</button></div> : <>
