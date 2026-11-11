@@ -35,6 +35,37 @@ test('Descubrir abre el cuestionario y Volver restaura su foco y scroll', async 
   await expect(discover).toBeFocused()
 })
 
+test('la primera pregunta usa tarjetas rectangulares y escenas como las siguientes', async ({ page }) => {
+  await open(page)
+  const options = page.locator('.questionnaire__option')
+  await expect(options).toHaveCount(5)
+  for (const width of [390, 1280]) {
+    await page.setViewportSize({ width, height: 900 })
+    for (let index = 0; index < 5; index++) {
+      const option = options.nth(index)
+      await expect(option).toHaveCSS('display', 'grid')
+      await expect(option).toHaveCSS('border-radius', '20px')
+      const box = await option.boundingBox()
+      expect(box!.width).toBeGreaterThan(box!.height)
+      const icon = option.locator('.questionnaire__icon')
+      await expect(icon).toHaveCSS('object-fit', 'cover')
+      await expect(icon).toHaveCSS('border-radius', '50%')
+      const iconBox = await icon.boundingBox()
+      expect(Math.abs(iconBox!.width - iconBox!.height)).toBeLessThan(1)
+      const scene = option.locator('.questionnaire__scene')
+      await expect(scene).toHaveAttribute('src', `/media/questionnaire/q2-${[1, 2, 4, 3, 5][index]}-scene.webp`)
+      if (width >= 600) {
+        await scene.scrollIntoViewIfNeeded()
+        await expect(scene).toBeVisible()
+        await expect.poll(() => scene.evaluate(image => (image as HTMLImageElement).naturalWidth)).toBeGreaterThan(0)
+      } else {
+        await expect(scene).toBeHidden()
+      }
+    }
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true)
+  }
+})
+
 test('exige respuesta, permite varias selecciones y no avanza automáticamente', async ({ page }) => {
   await open(page)
   await expect(page.getByRole('progressbar')).toHaveAttribute('value', '1')

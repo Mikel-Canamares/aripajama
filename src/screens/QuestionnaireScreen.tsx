@@ -74,7 +74,7 @@ export function QuestionnaireScreen({ active, onReady, step, total, completed, a
             <h1 data-reveal="question-title" ref={titleRef} id="question-title" tabIndex={-1}>{question.title}</h1>
             <p data-reveal="help" id="question-help">{question.mode === 'single' ? 'Puedes elegir una opción.' : step === 7 ? 'Puedes elegir una opción o varias.' : 'Puedes elegir una o varias opciones.'}</p>
           </header>
-          <fieldset ref={fieldRef} id="question-options" className={`questionnaire__options ${first ? 'questionnaire__options--circles' : ''}`} tabIndex={-1} aria-labelledby="question-title" aria-describedby={`question-help${error ? ' question-error' : ''}`} aria-invalid={error || undefined}>
+          <fieldset ref={fieldRef} id="question-options" className="questionnaire__options" tabIndex={-1} aria-labelledby="question-title" aria-describedby={`question-help${error ? ' question-error' : ''}`} aria-invalid={error || undefined}>
             <legend className="visually-hidden">{question.title}</legend>
             {question.options.map((option, index) => {
               const checked = selected.includes(option.id)
@@ -90,7 +90,7 @@ export function QuestionnaireScreen({ active, onReady, step, total, completed, a
                   <span data-reveal={`title-${option.id}`} id={`${optionId}-title`} className="questionnaire__option-title">{option.title}</span>
                   {option.description && <span data-reveal={`description-${option.id}`} id={`${optionId}-description`} className="questionnaire__description">{option.description}</span>}
                 </span>
-                {!first && <img data-reveal={`scene-${option.id}`} className="questionnaire__scene" src={`/media/questionnaire/q${step + 1}-${index + 1}-scene.webp`} width="208" height="165" alt="" loading="lazy" onError={event => { event.currentTarget.style.visibility = 'hidden' }} />}
+                <img data-reveal={`scene-${option.id}`} className="questionnaire__scene" src={`/media/questionnaire/q${first ? 2 : step + 1}-${first ? [1, 2, 4, 3, 5][index] : index + 1}-scene.webp`} width="208" height="165" alt="" loading="lazy" onError={event => { event.currentTarget.style.visibility = 'hidden' }} />
                 <span data-reveal={`indicator-${option.id}`} className="questionnaire__indicator" aria-hidden="true">{checked ? '✓' : ''}</span>
               </label>
             })}
