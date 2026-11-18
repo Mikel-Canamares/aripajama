@@ -48,23 +48,25 @@
 
   .about__collage { position: relative; grid-column: 1 / -1; justify-self: center; width: min(75%, 35.5rem); aspect-ratio: 2.6; margin-top: .25rem; }
   .about__collage > .about__paper { top: 6%; left: 0; width: 92%; height: 94%; }
-  .about__photo--photography-mountain { left: 19%; top: 3%; width: 24%; aspect-ratio: 1.13; transform: rotate(-11deg); z-index: 2; }
-  .about__photo--photography-desert { left: 9%; top: 26%; width: 15%; aspect-ratio: .7; transform: rotate(-15deg); z-index: 3; }
-  .about__photo--photography-road { left: 24%; top: 54%; width: 15%; aspect-ratio: 1; transform: rotate(12deg); z-index: 3; }
-  .about__photo--photography-snow { left: 54%; top: 15%; width: 17%; aspect-ratio: .78; transform: rotate(20deg); z-index: 1; }
-  .about__photo--photography-ocean { left: 39%; top: 30%; width: 16%; aspect-ratio: .63; transform: rotate(9deg); z-index: 4; }
-  .about__photo--photography-river { left: 69%; top: 57%; width: 14%; aspect-ratio: .82; transform: rotate(-12deg); z-index: 3; }
-  .about__camera-note { position: absolute; width: 28%; right: 0; top: 0; height: auto; mix-blend-mode: multiply; z-index: 5; }
-  .about__collage--travel { width: min(72%, 32rem); aspect-ratio: 2.15; margin-top: .5rem; }
-  .about__collage--travel > .about__paper { top: 10%; width: 99%; height: 90%; }
-  .about__photo--travel-hike { left: 5%; top: 17%; width: 14%; aspect-ratio: .65; transform: rotate(-16deg); }
-  .about__photo--travel-museum { left: 22%; top: 3%; width: 22%; aspect-ratio: 1.05; transform: rotate(-11deg); z-index: 1; }
-  .about__photo--travel-aurora { left: 50%; top: 0; width: 14%; aspect-ratio: .65; transform: rotate(15deg); }
-  .about__photo--travel-colosseum { left: 73%; top: 27%; width: 18%; aspect-ratio: 1.1; transform: rotate(14deg); }
-  .about__photo--travel-selfie { left: 40%; top: 35%; width: 24%; aspect-ratio: 1.5; transform: rotate(6deg); z-index: 3; }
-  .about__photo--travel-temple { left: 17%; top: 52%; width: 13%; aspect-ratio: .6; transform: rotate(13deg); z-index: 4; }
-  .about__photo--travel-summit { left: 33%; top: 61%; width: 20%; aspect-ratio: 1.05; transform: rotate(-11deg); z-index: 4; }
-  .about__photo--travel-morocco { left: 61%; top: 54%; width: 13%; aspect-ratio: .65; transform: rotate(9deg); z-index: 2; }
+  .about__collage--photography { width: min(90%, 42rem); aspect-ratio: 1.75; margin-top: 1rem; }
+  .about__collage--photography > .about__paper { top: 18%; left: 6%; width: 88%; height: 77%; }
+  .about__photo--photography-mountain { left: 13%; top: 8%; width: 33%; aspect-ratio: 1.13; transform: rotate(-11deg); z-index: 2; }
+  .about__photo--photography-desert { left: 4%; top: 32%; width: 18%; aspect-ratio: .6; transform: rotate(-15deg); z-index: 3; }
+  .about__photo--photography-road { left: 20%; top: 61%; width: 20%; aspect-ratio: 1; transform: rotate(12deg); z-index: 3; }
+  .about__photo--photography-snow { left: 57%; top: 22%; width: 21%; aspect-ratio: .75; transform: rotate(20deg); z-index: 1; }
+  .about__photo--photography-ocean { left: 40%; top: 34%; width: 21%; aspect-ratio: .58; transform: rotate(9deg); z-index: 4; }
+  .about__photo--photography-river { left: 78%; top: 61%; width: 16%; aspect-ratio: .75; transform: rotate(-12deg); z-index: 3; }
+  .about__camera-note { position: absolute; width: 27%; right: 0; top: 17%; height: auto; mix-blend-mode: multiply; z-index: 5; }
+  .about__collage--travel { width: min(90%, 42rem); aspect-ratio: 1.5; margin-top: 1rem; }
+  .about__collage--travel > .about__paper { top: 27%; left: 4%; width: 94%; height: 60%; }
+  .about__photo--travel-hike { left: 3%; top: 17%; width: 14%; aspect-ratio: .46; transform: rotate(-16deg); }
+  .about__photo--travel-museum { left: 19%; top: 7%; width: 25%; aspect-ratio: 1; transform: rotate(-11deg); z-index: 1; }
+  .about__photo--travel-aurora { left: 48%; top: 2%; width: 14%; aspect-ratio: .56; transform: rotate(15deg); }
+  .about__photo--travel-colosseum { left: 78%; top: 35%; width: 22%; aspect-ratio: 1.33; transform: rotate(14deg); }
+  .about__photo--travel-selfie { left: 39%; top: 38%; width: 30%; aspect-ratio: 1.75; transform: rotate(6deg); z-index: 3; }
+  .about__photo--travel-temple { left: 14%; top: 57%; width: 14%; aspect-ratio: .6; transform: rotate(13deg); z-index: 4; }
+  .about__photo--travel-summit { left: 33%; top: 65%; width: 21%; aspect-ratio: 1.05; transform: rotate(-11deg); z-index: 4; }
+  .about__photo--travel-morocco { left: 65%; top: 52%; width: 14%; aspect-ratio: .56; transform: rotate(9deg); z-index: 2; }
   .about__closing { position: relative; z-index: 1; margin-top: .75rem; padding: 0 5% max(2.75rem, env(safe-area-inset-bottom)); color: #45130f; text-align: center; }
   .about__closing p { margin: 0; font: 400 italic clamp(1.6rem, 3.8cqw, 2.4rem)/1.05 var(--font-editorial); }
   .about__heart { width: 18px; height: 18px; margin: 1rem auto 0; color: var(--about-bronze); }

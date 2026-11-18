@@ -1,3 +1,31 @@
+## Quién soy · Ocho fotografías del collage inferior · 18/11/2026 · Plan aprobado
+
+- [x] Identificar las ocho fotos originales y su distribución en la referencia.
+- [x] Generar los WebP y conectar cada imagen con su marco y texto alternativo.
+- [x] Ajustar encuadres, tamaños y solapamientos y conservar el espacio de la frase final.
+- [x] Actualizar las comprobaciones existentes, verificar móvil y escritorio y completar Review.
+
+### Review
+
+- **Resumen de cambios:** `scripts/prepare-about-photos.mjs` incorpora los ocho originales del collage inferior y genera WebP independientes en `public/media/about/`. `src/data/about-photos.ts` conecta las imágenes con sus textos alternativos y encuadres. `src/about.css` reproduce la distribución de la referencia con escalada a la izquierda, museo y aurora en la parte superior, Coliseo a la derecha, manos verdes en primer plano y Japón, montaña y textiles en la parte inferior, conservando marcos blancos, inclinaciones y sombras de álbum.
+- **Verificación:** `npm run build` correcto. `npm run test:frontend -- tests/about.spec.ts --workers=2`: 16/16 correctas en Chromium y WebKit. Las comprobaciones existentes verifican ahora las quince fotografías, su carga diferida, ocho tamaños entre 280 y 1440 px, ausencia de fotos fuera de pantalla y separación entre los marcos inferiores y la frase de cierre; también se comprueba texto al 200 %. Revisadas visualmente capturas de 390 y 941 px. `git diff --check`: sin errores de espacios.
+- **Riesgos potenciales:** los solapamientos y pequeños recortes forman parte del diseño de referencia. Las ocho fotos nuevas suman unos 897 KiB y se cargan bajo demanda.
+- **Siguientes pasos sugeridos:** revisar los encuadres del álbum completo en el dispositivo habitual.
+
+## Quién soy · Fotografías del collage de fotografía · 18/11/2026 · Plan aprobado
+
+- [x] Identificar las seis fotos originales y su posición según la captura aportada.
+- [x] Generar versiones WebP optimizadas y conectarlas a los seis marcos.
+- [x] Ajustar proporciones, encuadres y solapamientos al acabado de álbum de la referencia.
+- [x] Actualizar las comprobaciones existentes, verificar móvil y escritorio y completar Review.
+
+### Review
+
+- **Resumen de cambios:** seis WebP independientes en `public/media/about/`, con generación reproducible mediante `node scripts/prepare-about-photos.mjs` desde los originales de `../RECURSOS/fotos quien soy`. `src/data/about-photos.ts` incorpora las fotos y sus textos alternativos. `src/about.css` adapta el collage a la referencia: montaña arriba a la izquierda, desierto en el lateral izquierdo, carretera abajo a la izquierda, buceo delante en el centro, glaciar arriba a la derecha y kayak en el extremo inferior derecho, con marcos blancos, sombras e inclinaciones.
+- **Verificación:** `npm run build` correcto. `npm run test:frontend -- tests/about.spec.ts --workers=2`: 16/16 pruebas correctas en Chromium y WebKit, incluida carga de las siete fotos de la pantalla, navegación, recursos fallidos, ocho tamaños responsive y texto al 200 %. Pruebas existentes actualizadas para activar y comprobar la carga diferida antes de las capturas. Revisadas visualmente las capturas de 390 y 941 px, con la nota de cámara legible. `git diff --check`: sin errores de espacios.
+- **Riesgos potenciales:** los marcos superponen intencionadamente pequeños fragmentos de las fotos, conforme a la referencia. Los seis recursos suman unos 693 KiB y se cargan bajo demanda.
+- **Siguientes pasos sugeridos:** revisar los encuadres en el dispositivo habitual.
+
 ## Quién soy · Eliminar la superposición de letras antiguas · 18/11/2026
 
 - [x] Revisar el fondo generado y detectar que comparte la ruta del recurso antiguo.
