@@ -1,3 +1,68 @@
+## Quién soy · Eliminar la superposición de letras antiguas · 18/11/2026
+
+- [x] Revisar el fondo generado y detectar que comparte la ruta del recurso antiguo.
+- [x] Generar el papel limpio con un nombre propio y actualizar la pegatina.
+- [x] Verificar el recurso y la composición en navegador; completar Review.
+
+### Review
+
+- **Resumen de cambios:** el papel limpio se genera ahora como `public/media/about/signature-paper.webp` y `AboutScreen.tsx` utiliza esa ruta exclusiva. Evita reutilizar una versión en caché de `signature.webp` con las letras anteriores. El logotipo oficial es la única capa de texto de la pegatina.
+- **Verificación:** inspección del papel sin letras y de la captura móvil con un único logotipo; ninguna referencia a la imagen antigua en los componentes o estilos. `npm run build` correcto y prueba responsive existente superada en Chromium y WebKit (2/2), ocho tamaños por navegador. `git diff --check`: sin errores de espacios.
+- **Riesgos potenciales:** cambio localizado en la ruta del fondo decorativo; la composición y las dimensiones se mantienen.
+- **Siguientes pasos sugeridos:** comprobar que la pegatina muestra una sola firma en el navegador habitual.
+
+## Quién soy · Logotipo oficial en la pegatina Aripajama · 18/11/2026
+
+- [x] Confirmar el logotipo y el color utilizados en la portada.
+- [x] Preparar el papel sin las letras antiguas e integrar el logotipo oficial.
+- [x] Verificar móvil y escritorio y completar Review.
+
+### Review
+
+- **Resumen de cambios:** `scripts/prepare-about-assets.mjs` retira las letras antiguas de la pegatina conservando su papel y genera `public/media/about/signature.webp`. `src/screens/AboutScreen.tsx` coloca encima el mismo recurso oficial `/brand/aripajama.webp` utilizado en la portada. `src/about.css` adapta el logotipo al papel, con inclinación de −8° y proporciones originales. `src/styles.css` comparte el tratamiento de color entre portada y pegatina.
+- **Verificación:** regeneración de recursos y `npm run build` correctos. Pruebas existentes responsive y de fallos decorativos: 4/4 correctas en Chromium y WebKit, con ocho encuadres por navegador entre 280 y 1440 px. Capturas de 390 y 941 px revisadas visualmente. `git diff --check`: sin errores de espacios.
+- **Riesgos potenciales:** el papel mantiene la resolución de la referencia original; el logotipo independiente conserva la definición del recurso oficial.
+- **Siguientes pasos sugeridos:** revisar el resultado en el dispositivo habitual.
+
+## Quién soy · Pegatina legible sobre la fotografía · 18/11/2026
+
+- [x] Revisar la mezcla de colores y la transparencia del recurso original.
+- [x] Retirar la mezcla y añadir un fondo de papel con la silueta de la pegatina.
+- [x] Verificar móvil y escritorio y completar Review.
+
+### Review
+
+- **Resumen de cambios:** `src/about.css` retira `mix-blend-mode: multiply` de la pegatina y añade un fondo de papel opaco recortado a su silueta original. La frase queda legible por encima de la fotografía, manteniendo posición, tamaño e inclinación.
+- **Verificación:** prueba responsive existente correcta en Chromium y WebKit (2/2), ocho encuadres por navegador entre 280 y 1440 px. Capturas de 390 y 941 px revisadas visualmente: frase completa visible sobre la foto. `git diff --check`: sin errores de espacios.
+- **Riesgos potenciales:** la pegatina cubre ahora la pequeña zona de la fotografía bajo su papel, conforme al acabado solicitado.
+- **Siguientes pasos sugeridos:** ninguno para este ajuste.
+
+## Quién soy · Primera fotografía de álbum · 18/11/2026
+
+- [x] Identificar el original de la fotografía aportada y revisar su marco.
+- [x] Incorporar una versión optimizada y encajarla en el primer hueco con el acabado de álbum.
+- [x] Adaptar las comprobaciones existentes, verificar la composición y completar Review.
+
+### Review
+
+- **Resumen de cambios:** `public/media/about/portrait.webp` incorpora la foto aportada desde `../RECURSOS/fotos quien soy/IMG_2406.jpeg`, optimizada a 1000 × 563 px (unos 185 KiB). `src/data/about-photos.ts` la conecta al primer marco con texto alternativo y encuadre centrado en Ariana y la mano de piedra. `src/about.css` ajusta la cinta para que se superponga al borde y parezca sujetar la foto al álbum, conservando el marco blanco, su inclinación y sombra.
+- **Verificación:** `npm run build` correcto; 6/6 pruebas existentes adaptadas en Chromium y WebKit, incluida carga de la foto, fallos de recursos y ocho tamaños de pantalla por navegador. Capturas de móvil (390 px) y referencia (941 px) revisadas visualmente. `git diff --check`: sin errores de espacios.
+- **Riesgos potenciales:** el marco recorta parte de los laterales del paisaje; Ariana permanece completa dentro del encuadre comprobado.
+- **Siguientes pasos sugeridos:** revisar el acabado en el dispositivo habitual.
+
+## Biblioteca · Eliminar el aviso de itinerarios · 18/11/2026
+
+- [x] Localizar el texto y revisar las referencias en las pruebas existentes.
+- [x] Retirar el aviso y su contenedor; adaptar las pruebas que lo utilizaban.
+- [x] Ejecutar las comprobaciones pertinentes y completar Review.
+
+### Review
+
+- **Resumen de cambios:** `src/screens/LibraryScreen.tsx` elimina el aviso de itinerarios y su contenedor. `tests/library.spec.ts` comprueba su ausencia y utiliza el pie de la biblioteca como destino de scroll.
+- **Verificación:** 6/6 pruebas existentes correctas en Chromium y WebKit: controles, regreso tras scroll y siete encuadres responsive por navegador. `git diff --check`: sin errores de espacios.
+- **Riesgos potenciales:** se reduce la altura del contenido al retirar el aviso; las comprobaciones de scroll y encuadres pasan.
+- **Siguientes pasos sugeridos:** ninguno para este ajuste.
+
 ## Biblioteca · Países sin flechas junto a los mapas · 09/11/2026
 
 - [x] Comparar las tarjetas de países con las de continentes y todos los viajes.

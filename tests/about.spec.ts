@@ -91,17 +91,21 @@ test('comparte transiciones y apariciones; el regreso desde scroll conserva la s
   expect(await page.evaluate(() => window.scrollY)).toBe(0)
 })
 
-test('conserva los textos y los quince marcos blancos sin cargar fotografías', async ({ page }) => {
+test('conserva los textos y los quince marcos con la primera fotografía de álbum', async ({ page }) => {
   await page.emulateMedia({ reducedMotion: 'reduce' })
   await page.goto('/#quien-soy')
   await expect(title(page)).toBeFocused()
   await expect(page.locator('.about__section')).toHaveCount(4)
   await expect(page.locator('.about__number')).toHaveText(['01', '02', '03', '04'])
   await expect(page.locator('.about__photo')).toHaveCount(15)
-  await expect(page.locator('.about__photo img')).toHaveCount(0)
+  await expect(page.locator('.about__photo img')).toHaveCount(1)
+  const portrait = page.locator('[data-photo-id="portrait"]')
+  await expect(portrait).not.toHaveAttribute('aria-hidden', 'true')
+  await expect(portrait.locator('img')).toHaveAttribute('alt', 'Ariana sentada en una gran mano de piedra, con montañas al fondo')
+  await expect.poll(() => portrait.locator('img').evaluate(image => (image as HTMLImageElement).naturalWidth)).toBeGreaterThan(0)
   for (const frame of await page.locator('.about__photo').all()) {
     await expect(frame).toHaveCSS('background-color', 'rgb(255, 255, 255)')
-    await expect(frame).toHaveAttribute('aria-hidden', 'true')
+    if (await frame.getAttribute('data-photo-id') !== 'portrait') await expect(frame).toHaveAttribute('aria-hidden', 'true')
   }
   await expect(page.locator('.about__section--origin')).toContainText('Hoy su letra forma parte de Aripajama')
   await expect(page.locator('.about__section--photography')).toContainText('No solo fotografío lugares, también personas')

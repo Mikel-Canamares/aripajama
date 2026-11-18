@@ -31,17 +31,19 @@
   .about__portrait { position: relative; grid-column: 1 / -1; justify-self: center; width: min(78%, 28rem); aspect-ratio: 2.1; margin-top: .2rem; }
   .about__paper { position: absolute; background: url('/media/about/watercolor.webp') center / 100% 100% no-repeat; }
   .about__portrait > .about__paper { left: 0; top: 1%; width: 93%; height: 100%; }
-  .about__tape { position: absolute; top: 5%; left: 39%; width: 14%; height: 6%; background: linear-gradient(95deg, #c9a68399, #d7b99ac9 55%, #c9a68399); transform: rotate(-5deg); z-index: 2; }
+  .about__tape { position: absolute; top: 10%; left: 39%; width: 14%; height: 9%; background: linear-gradient(95deg, #c9a68399, #d7b99ac9 55%, #c9a68399); transform: rotate(-5deg); z-index: 2; }
   .about__photo { position: absolute; background: #fff; border: clamp(3px, .6cqw, 6px) solid #fff; box-shadow: 0 2px 5px #49352326, inset 0 0 0 1px #eee8e2; }
   .about__photo img { width: 100%; height: 100%; object-fit: cover; }
   .about__photo--portrait { left: 27%; top: 14%; width: 40%; height: 58%; transform: rotate(-2deg); }
   .about__cotton { position: absolute; left: 13%; top: 32%; width: 18.5%; height: auto; z-index: 3; mix-blend-mode: multiply; }
   .about__sun { position: absolute; top: 0; left: 76%; width: 15%; color: var(--about-bronze); }
-  .about__note { position: absolute; right: 0; top: 43%; width: 48%; height: auto; z-index: 4; mix-blend-mode: multiply; }
+  .about__note { position: absolute; right: 0; top: 43%; width: 48%; height: auto; z-index: 4; background: #f7e5d7; clip-path: polygon(1.88% 47.27%, 85.92% 3.64%, 98.59% 77.27%, 12.68% 98.18%); }
   .about__signature { display: flex; align-items: center; justify-content: center; gap: 0; grid-column: 1 / -1; justify-self: center; width: min(70%, 19rem); margin-top: .1rem; }
-  .about__signature > img:first-child { width: 56%; height: auto; }
+  .about__signature-sticker { position: relative; display: block; width: 56%; flex-shrink: 0; }
+  .about__signature-paper { width: 100%; height: auto; }
+  .about__signature-logo { position: absolute; left: 9%; top: 24%; width: 82%; height: auto; transform: rotate(-8deg); }
   .about__mountains { width: 44%; height: auto; }
-  .about__signature img { mix-blend-mode: multiply; }
+  .about__signature-paper, .about__mountains { mix-blend-mode: multiply; }
   .about__section + .about__section--photography { margin-top: .25rem; }
 
   .about__collage { position: relative; grid-column: 1 / -1; justify-self: center; width: min(75%, 35.5rem); aspect-ratio: 2.6; margin-top: .25rem; }

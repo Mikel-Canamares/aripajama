@@ -134,9 +134,6 @@ export function LibraryScreen({ active, onReady, onBack }: { active: boolean; on
         <p data-reveal-group=""><Icon name="heart" /><span data-reveal="">Experiencias<br />de primera mano</span></p>
         <p data-reveal-group=""><Icon name="leaf" /><span data-reveal="">Destinos con<br />sentido</span></p>
       </footer>
-      <div className="library__notice">
-        <p data-reveal="" id="library-pending">Descubre los {TRIPS.length} itinerarios, sus rutas y las experiencias de cada viaje. Próximamente: exploración por tipo de viaje.</p>
-      </div>
       </>}
     </div>
     </div>

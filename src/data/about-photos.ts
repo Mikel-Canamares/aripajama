@@ -10,7 +10,7 @@ type AboutPhoto = { src: string | null; alt: string; position?: string }
 // Add each original separately. A null source renders a white, decorative frame.
 // position accepts CSS object-position, for example '50% 30%'.
 export const ABOUT_PHOTOS: Record<AboutPhotoId, AboutPhoto> = {
-  portrait: { src: null, alt: '' },
+  portrait: { src: '/media/about/portrait.webp', alt: 'Ariana sentada en una gran mano de piedra, con montañas al fondo', position: '53% 50%' },
   'photography-mountain': { src: null, alt: '' },
   'photography-desert': { src: null, alt: '' },
   'photography-road': { src: null, alt: '' },

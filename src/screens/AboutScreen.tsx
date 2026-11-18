@@ -82,7 +82,10 @@ export function AboutScreen({ active, onReady, onBack }: { active: boolean; onRe
           <p data-reveal="">Hoy su letra forma parte de Aripajama y su manera de soñar sigue acompañándome en cada viaje.</p>
         </div>
         <div className="about__signature" data-reveal-group="">
-          <img data-reveal="" src="/media/about/signature.webp" width="165" height="77" alt="Aripajama, con la letra de mi padre" onError={event => { event.currentTarget.style.visibility = 'hidden' }} />
+          <span data-reveal="" className="about__signature-sticker">
+            <img className="about__signature-paper" src="/media/about/signature-paper.webp" width="165" height="77" alt="" onError={event => { event.currentTarget.style.visibility = 'hidden' }} />
+            <img className="about__signature-logo" src="/brand/aripajama.webp" width="1380" height="480" alt="Aripajama, con la letra de mi padre" onError={event => { event.currentTarget.style.visibility = 'hidden' }} />
+          </span>
           <img data-reveal="" className="about__mountains" src="/media/about/mountains.webp" width="126" height="47" alt="" onError={event => { event.currentTarget.style.visibility = 'hidden' }} />
         </div>
       </section>

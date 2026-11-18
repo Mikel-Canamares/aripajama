@@ -164,7 +164,7 @@
   }
 
   .intro .brand { width: 100%; }
-  .intro .brand__logo { filter: brightness(0) saturate(100%) invert(8%) sepia(25%) saturate(2725%) hue-rotate(327deg) brightness(88%) contrast(103%); }
+  .intro .brand__logo, .about__signature-logo { filter: brightness(0) saturate(100%) invert(8%) sepia(25%) saturate(2725%) hue-rotate(327deg) brightness(88%) contrast(103%); }
   .intro .brand__descriptor { color: #b77336; font-size: clamp(.45rem, 1.8vw, 1.1rem); }
   .intro__headline {
     margin-block-start: 22.5svh;

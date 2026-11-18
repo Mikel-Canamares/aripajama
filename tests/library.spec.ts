@@ -66,7 +66,7 @@ test('el regreso conserva la posición visual de salida después de hacer scroll
   await openHubWithMotion(page)
   await page.getByRole('button', { name: 'Biblioteca de viajes', exact: true }).click()
   await expect(page.getByRole('heading', { name: 'Biblioteca de viajes', level: 1 })).toBeFocused()
-  await page.locator('.library__notice').scrollIntoViewIfNeeded()
+  await page.locator('.library__footer').scrollIntoViewIfNeeded()
   const scroll = await page.evaluate(() => window.scrollY)
   expect(scroll).toBeGreaterThan(0)
   await page.keyboard.press('Escape')
@@ -131,8 +131,7 @@ test('habilita países y continentes sin mostrar el botón de tipo de viaje', as
     await expect(page.getByRole('button', { name, exact: true })).toBeEnabled()
   }
   await expect(page.getByRole('button', { name: 'Tipo de viaje', exact: true })).toHaveCount(0)
-  await expect(page.locator('#library-pending')).toBeVisible()
-  await expect(page.locator('#library-pending')).toContainText('39 itinerarios')
+  await expect(page.locator('#library-pending')).toHaveCount(0)
   await expect(page.locator('.library a')).toHaveCount(0)
 })
 
@@ -173,7 +172,7 @@ test('mobile first sin desbordamientos en vertical, horizontal y escritorio', as
       expect(await button.evaluate(el => el.scrollWidth <= el.clientWidth + 1)).toBe(true)
     }
     await page.screenshot({ path: testInfo.outputPath(`library-${viewport.width}x${viewport.height}.png`), fullPage: true })
-    await page.locator('.library__notice').scrollIntoViewIfNeeded()
+    await page.locator('.library__footer').scrollIntoViewIfNeeded()
     await page.keyboard.press('Escape')
     await expect(page.getByRole('button', { name: 'Biblioteca de viajes', exact: true })).toBeFocused()
     expect(await page.evaluate(() => window.scrollY)).toBe(0)
