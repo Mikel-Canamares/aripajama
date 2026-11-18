@@ -5,6 +5,7 @@ import { JourneyScreen } from './screens/JourneyScreen'
 import { LibraryScreen } from './screens/LibraryScreen'
 import { CreateTripFlow } from './screens/CreateTripFlow'
 import { AboutScreen } from './screens/AboutScreen'
+import { MobileNavigation } from './components/MobileNavigation'
 
 type Destination = 'library' | 'create' | 'about'
 
@@ -91,11 +92,14 @@ export function App() {
   const introActive = phase === 'intro' || phase === 'preparing'
 
   function openDestination(next: Destination) {
-    if (navigation !== 'hub') return
+    if (navigation !== 'hub' && navigation !== destination) return
+    if (navigation === next) return
+    const fromHub = phase === 'journey' && navigation === 'hub'
+    setPhase('journey')
     setDestination(next)
     setDestinationReady(false)
     setRestoreFocus(null)
-    const state = next === 'library' ? { libraryDepth: 0 } : next === 'create' ? { createFromHub: true } : { aboutFromHub: true }
+    const state = next === 'library' ? { libraryDepth: 0 } : next === 'create' ? { createFromHub: fromHub } : { aboutFromHub: fromHub }
     const hash = next === 'library' ? '#biblioteca' : next === 'create' ? '#crear-mi-viaje' : '#quien-soy'
     history.pushState(state, '', hash)
     setNavigation('preparing')
@@ -184,6 +188,18 @@ export function App() {
           </div>
         </div>
       )}
+      <MobileNavigation
+        current={phase === 'intro' ? 'intro' : navigation === 'hub' ? 'hub' : destination}
+        disabled={(phase !== 'intro' && phase !== 'journey') || (navigation !== 'hub' && navigation !== destination)}
+        onNavigate={next => {
+          if (next !== 'intro') { openDestination(next); return }
+          if (phase === 'intro') return
+          history.pushState(null, '', window.location.pathname + window.location.search)
+          setRestoreFocus(null)
+          setNavigation('hub')
+          setPhase('intro')
+        }}
+      />
     </div>
   )
 }

@@ -21,8 +21,8 @@
   .about__copy h1, .about__copy h2 { margin: 0; color: #080706; font: 700 clamp(1.8rem, 3.5cqw, 2.2rem)/.94 var(--font-editorial); letter-spacing: -.025em; overflow-wrap: anywhere; }
   .about__copy h1 { font-size: clamp(2rem, 4.1cqw, 2.5rem); line-height: .9; }
   .about__copy h1:focus, .about__copy h2:focus { outline: none; }
-  .about__copy p { margin: 0; font: 400 clamp(1rem, 1.7cqw, 1.125rem)/1.12 'Times New Roman', Times, serif; overflow-wrap: anywhere; }
-  .about__copy p + p { margin-top: .3em; }
+  .about__copy p { margin: 0; font: 400 clamp(1rem, 1.7cqw, 1.125rem)/1.45 'Times New Roman', Times, serif; overflow-wrap: anywhere; }
+  .about__copy p + p { margin-top: .9em; }
   .about__number { position: relative; display: grid; place-items: center; align-self: start; aspect-ratio: 1; color: #17120e; font: 400 italic clamp(1.25rem, 2.7cqw, 1.7rem)/1 var(--font-editorial); background: url('/media/about/number-peach.webp') center / contain no-repeat; }
   .about__number::after { content: ''; position: absolute; top: 4%; left: calc(100% + var(--about-column-gap) / 2); width: 1px; height: clamp(2rem, 4.9cqw, 3rem); background: #af7b3b; }
   .about__section--photography .about__number { background-image: url('/media/about/number-blue.webp'); }
