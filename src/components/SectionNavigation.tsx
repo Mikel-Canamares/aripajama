@@ -87,9 +87,10 @@ export function MobileNavigation({ current, disabled, onNavigate }: {
       <p className="mobile-navigation__caption">Tu próxima historia</p>
       {items.map(item => <a key={item.id} href={item.href} tabIndex={0} aria-current={current === item.id ? 'page' : undefined}
         onClick={event => {
-          event.preventDefault()
           setOpen(false)
           toggle.current?.focus({ preventScroll: true })
+          if (item.id === current && window.location.hash !== item.href) return
+          event.preventDefault()
           onNavigate(item.id)
         }}>
         {item.label}<LibraryIcon name="arrow" />

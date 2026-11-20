@@ -57,6 +57,40 @@ test('no muestra el menú en la portada, tampoco al volver desde el recorrido', 
   await expect(page.locator('.mobile-navigation')).toHaveCount(0)
 })
 
+for (const width of [390, 1366]) {
+  test(`vuelve a la biblioteca desde un continente y una ficha con historial a ${width} px`, async ({ page }) => {
+    await page.setViewportSize({ width, height: 844 })
+    const menu = page.getByRole('navigation', { name: 'Navegación principal' })
+    const library = page.locator('.library')
+    const home = page.getByRole('heading', { name: 'Biblioteca de viajes' })
+    await page.locator('#library-asia').click()
+    await expect(page.getByRole('heading', { name: 'Asia', level: 1, exact: true })).toBeFocused()
+
+    for (const view of ['trips', 'detail']) {
+      if (view === 'detail') {
+        await page.locator('#trip-tailandia').click()
+        await expect(library.locator('h1')).toBeFocused()
+      }
+      const origin = page.url()
+      await expect(library).toHaveAttribute('data-view', view)
+      if (width < 768) await page.getByRole('button', { name: 'Abrir menú' }).click()
+      await menu.getByRole('link', { name: 'Biblioteca de viajes' }).click()
+      await expect(page).toHaveURL(/#biblioteca$/)
+      await expect(library).toHaveAttribute('data-view', 'home')
+      await expect(home).toBeFocused()
+      expect(await page.evaluate(() => window.scrollY)).toBe(0)
+      if (width < 768) await expect(menu).toBeHidden()
+      await page.goBack()
+      await expect(page).toHaveURL(origin)
+      await expect(library).toHaveAttribute('data-view', view)
+      await expect(library.locator('h1')).toBeFocused()
+    }
+    await page.goForward()
+    await expect(page).toHaveURL(/#biblioteca$/)
+    await expect(home).toBeFocused()
+  })
+}
+
 test('encaja en móvil estrecho y horizontal y se oculta en escritorio', async ({ page }, testInfo) => {
   for (const size of [{ width: 280, height: 568 }, { width: 390, height: 844 }, { width: 740, height: 360 }]) {
     await page.setViewportSize(size)

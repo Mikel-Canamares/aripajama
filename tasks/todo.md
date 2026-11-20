@@ -1,3 +1,17 @@
+## Biblioteca · Regreso desde el menú móvil · 20/11/2026 · Plan aprobado
+
+- [x] Localizar la causa y revisar el comportamiento del menú de escritorio.
+- [x] Permitir que el menú móvil abra la portada de la biblioteca desde sus vistas internas.
+- [x] Verificar continentes, fichas, historial y navegación de escritorio.
+- [x] Revisar el diff y completar Review con los resultados.
+
+### Review
+
+- **Resumen de cambios:** `src/components/SectionNavigation.tsx` permite seguir el enlace a la raíz de la sección activa cuando la URL corresponde a una vista interna, reutilizando el comportamiento del menú de escritorio y cerrando el desplegable. Resuelve el bloqueo causado por enviar esa pulsación al manejador que ignora la sección ya activa. `tests/mobile-navigation.spec.ts` añade cobertura del regreso desde Asia y la ficha de Tailandia a 390 y 1366 px, con foco, scroll inicial, cierre del menú y navegación Atrás/Adelante.
+- **Verificación:** `npm run build` correcto. `npm run test:frontend -- tests/mobile-navigation.spec.ts --workers=2`: 12/12 correctas en Chromium y WebKit. La primera ejecución detectó un selector ambiguo de la prueba nueva, corregido limitándolo al título principal. `git diff --check`: sin errores de espacios.
+- **Riesgos potenciales:** ajuste localizado en el enlace de la sección activa; comparte la navegación nativa ya utilizada en escritorio.
+- **Siguientes pasos sugeridos:** comprobar el regreso en el dispositivo habitual.
+
 ## Menú de navegación · Cristal suave integrado · 20/11/2026 · Plan aprobado
 
 - [x] Revisar los estilos actuales y registrar el plan aprobado.
