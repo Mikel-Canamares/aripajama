@@ -39,7 +39,7 @@ test('muestra el tríptico completo y cambia de composición en 1024 px', async 
 
 test('mantiene las tres entradas con arte fallido, teclado y texto al 200 %', async ({ page }) => {
   await page.route('**/media/about/footer-ribbons.webp', route => route.abort())
-  await page.route('**/media/trips/vietnam/ruta.webp', route => route.abort())
+  await page.route('**/media/library/background.webp', route => route.abort())
   await enterHub(page)
   await expect(page.locator('.journey')).toHaveAttribute('data-artwork', 'error')
   await page.addStyleTag({ content: 'html { font-size: 200% }' })

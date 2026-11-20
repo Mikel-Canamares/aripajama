@@ -1,3 +1,43 @@
+## Hub · Composición centrada de Biblioteca · 20/11/2026
+
+- [x] Revisar el encuadre actual y la proporción de la ilustración original.
+- [x] Centrar la composición del planeta con más aire alrededor, equilibrándola con Quién soy.
+- [x] Revisar capturas de escritorio y completar Review.
+
+### Review
+
+- **Resumen de cambios:** `src/desktop.css` presenta el tramo ilustrado del fondo de Biblioteca en una franja centrada verticalmente, conservando su proporción y reduciendo la ampliación del 160 % al 100 %. El planeta y las cintas quedan a la altura de la composición de Quién soy, con espacio blanco por encima y por debajo.
+- **Verificación:** capturas revisadas a 1024, 1366 y 1920 px. Prueba existente de composición del tríptico: 2/2 correctas en Chromium y WebKit, incluyendo 1024, 1366, 1440 y 1920 px. `git diff --check`: correcto.
+- **Riesgos potenciales:** el planeta conserva el recorte lateral del recurso original; el encuadre central utiliza solo la cabecera ilustrada, omitiendo la zona blanca de la imagen vertical.
+- **Siguientes pasos sugeridos:** revisar el nuevo equilibrio visual en el monitor habitual.
+
+## Hub · Ajuste de ilustraciones del tríptico · 20/11/2026
+
+- [x] Localizar la brújula decorativa y el encuadre del globo.
+- [x] Retirar la brújula de Crear mi viaje y bajar la ilustración de Biblioteca.
+- [x] Verificar visualmente el resultado y completar Review.
+
+### Review
+
+- **Resumen de cambios:** `src/desktop.css` elimina el pseudoelemento de la brújula en Crear mi viaje y desplaza hacia abajo el fondo de Biblioteca entre 32 y 64 px según la altura disponible, reduciendo el espacio blanco inferior.
+- **Verificación:** capturas actualizadas a 1024, 1366, 1920 y 390 px; revisión visual a 1366 y 1920 px con la brújula retirada y el globo más bajo. Se mantienen las dimensiones de las tarjetas. `git diff --check`: correcto.
+- **Riesgos potenciales:** mínimos; ajuste decorativo localizado en los estilos de escritorio.
+- **Siguientes pasos sugeridos:** revisar el encuadre en el monitor habitual.
+
+## Hub · Tríptico de escritorio · 20/11/2026 · Plan aprobado
+
+- [x] Revisar las ilustraciones superiores de cada módulo y los estilos actuales.
+- [x] Usar las ilustraciones originales de Quién soy, Biblioteca y Crear mi viaje.
+- [x] Ocultar «Volver a la portada» en escritorio, subir el título y alargar las tres tarjetas.
+- [x] Verificar compilación, navegación y composición responsive; completar Review.
+
+### Review
+
+- **Resumen de cambios:** `src/desktop.css` reutiliza la cabecera ilustrada de Quién soy y el globo con cintas de Biblioteca, junto a las montañas de Crear mi viaje. Las tarjetas pasan a paneles verticales de igual altura (entre 28 y 38 rem, adaptados a la altura de pantalla), con una franja inferior común para alinear títulos y flechas. El título se sitúa cerca del borde superior y «Volver a la portada» se oculta en escritorio. Se conserva la adaptación con texto ampliado. `tests/layout.desktop.ts` actualiza el recurso bloqueado en la prueba de fallo de ilustración.
+- **Verificación:** `npm run build` correcto. `npm run test:frontend -- tests/layout.desktop.ts tests/journey.spec.ts --workers=2`: 20/20 correctas en Chromium y WebKit, incluyendo navegación, teclado, texto al 200 % y adaptación móvil. Tras ajustar la alineación inferior, se repitieron las 6 pruebas de escritorio y la compilación, todas correctas. Capturas revisadas a 1024, 1366 y 1920 px; tarjetas completas y sin desbordamiento en los tamaños comprobados. `git diff --check`: correcto.
+- **Riesgos potenciales:** el encuadre de las ilustraciones varía con las proporciones disponibles; en pantallas de poca altura el contenido permite desplazamiento vertical.
+- **Siguientes pasos sugeridos:** revisar el acabado del tríptico en el monitor habitual.
+
 ## Biblioteca · Regreso desde el menú móvil · 20/11/2026 · Plan aprobado
 
 - [x] Localizar la causa y revisar el comportamiento del menú de escritorio.

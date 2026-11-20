@@ -40,7 +40,7 @@
       --journey-caption-size: .75rem;
       --journey-caption-tracking: .13em;
       --journey-caption-color: #75543d;
-      padding: 4.5rem 0; background: #faf8f3;
+      align-items: flex-start; padding: clamp(2rem, 5svh, 3.5rem) 0 4.5rem; background: #faf8f3;
     }
     .journey__media { width: 100%; }
     .journey__artwork {
@@ -48,64 +48,46 @@
       mask-image: none; mix-blend-mode: multiply;
     }
     .journey__canvas { width: var(--spread-width); margin-inline: auto; }
-    .journey__header { margin-bottom: clamp(1.8rem, 5.2svh, 3.75rem); padding: 0; text-align: center; }
+    .journey__header { margin-bottom: clamp(1.75rem, 4svh, 3rem); padding: 0; text-align: center; }
     .journey__title { display: flex; flex-wrap: wrap; justify-content: center; align-items: baseline; gap: .35em 1.3rem; }
     .journey__title-main { text-transform: none; }
     .journey__title-sub { position: static; margin: 0; white-space: normal; color: #88654d; }
     .journey__cards { display: grid; grid-template-columns: var(--spread-columns); gap: var(--spread-gap); }
     .journey__card {
       display: grid; grid-column: span 4; grid-template-columns: minmax(0, 1fr) auto;
-      grid-template-rows: auto 1fr; gap: 0 .65rem; align-items: center; min-height: 0;
+      grid-template-rows: minmax(0, 1fr) auto; gap: 0 .65rem; align-items: center;
+      min-height: clamp(28rem, 66svh, 38rem);
       padding: .55rem .55rem 0; border: 1px solid var(--paper-rule); border-radius: 4px;
       background: #fffcf6; box-shadow: 0 8px 24px -15px #614b3b66;
     }
     /* Once the hub fades in, all three destinations can be read and used together. */
     .journey__cards [data-reveal-state] { opacity: 1; translate: none; pointer-events: auto; }
-    .journey__card-text { padding: clamp(1rem, 1.7vw, 1.5rem) 0 clamp(1.2rem, 2vw, 1.8rem) clamp(.55rem, 1.1vw, 1.1rem); }
+    .journey__card-text { min-height: 8rem; padding: clamp(1rem, 1.7vw, 1.5rem) 0 clamp(1.2rem, 2vw, 1.8rem) clamp(.55rem, 1.1vw, 1.1rem); }
     .journey__card-title { text-transform: none; font-weight: 600; overflow-wrap: anywhere; }
     .journey__card-text br { display: none; }
     .journey__card-sub { margin-top: .65rem; }
     .journey__card-arrow { width: clamp(2rem, 3vw, 2.6rem); margin: 0 clamp(.4rem, 1vw, .9rem) 0 0; }
     .journey__card:has(.journey__card-link):hover { transform: none; }
-    .journey__back {
-      left: max(5%, calc((100% - 1280px) / 2)); padding-inline: 0; opacity: 1; pointer-events: auto;
-      border: 0; background: transparent; color: #6c5541; font-size: .85rem;
-    }
+    .journey__back { display: none; }
 
-    /* The three illustrations use artwork already present in the travel journal. */
+    /* Reuse each destination's upper-right artwork as a triptych panel. */
     .journey__scene {
-      display: block; position: relative; grid-column: 1 / -1; width: 100%; aspect-ratio: 1.48;
+      display: block; position: relative; grid-column: 1 / -1; width: 100%; height: 100%; min-height: 18rem;
       overflow: hidden; isolation: isolate;
     }
-    .journey__scene::before, .journey__scene::after { content: ''; position: absolute; }
     .journey__card--about .journey__scene {
-      background: url('/media/about/watercolor.webp') center / cover, #f0e5d6;
-    }
-    .journey__card--about .journey__scene::before {
-      inset: 13% 9% 11%; transform: rotate(-4deg); border: .45rem solid #fffdf6; border-bottom-width: .9rem;
-      background: #e9ddca url('/media/about/portrait.webp') center / cover;
-      box-shadow: .1rem .4rem .65rem #5143354d;
-    }
-    .journey__card--about .journey__scene::after {
-      left: 39%; top: 9%; width: 23%; height: 9%; background: #d9bb89cc; transform: rotate(-8deg);
-      clip-path: polygon(0 4%, 98% 0, 96% 20%, 100% 43%, 97% 61%, 100% 88%, 2% 100%, 4% 71%, 0 62%, 3% 40%);
+      background: #fff url('/media/about/header-art.webp') right center / 165% auto no-repeat;
     }
     .journey__card--library .journey__scene {
-      background: #e6e1cd url('/media/trips/vietnam/ruta.webp') 48% 45% / cover;
+      background: #fff;
     }
-    .journey__card--library .journey__scene::after {
-      right: 5%; bottom: 6%; width: 38%; height: 44%; transform: rotate(6deg);
-      border: .32rem solid #fffcf3; border-bottom-width: .65rem;
-      background: #e5daca url('/media/trips/vietnam/portada.webp') 50% 54% / cover;
-      box-shadow: 0 .15rem .6rem #41321955;
+    .journey__card--library .journey__scene::before {
+      content: ''; position: absolute; top: 50%; left: 0; width: 100%; aspect-ratio: 941 / 560;
+      transform: translateY(-50%);
+      background: url('/media/library/background.webp') right top / 100% auto no-repeat;
     }
     .journey__card--create .journey__scene {
       background: #fff url('/media/create-trip/background.webp') right top / 160% auto no-repeat;
-    }
-    .journey__card--create .journey__scene::after {
-      left: 7%; bottom: 7%; width: 18%; aspect-ratio: 1;
-      background: url('/media/create-trip/compass.webp') center / contain no-repeat; mix-blend-mode: multiply;
-      transform: rotate(-9deg);
     }
 
     .about__content { width: var(--spread-width); max-width: none; padding-bottom: 2rem; }
@@ -218,8 +200,8 @@
 
     @container (max-width: 46rem) {
       .journey__cards { grid-template-columns: minmax(0,1fr); }
-      .journey__card { grid-column: auto; }
-      .journey__scene { max-height: 12rem; }
+      .journey__card { grid-column: auto; min-height: 0; }
+      .journey__scene { height: 12rem; min-height: 0; }
       .questionnaire__form { display: block; }
       .questionnaire__responses { margin-top: 1.5rem; }
       .create-trip__actions { grid-column: 1 / -1; }
