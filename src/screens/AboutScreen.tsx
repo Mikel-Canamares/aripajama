@@ -93,7 +93,17 @@ export function AboutScreen({ active, onReady, onBack }: { active: boolean; onRe
       <section className="about__section about__section--photography" aria-labelledby="about-photography">
         <span data-reveal="" className="about__number" aria-hidden="true">03</span>
         <div className="about__copy" data-reveal-group="">
-          <h2 data-reveal="" id="about-photography" tabIndex={-1}>La fotografía,<br />mi otra forma de viajar.</h2>
+          <div className="about__photography-heading">
+            <h2 data-reveal="" id="about-photography" tabIndex={-1}>La fotografía,<br />mi otra forma de viajar.</h2>
+            <a data-reveal="" className="about__instagram" href="https://www.instagram.com/arianagponce?hvrq=MXA3bTg2ZHUwYm0xdg%3D%3D&utm_source=qr" target="_blank" rel="noopener noreferrer" aria-label="Ver las fotografías de Ariana en Instagram (se abre en una pestaña nueva)">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" aria-hidden="true">
+                <rect x="3" y="3" width="18" height="18" rx="5" />
+                <circle cx="12" cy="12" r="4" />
+                <circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none" />
+              </svg>
+              <span>Instagram</span>
+            </a>
+          </div>
           <span data-reveal="" className="about__rule" aria-hidden="true" />
           <p data-reveal="">Desde hace años construyo mi pequeño diario visual. La fotografía me permite capturar momentos, contar historias y volver a sentir lo vivido.</p>
           <p data-reveal="">No solo fotografío lugares, también personas, detalles, luces, comidas, caminos, culturas y todo lo que hace que un viaje sea único.</p>

@@ -1,3 +1,141 @@
+## Menú de navegación · Cristal suave integrado · 20/11/2026 · Plan aprobado
+
+- [x] Revisar los estilos actuales y registrar el plan aprobado.
+- [x] Aplicar fondo crema neutro al 50–55 %, desenfoque de 14 px y borde y sombra más suaves.
+- [x] Verificar encuadres y legibilidad sobre texto y fotografías.
+- [x] Completar Review con los resultados.
+
+### Review
+
+- **Resumen de cambios:** `src/styles.css` sustituye el fondo beige al 80 % por un degradado crema neutro al 55–50 %, aumenta el desenfoque a 14 px con prefijo para Safari, reduce la opacidad del borde al 25 % y suaviza la sombra a `0 6px 20px #5945330f`. Texto y flechas conservan su opacidad completa.
+- **Verificación:** prueba responsive existente del menú: 2/2 correctas en Chromium y WebKit, a 280, 390 y 740 px, con ocultación en escritorio. Capturas de 390 px sobre texto y fotografía revisadas: buena legibilidad y desenfoque visible en Chromium. `git diff --check`: correcto.
+- **Riesgos potenciales:** WebKit de Playwright en este entorno Windows acepta el CSS pero no dibuja `backdrop-filter`, confirmado también en una página mínima independiente; sus capturas muestran el contenido posterior sin desenfoque y no permiten validar el acabado de Safari real.
+- **Siguientes pasos sugeridos:** comprobar el acabado en Safari/iPhone real.
+
+## Menú de navegación · Desplegable más traslúcido · 20/11/2026
+
+- [x] Revisar el fondo y los estilos actuales del menú abierto.
+- [x] Reducir la opacidad del fondo al 80 % y añadir desenfoque suave.
+- [x] Comprobar el diff y completar Review.
+
+### Review
+
+- **Resumen de cambios:** `src/styles.css` aplica un 80 % de opacidad a los dos tonos del fondo del desplegable y un desenfoque de 8 px al contenido situado detrás, con prefijo para Safari. Texto e iconos conservan su opacidad completa.
+- **Verificación:** diff revisado y `git diff --check` correcto; sin revisión visual en navegador.
+- **Riesgos potenciales:** el contraste percibido varía según el contenido situado detrás del menú.
+- **Siguientes pasos sugeridos:** revisar la transparencia en el dispositivo habitual.
+
+## Quién soy · Acercar la foto de Roma al collage · 20/11/2026
+
+- [x] Localizar la foto del Coliseo y revisar su posición en el collage inferior.
+- [x] Desplazarla hacia la izquierda y arriba para acercarla al resto de fotografías.
+- [x] Comprobar la adaptación responsive y completar Review.
+
+### Review
+
+- **Resumen de cambios:** `src/about.css` mueve la foto del Coliseo de `left: 78%; top: 35%` a `left: 66%; top: 22%`, acercándola al conjunto por arriba y por la izquierda.
+- **Verificación:** 2/2 pruebas responsive existentes correctas en Chromium y WebKit, con ocho tamaños entre 280 y 1440 px. Captura de 941 px revisada visualmente.
+- **Riesgos potenciales:** el marco se solapa ligeramente con la fotografía central, conforme al acabado de collage.
+- **Siguientes pasos sugeridos:** revisar la nueva posición en el dispositivo habitual.
+
+## Quién soy · Icono de Instagram más pequeño · 20/11/2026
+
+- [x] Reducir el icono de Instagram de 30 a 24 px.
+
+### Review
+
+- **Resumen de cambios:** `src/about.css` reduce el icono a 24 × 24 px, manteniendo la altura pulsable de 44 px del enlace.
+- **Riesgos potenciales:** mínimos; ajuste visual localizado.
+- **Siguientes pasos sugeridos:** revisar el tamaño visual.
+
+## Quién soy · Etiqueta Instagram · 20/11/2026
+
+- [x] Cambiar el texto visible «IG» por «Instagram».
+
+### Review
+
+- **Resumen de cambios:** `src/screens/AboutScreen.tsx` muestra «Instagram» junto al icono.
+- **Riesgos potenciales:** mínimos; cambio de etiqueta visible.
+- **Siguientes pasos sugeridos:** ninguno.
+
+## Quién soy · Etiqueta IG · 20/11/2026
+
+- [x] Cambiar el texto visible «ariana.gponce» por «IG».
+
+### Review
+
+- **Resumen de cambios:** `src/screens/AboutScreen.tsx` muestra «IG» junto al icono de Instagram.
+- **Riesgos potenciales:** mínimos; cambio de texto visible.
+- **Siguientes pasos sugeridos:** ninguno.
+
+## Quién soy · Instagram con nombre y tono de las montañas · 20/11/2026
+
+- [x] Revisar el enlace actual y la ilustración de las montañas.
+- [x] Alinear el enlace a la izquierda con el icono seguido de «ariana.gponce», ambos en dorado.
+- [x] Verificar la adaptación responsive y completar Review.
+
+### Review
+
+- **Resumen de cambios:** `src/screens/AboutScreen.tsx` añade el nombre visible «ariana.gponce» a la derecha del icono. `src/about.css` alinea el enlace a la izquierda bajo el título y aplica el tono dorado `--about-bronze` al icono y al nombre, acorde con las montañas superiores.
+- **Verificación:** 4/4 pruebas existentes correctas en Chromium y WebKit, entre 280 y 1440 px y con texto al 200 %. Captura móvil de 390 px revisada visualmente. `git diff --check`: sin errores de espacios.
+- **Riesgos potenciales:** el enlace ocupa una fila propia y aumenta ligeramente la altura del apartado.
+- **Siguientes pasos sugeridos:** revisar la disposición en el dispositivo habitual.
+
+## Quién soy · Instagram personal de Ariana · 20/11/2026
+
+- [x] Localizar el apartado de fotografía y revisar sus estilos.
+- [x] Añadir el icono de Instagram a la derecha del título, enlazado al perfil personal y con nombre accesible.
+- [x] Comprobar compilación y adaptación responsive; completar Review.
+
+### Review
+
+- **Resumen de cambios:** `src/screens/AboutScreen.tsx` añade el enlace aportado al Instagram personal de Ariana con un icono SVG junto al título de fotografía. Abre una pestaña nueva e incluye nombre accesible. `src/about.css` coloca el icono a la derecha, en burdeos, con área pulsable de 44 × 44 px y foco visible para teclado.
+- **Verificación:** `npm run build` correcto. Pruebas existentes de adaptación entre 280 y 1440 px y texto al 200 %: 4/4 correctas en Chromium y WebKit. Captura de 390 px revisada visualmente, con el icono a la derecha del título. `git diff --check`: sin errores de espacios.
+- **Riesgos potenciales:** en anchos reducidos el título puede ocupar más líneas al compartir espacio con el icono; las comprobaciones responsive pasan.
+- **Siguientes pasos sugeridos:** revisar el enlace y su aspecto en el dispositivo habitual.
+
+## Menú de navegación · Icono discreto y flechas compartidas · 20/11/2026 · Plan aprobado
+
+- [x] Revisar el botón móvil y localizar el icono y color de la flecha de Países.
+- [x] Reducir las rayas manteniendo 46 × 46 px de área pulsable y aplicar opacidad del 85 % dentro de los apartados, con menú cerrado y sin foco.
+- [x] Reutilizar la flecha SVG de Países en las tres opciones del desplegable.
+- [x] Completar Review; revisión visual a cargo del usuario.
+
+### Review
+
+- **Resumen de cambios:** `src/components/SectionNavigation.tsx` reutiliza `LibraryIcon` con su flecha circular en las tres opciones y expone el apartado actual para el estilo del botón. `src/styles.css` reduce las rayas de 20 a 18 px y su separación de 5 a 4 px, ajusta la transformación de cierre y conserva el área pulsable de 46 × 46 px. El botón cerrado dentro de los apartados tiene opacidad del 85 % y recupera la opacidad completa al abrirlo o recibir foco. Las flechas conservan el trazo SVG original y el color de Países (`#7c2220`); la opción activa sigue identificada mediante su texto y `aria-current`.
+- **Verificación:** sin pruebas ni revisión visual, conforme a la indicación del usuario de realizar su propia revisión.
+- **Riesgos potenciales:** la percepción del botón semitransparente depende del contenido sobre el que se sitúe.
+- **Siguientes pasos sugeridos:** revisión visual por el usuario en sus dispositivos.
+
+## Quién soy · Texto a la izquierda y margen de la pegatina · 20/11/2026 · Plan aprobado
+
+- [x] Revisar los estilos de párrafos y el margen de la pegatina Aripajama.
+- [x] Retirar la justificación y desactivar la separación silábica automática.
+- [x] Ampliar el margen superior de la pegatina y las montañas a 24–40 px.
+- [x] Documentar el resultado; revisión visual a cargo del usuario.
+
+### Review
+
+- **Resumen de cambios:** `src/about.css` alinea los párrafos a la izquierda y desactiva la separación silábica automática. El margen superior del conjunto de pegatina y montañas pasa de `.1rem` a `clamp(1.5rem, 4cqw, 2.5rem)` (24–40 px con el tamaño de texto habitual).
+- **Verificación:** sin pruebas ni revisión visual, según la indicación del usuario.
+- **Riesgos potenciales:** el margen añadido aumenta ligeramente la altura del segundo apartado.
+- **Siguientes pasos sugeridos:** revisión visual por el usuario.
+
+## Quién soy · Separación y texto justificado · 20/11/2026 · Plan aprobado
+
+- [x] Revisar los estilos de los cuatro apartados y localizar las excepciones de separación.
+- [x] Unificar los tres saltos con una separación adaptable de 48 a 72 px.
+- [x] Justificar los párrafos, alinear su última línea a la izquierda y activar separación silábica en español.
+- [x] Completar Review; la revisión visual queda a cargo del usuario por indicación expresa.
+
+### Review
+
+- **Resumen de cambios:** `src/about.css` aplica `clamp(3rem, 7cqw, 4.5rem)` a los tres saltos entre apartados y elimina las excepciones del tercero y de móvil. Los párrafos de los cuatro bloques se justifican con última línea a la izquierda y separación silábica automática, utilizando el idioma español ya declarado en el documento.
+- **Verificación:** no se han ejecutado pruebas ni realizado revisión visual, por indicación del usuario.
+- **Riesgos potenciales:** la separación silábica automática depende del soporte del navegador y de su diccionario de español.
+- **Siguientes pasos sugeridos:** el usuario revisará la separación y el espaciado entre palabras en sus dispositivos.
+
 ## Quién soy · Ocho fotografías del collage inferior · 18/11/2026 · Plan aprobado
 
 - [x] Identificar las ocho fotos originales y su distribución en la referencia.

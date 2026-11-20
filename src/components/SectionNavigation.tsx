@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
+import { LibraryIcon } from './LibraryIcon'
 
 const items = [
   { id: 'about', label: 'Quién soy', href: '#quien-soy' },
@@ -71,7 +72,7 @@ export function MobileNavigation({ current, disabled, onNavigate }: {
     }
   }, [open])
 
-  return <div ref={root} className="mobile-navigation" data-open={open} onBlur={event => {
+  return <div ref={root} className="mobile-navigation" data-open={open} data-current={current} onBlur={event => {
     if (event.relatedTarget && !event.currentTarget.contains(event.relatedTarget)) setOpen(false)
   }}>
     <button ref={toggle} type="button" className="mobile-navigation__toggle" disabled={disabled}
@@ -91,7 +92,7 @@ export function MobileNavigation({ current, disabled, onNavigate }: {
           toggle.current?.focus({ preventScroll: true })
           onNavigate(item.id)
         }}>
-        {item.label}<span aria-hidden="true">↗</span>
+        {item.label}<LibraryIcon name="arrow" />
       </a>)}
     </nav>
   </div>
