@@ -364,11 +364,13 @@
     border-radius: max(12px, 4cqw);
     transition: border-color .35s, box-shadow .35s, transform .35s var(--ease-reveal);
   }
-  .journey[data-artwork='ready'] .journey__card {
-    background-image: url('/media/hub-clean.webp');
-    /* Sample x=58–884 and the interior of each card, omitting the baked edges. */
-    background-size: calc(100% * 942 / 826) calc(100% * 1670 / var(--journey-texture-height));
-    background-position: center calc(100% * var(--journey-texture-top) / (1670 - var(--journey-texture-height)));
+  @media (width < 1024px) {
+    .journey[data-artwork='ready'] .journey__card {
+      background-image: url('/media/hub-clean.webp');
+      /* Sample each card's interior, omitting the baked edges. */
+      background-size: calc(100% * 942 / 826) calc(100% * 1670 / var(--journey-texture-height));
+      background-position: center calc(100% * var(--journey-texture-top) / (1670 - var(--journey-texture-height)));
+    }
   }
   .journey__card--about { --journey-texture-top: 590; --journey-texture-height: 212; }
   .journey__card--library { --journey-texture-top: 844; --journey-texture-height: 222; }

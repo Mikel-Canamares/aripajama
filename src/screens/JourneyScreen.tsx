@@ -1,4 +1,4 @@
-import { Fragment, useEffect, useRef, useState } from 'react'
+import { Fragment, useEffect, useRef, useState, useSyncExternalStore } from 'react'
 import { useRevealSequence } from '../hooks/useRevealSequence'
 
 // Copy stays independent of the artwork. Arrays define the reference's line breaks.
@@ -19,6 +19,14 @@ function Lines({ lines }: { lines: string[] }) {
   ))
 }
 
+const desktopQuery = '(min-width: 1024px)'
+const isDesktop = () => window.matchMedia(desktopQuery).matches
+function subscribeLayout(notify: () => void) {
+  const media = window.matchMedia(desktopQuery)
+  media.addEventListener('change', notify)
+  return () => media.removeEventListener('change', notify)
+}
+
 export function JourneyScreen({ active, onReady, onBack, onOpenLibrary, onOpenCreate, onOpenAbout, restoreFocus }: {
   active: boolean
   onReady: () => void
@@ -33,6 +41,7 @@ export function JourneyScreen({ active, onReady, onBack, onOpenLibrary, onOpenCr
   const libraryRef = useRef<HTMLButtonElement>(null)
   const createRef = useRef<HTMLButtonElement>(null)
   const aboutRef = useRef<HTMLButtonElement>(null)
+  const desktop = useSyncExternalStore(subscribeLayout, isDesktop, () => false)
   const [artwork, setArtwork] = useState<'loading' | 'ready' | 'error'>('loading')
   useRevealSequence(rootRef, active)
 
@@ -70,20 +79,21 @@ export function JourneyScreen({ active, onReady, onBack, onOpenLibrary, onOpenCr
     <main ref={rootRef} data-reveal-scope="" className="journey screen" data-artwork={artwork}>
       <div className="journey__media">
         <img
+          key={desktop ? 'ribbons' : 'vertical'}
           className="journey__artwork"
-          src="/media/hub-clean.webp"
+          src={desktop ? '/media/about/footer-ribbons.webp' : '/media/hub-clean.webp'}
           alt=""
           aria-hidden="true"
-          width={942}
-          height={1670}
+          width={desktop ? 941 : 942}
+          height={desktop ? 118 : 1670}
           onLoad={async (event) => {
             const image = event.currentTarget
             try {
               await image.decode()
               await document.fonts.ready
-              setArtwork('ready')
+              if (image.isConnected) setArtwork('ready')
             } catch {
-              setArtwork('error')
+              if (image.isConnected) setArtwork('error')
             }
           }}
           onError={() => setArtwork('error')}
@@ -118,6 +128,7 @@ export function JourneyScreen({ active, onReady, onBack, onOpenLibrary, onOpenCr
                 aria-label="Crear mi viaje"
                 onClick={onOpenCreate}
               />}
+              <div className="journey__scene" aria-hidden="true" />
               <div className="journey__card-text">
                 <h2 data-reveal="" className="journey__card-title"><Lines lines={title} /></h2>
                 <p data-reveal="" className="journey__card-sub"><Lines lines={subtitle} /></p>

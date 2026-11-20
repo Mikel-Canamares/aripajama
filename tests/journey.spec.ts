@@ -25,7 +25,7 @@ test('entra con el fondo preparado y regresa con el control de teclado', async (
   await expect(page.locator('.journey')).toHaveCount(0)
 })
 
-test('conserva la composición completa en móvil, referencia y escritorio', async ({ page }, testInfo) => {
+test('conserva la composición móvil de referencia en vertical y horizontal', async ({ page }, testInfo) => {
   test.slow()
   await page.emulateMedia({ reducedMotion: 'reduce' })
   for (const viewport of [
@@ -35,7 +35,6 @@ test('conserva la composición completa en móvil, referencia y escritorio', asy
     { width: 390, height: 844 },
     { width: 942, height: 1670 },
     { width: 844, height: 390 },
-    { width: 1440, height: 900 },
   ]) {
     await page.setViewportSize(viewport)
     await openIntroWithMediaError(page)
@@ -58,7 +57,7 @@ test('conserva la composición completa en móvil, referencia y escritorio', asy
     expect(canvas.width).toBeLessThanOrEqual(viewport.width)
     expect(canvas.height).toBeLessThanOrEqual(viewport.height + 1)
     if (viewport.width / viewport.height >= 1) {
-      // Landscape & desktop: content is positioned in the right half alongside the artwork
+      // Compact landscape places the controls alongside the artwork.
       expect(canvas.x).toBeGreaterThanOrEqual(viewport.width * 0.45)
     } else {
       // Mobile & reference portrait: canvas is centered

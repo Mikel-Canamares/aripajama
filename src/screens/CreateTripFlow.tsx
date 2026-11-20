@@ -11,7 +11,9 @@ import '../questionnaire.css'
 
 export type CreatePosition = { scroll: number; focus?: string }
 
-export function CreateTripFlow({ active, onReady, onBack }: { active: boolean; onReady: () => void; onBack: () => void }) {
+export function CreateTripFlow({ active, onReady, onBack, onBusyChange }: {
+  active: boolean; onReady: () => void; onBack: () => void; onBusyChange: (busy: boolean) => void
+}) {
   const [draft] = useState(loadTripDraft)
   const [answers, setAnswers] = useState(draft.answers)
   const [route, setRoute] = useState(() => {
@@ -30,6 +32,11 @@ export function CreateTripFlow({ active, onReady, onBack }: { active: boolean; o
   const step = isLanding ? 0 : completed || isDetails || isEmail ? 10 : Number(route.hash.slice(QUESTION_ROOT.length)) - 1
   const request = useTripRequest({ draft, answers, step, active: active && stage === 'idle', completed, onSaved: () => { if (isEmail) navigate(COMPLETE_HASH, 'trip-email-submit') } })
   const { form } = request
+
+  useEffect(() => {
+    onBusyChange(request.busy)
+    return () => onBusyChange(false)
+  }, [request.busy, onBusyChange])
 
   function remember(sourceId?: string) {
     const focus = sourceId || (document.activeElement as HTMLElement | null)?.id

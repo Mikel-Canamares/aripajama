@@ -54,26 +54,28 @@ export function QuestionnaireScreen({ active, onReady, step, total, completed, a
           <button data-reveal="landing" id="question-landing" className="questionnaire__secondary" onClick={onLanding}>Volver a Crear mi viaje</button>
           <button data-reveal="restart" id="question-restart" className="questionnaire__secondary" onClick={onRestart}>Empezar de nuevo</button>
         </div>
-      </section> : <>
-        {first && <header className="questionnaire__intro" data-reveal-group="">
-          <h2 data-reveal="intro-title">Todo viaje<br />empieza<br />con una idea.</h2>
-          <span data-reveal="intro-rule" className="create-trip__rule" aria-hidden="true" />
-          <p data-reveal="intro-copy">Antes de diseñar tu viaje, quiero conocer un poco más sobre ti y cómo te gusta descubrir el mundo.</p>
-        </header>}
-        <div className="questionnaire__progress">
-          <p data-reveal="counter" aria-hidden="true">{String(step + 1).padStart(2, '0')} / {total}</p>
-          <progress data-reveal="progress" max={total} value={step + 1} aria-label={`Pregunta ${step + 1} de ${total}`} />
-        </div>
-        <form noValidate onSubmit={event => {
-          event.preventDefault()
-          if (!selected.length) { setError(true); fieldRef.current?.focus({ preventScroll: true }); return }
-          onContinue()
-        }}>
+      </section> : <form className="questionnaire__form" noValidate onSubmit={event => {
+        event.preventDefault()
+        if (!selected.length) { setError(true); fieldRef.current?.focus({ preventScroll: true }); return }
+        onContinue()
+      }}>
+        <div className="questionnaire__brief">
+          {first && <header className="questionnaire__intro" data-reveal-group="">
+            <h2 data-reveal="intro-title">Todo viaje{' '}<br />empieza{' '}<br />con una idea.</h2>
+            <span data-reveal="intro-rule" className="create-trip__rule" aria-hidden="true" />
+            <p data-reveal="intro-copy">Antes de diseñar tu viaje, quiero conocer un poco más sobre ti y cómo te gusta descubrir el mundo.</p>
+          </header>}
+          <div className="questionnaire__progress">
+            <p data-reveal="counter" aria-hidden="true">{String(step + 1).padStart(2, '0')} / {total}</p>
+            <progress data-reveal="progress" max={total} value={step + 1} aria-label={`Pregunta ${step + 1} de ${total}`} />
+          </div>
           <header className="questionnaire__heading" data-reveal-group="">
             <p data-reveal="eyebrow" className="questionnaire__eyebrow"><span aria-hidden="true" />Tu forma de viajar<span aria-hidden="true" /></p>
             <h1 data-reveal="question-title" ref={titleRef} id="question-title" tabIndex={-1}>{question.title}</h1>
             <p data-reveal="help" id="question-help">{question.mode === 'single' ? 'Puedes elegir una opción.' : step === 7 ? 'Puedes elegir una opción o varias.' : 'Puedes elegir una o varias opciones.'}</p>
           </header>
+        </div>
+        <div className="questionnaire__responses">
           <fieldset ref={fieldRef} id="question-options" className="questionnaire__options" tabIndex={-1} aria-labelledby="question-title" aria-describedby={`question-help${error ? ' question-error' : ''}`} aria-invalid={error || undefined}>
             <legend className="visually-hidden">{question.title}</legend>
             {question.options.map((option, index) => {
@@ -97,8 +99,8 @@ export function QuestionnaireScreen({ active, onReady, step, total, completed, a
           </fieldset>
           <p className="questionnaire__error" id="question-error" role="alert">{error ? 'Selecciona al menos una opción para continuar' : ''}</p>
           <button data-reveal="continue" id="question-continue" className="questionnaire__continue" type="submit">Continuar <span aria-hidden="true">⟶</span></button>
-        </form>
-      </>}
+        </div>
+      </form>}
     </div>
   </main>
 }

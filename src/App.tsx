@@ -5,7 +5,7 @@ import { JourneyScreen } from './screens/JourneyScreen'
 import { LibraryScreen } from './screens/LibraryScreen'
 import { CreateTripFlow } from './screens/CreateTripFlow'
 import { AboutScreen } from './screens/AboutScreen'
-import { MobileNavigation } from './components/MobileNavigation'
+import { DesktopNavigation, MobileNavigation } from './components/SectionNavigation'
 
 type Destination = 'library' | 'create' | 'about'
 
@@ -22,6 +22,7 @@ export function App() {
   const [navigation, setNavigation] = useState<'hub' | 'preparing' | 'entering' | Destination | 'returning'>(() => readDestination() || 'hub')
   const [destination, setDestination] = useState<Destination>(() => readDestination() || 'library')
   const [destinationReady, setDestinationReady] = useState(false)
+  const [requestBusy, setRequestBusy] = useState(false)
   const [exitScroll, setExitScroll] = useState(0)
   const [restoreFocus, setRestoreFocus] = useState<Destination | null>(null)
   const reducedMotion = useReducedMotion()
@@ -180,17 +181,24 @@ export function App() {
               }
             }}
           >
+            <DesktopNavigation current={destination} busy={requestBusy} onNavigate={openDestination} onHub={() => {
+              if (navigation !== destination) return
+              history.pushState(null, '', window.location.pathname + window.location.search)
+              setExitScroll(window.scrollY)
+              setRestoreFocus(destination)
+              setNavigation('returning')
+            }} />
             {destination === 'library'
               ? <LibraryScreen active={navigation === 'library'} onReady={handleDestinationReady} onBack={returnToHub} />
               : destination === 'about' ? <AboutScreen active={navigation === 'about'} onReady={handleDestinationReady} onBack={returnToHub} />
-              : <CreateTripFlow active={navigation === 'create'} onReady={handleDestinationReady} onBack={returnToHub} />}
+              : <CreateTripFlow active={navigation === 'create'} onReady={handleDestinationReady} onBack={returnToHub} onBusyChange={setRequestBusy} />}
           </div>}
           </div>
         </div>
       )}
       {phase === 'journey' && <MobileNavigation
         current={navigation === 'hub' ? 'hub' : destination}
-        disabled={navigation !== 'hub' && navigation !== destination}
+        disabled={requestBusy || (navigation !== 'hub' && navigation !== destination)}
         onNavigate={openDestination}
       />}
     </div>

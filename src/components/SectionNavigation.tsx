@@ -6,6 +6,30 @@ const items = [
   { id: 'create', label: 'Crear mi viaje', href: '#crear-mi-viaje' },
 ] as const
 
+type Destination = typeof items[number]['id']
+
+export function DesktopNavigation({ current, busy, onNavigate, onHub }: {
+  current: Destination
+  busy: boolean
+  onNavigate: (destination: Destination) => void
+  onHub: () => void
+}) {
+  return <header className="desktop-navigation" inert={busy}>
+    <div className="desktop-navigation__inner">
+      <button type="button" className="desktop-navigation__brand" onClick={onHub} aria-label="Aripajama, volver al hub" />
+      <nav aria-label="Navegación principal">
+        {items.map(item => <a key={item.id} href={item.href} aria-current={current === item.id ? 'page' : undefined}
+          onClick={event => {
+            if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return
+            if (item.id === current && window.location.hash !== item.href) return
+            event.preventDefault()
+            onNavigate(item.id)
+          }}>{item.label}</a>)}
+      </nav>
+    </div>
+  </header>
+}
+
 export function MobileNavigation({ current, disabled, onNavigate }: {
   current: 'hub' | 'about' | 'library' | 'create'
   disabled: boolean
