@@ -188,18 +188,11 @@ export function App() {
           </div>
         </div>
       )}
-      <MobileNavigation
-        current={phase === 'intro' ? 'intro' : navigation === 'hub' ? 'hub' : destination}
-        disabled={(phase !== 'intro' && phase !== 'journey') || (navigation !== 'hub' && navigation !== destination)}
-        onNavigate={next => {
-          if (next !== 'intro') { openDestination(next); return }
-          if (phase === 'intro') return
-          history.pushState(null, '', window.location.pathname + window.location.search)
-          setRestoreFocus(null)
-          setNavigation('hub')
-          setPhase('intro')
-        }}
-      />
+      {phase === 'journey' && <MobileNavigation
+        current={navigation === 'hub' ? 'hub' : destination}
+        disabled={navigation !== 'hub' && navigation !== destination}
+        onNavigate={openDestination}
+      />}
     </div>
   )
 }

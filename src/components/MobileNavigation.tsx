@@ -1,16 +1,15 @@
 import { useEffect, useRef, useState } from 'react'
 
 const items = [
-  { id: 'intro', label: 'Portada', href: '#' },
   { id: 'about', label: 'Quién soy', href: '#quien-soy' },
   { id: 'library', label: 'Biblioteca de viajes', href: '#biblioteca' },
   { id: 'create', label: 'Crear mi viaje', href: '#crear-mi-viaje' },
 ] as const
 
 export function MobileNavigation({ current, disabled, onNavigate }: {
-  current: 'intro' | 'hub' | 'about' | 'library' | 'create'
+  current: 'hub' | 'about' | 'library' | 'create'
   disabled: boolean
-  onNavigate: (destination: 'intro' | 'about' | 'library' | 'create') => void
+  onNavigate: (destination: 'about' | 'library' | 'create') => void
 }) {
   const [open, setOpen] = useState(false)
   const root = useRef<HTMLDivElement>(null)
