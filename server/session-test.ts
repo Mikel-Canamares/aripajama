@@ -9,7 +9,7 @@ export async function sessionTestPage(request: Request, env: Env, reference: str
   const url = new URL(request.url)
   if (!await verifySessionTestLink(env, url, reference, io.now())) throw new ApiError(404, 'TEST_LINK_NOT_FOUND')
   const row = await env.DB.prepare('SELECT * FROM trip_requests WHERE booking_reference = ?').bind(reference).first<RequestRow>()
-  if (!row) throw new ApiError(404, 'TEST_LINK_NOT_FOUND')
+  if (!row?.email) throw new ApiError(404, 'TEST_LINK_NOT_FOUND')
   restrictTestOwner(env, row.email)
   if (row.email_status !== 'accepted') throw new ApiError(409, 'PROFILE_NOT_ACCEPTED')
   if (!['GET','POST'].includes(request.method)) throw new ApiError(405, 'METHOD_NOT_ALLOWED')

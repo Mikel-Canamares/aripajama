@@ -1,7 +1,7 @@
 import { TRIP_QUESTIONS } from './questionnaire-content.ts'
 export { TRIP_QUESTIONS, type TripQuestion } from './questionnaire-content.ts'
 
-import { emptyTripDetails, tripDetailsErrors, validEmail, type TripDetails, type TripReceipt } from './trip-request'
+import { emptyTripDetails, tripDetailsErrors, isTripReceipt, type TripDetails, type TripReceipt } from './trip-request'
 export type TripAnswers = Record<string, string[]>
 export const DRAFT_KEY = 'aripajama:create-trip:v2'
 const LEGACY_DRAFT_KEY = 'aripajama:create-trip:v1'
@@ -12,9 +12,9 @@ export const COMPLETE_HASH = `${QUESTION_ROOT}completado`
 export const DETAILS_HASH = `${QUESTION_ROOT}detalles`
 export const EMAIL_HASH = `${QUESTION_ROOT}email`
 export type RequestIdentity = { id: string; token: string }
-export type DraftExtra = { details: TripDetails; email: string; consent: boolean; request: RequestIdentity | null; receipt: TripReceipt | null }
+export type DraftExtra = { details: TripDetails; request: RequestIdentity | null; receipt: TripReceipt | null }
 export type Draft = DraftExtra & { version: 2; answers: TripAnswers; step: number }
-const blankDraft = (): Draft => ({ version: 2, answers: {}, step: 0, details: emptyTripDetails(), email: '', consent: false, request: null, receipt: null })
+const blankDraft = (): Draft => ({ version: 2, answers: {}, step: 0, details: emptyTripDetails(), request: null, receipt: null })
 // Retain the same fallback even when returning to the module with storage blocked.
 let memoryDraft: Draft = blankDraft()
 
@@ -33,10 +33,8 @@ export function loadTripDraft(): Draft {
     const extra = blankDraft()
     if (draft.version === 2) {
       if (draft.details && Object.entries(extra.details).every(([key, value]) => typeof draft.details[key] === typeof value)) extra.details = draft.details
-      if (typeof draft.email === 'string' && draft.email.length <= 254) extra.email = draft.email
-      extra.consent = draft.consent === true
       if (draft.request && /^[a-zA-Z0-9_-]{20,80}$/.test(draft.request.id) && /^[a-zA-Z0-9_-]{40,128}$/.test(draft.request.token)) extra.request = draft.request
-      if (extra.request && draft.receipt?.saved === true && draft.receipt.requestId === extra.request.id && ['pending','sending','accepted','failed','unconfigured','review_required','simulated'].includes(draft.receipt.emailStatus)) extra.receipt = draft.receipt
+      if (extra.request && isTripReceipt(draft.receipt, extra.request.id)) extra.receipt = draft.receipt
     }
     memoryDraft = { ...extra, answers, step: draft.step }
   } catch (error) {
@@ -68,9 +66,9 @@ export function safeCreateHash(hash: string, answers: TripAnswers, extra?: Draft
   const pending = firstPending(answers)
   if ([DETAILS_HASH, EMAIL_HASH, COMPLETE_HASH].includes(hash)) {
     if (pending >= 0) return questionHash(pending)
-    if (hash === DETAILS_HASH) return hash
+    if (hash === DETAILS_HASH || hash === EMAIL_HASH) return DETAILS_HASH
     if (!extra || Object.keys(tripDetailsErrors(extra.details)).length) return DETAILS_HASH
-    if (hash === COMPLETE_HASH && (!extra.receipt || !validEmail(extra.email) || !extra.consent)) return EMAIL_HASH
+    if (!extra.receipt) return DETAILS_HASH
     return hash
   }
   const match = hash.match(/^#crear-mi-viaje\/cuestionario\/([1-9]|10)$/)

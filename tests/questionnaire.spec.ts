@@ -167,14 +167,14 @@ test('recupera scroll, foco, selecciones e historial entre preguntas', async ({ 
 
 test('regresa al hub desde una presentación abierta después del cierre', async ({ page }) => {
   await mockTripApi(page)
-  await seedFinalDraft(page, { receipt: 'accepted' })
+  await seedFinalDraft(page, { profile: 'cultural' })
   await page.emulateMedia({ reducedMotion: 'reduce' })
   await openIntroWithMediaError(page)
   await page.getByRole('button', { name: 'Comencemos' }).click()
   const hub = page.getByRole('button', { name: 'Crear mi viaje', exact: true })
   await hub.click()
   await page.locator('#create-trip-discover').click()
-  await expect(title(page)).toHaveText('Tu perfil está en camino.')
+  await expect(title(page)).toHaveText('El Cultural')
   await page.getByRole('button', { name: 'Volver a Crear mi viaje', exact: true }).click()
   await expect(page.locator('#create-trip-discover')).toBeFocused()
   await page.keyboard.press('Escape')

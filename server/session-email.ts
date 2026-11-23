@@ -30,7 +30,7 @@ export function renderSessionEmail(
   const format = new Intl.DateTimeFormat('es-ES', { dateStyle: 'full', timeStyle: 'short', timeZone: appointment.timeZone })
   const video = safeVideoUrl(appointment.videoUrl)
   const fields: [string, string][] = [
-    ['Nombre', appointment.name || 'No facilitado'], ['Email del formulario', request.email],
+    ['Nombre', appointment.name || 'No facilitado'], ['Email del formulario', request.email || 'No facilitado'],
     ['Email de la reserva', appointment.email], ['Inicio de la cita', format.format(new Date(appointment.start))],
     ['Fin de la cita', format.format(new Date(appointment.end))], ['Zona horaria de la cita', appointment.timeZone],
     ['Zona horaria del cliente', appointment.attendeeTimeZone], ['Videollamada', video || 'Enlace aún no disponible'],

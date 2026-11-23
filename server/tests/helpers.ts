@@ -67,7 +67,7 @@ export function fixture() {
   const handler = createHandler(io)
   const id = 'request_fixture_000000000001'
   const token = 'a'.repeat(64)
-  const payload = () => ({ requestId:id, retryToken:token, answers:currentAnswers(), details:details(), email:'traveler@example.test', consent:true, turnstileToken:'test-token', website:'' })
+  const payload = () => ({ requestId:id, retryToken:token, answers:currentAnswers(), details:details(), turnstileToken:'test-token', website:'' })
   const call = (path: string, data?: unknown, headers: Record<string,string> = {}, method = data === undefined ? 'GET' : 'POST') => handler(new Request(`https://aripajama.example${path}`, { method, headers:{ Origin:'https://aripajama.example', ...(data === undefined ? {} : { 'Content-Type':'application/json' }), ...headers }, ...(data === undefined ? {} : { body:JSON.stringify(data) }) }), env)
   const create = (data: unknown = payload()) => call('/api/trip-requests', data)
   const retry = () => call(`/api/trip-requests/${id}/retry-email`, { turnstileToken:'fresh-token' }, { Authorization:`Bearer ${token}` })

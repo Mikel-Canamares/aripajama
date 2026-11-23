@@ -1,3 +1,5 @@
+import { TRAVELER_PROFILES, type ProfileId } from './traveler-profiles.ts'
+
 export const TRAVEL_COMPANIES = [
   { id: 'couple', label: 'En pareja' }, { id: 'family', label: 'En familia' },
   { id: 'friends', label: 'Con amigos' }, { id: 'solo', label: 'En solitario' },
@@ -37,5 +39,9 @@ export function normalizeTripDetails(input: unknown): TripDetails {
   return data
 }
 export const validEmail = (value: string) => value.length <= 254 && /^[^\s<>@,;]+@[^\s<>@,;]+\.[^\s<>@,;]+$/.test(value)
-export type EmailStatus = 'pending' | 'sending' | 'accepted' | 'failed' | 'unconfigured' | 'review_required' | 'simulated'
-export type TripReceipt = { requestId: string; saved: true; emailStatus: EmailStatus; canRetry: boolean; errorCode?: string; retryAfterSeconds?: number }
+export type TripReceipt = { requestId: string; saved: true; profile: ProfileId }
+export function isTripReceipt(value: unknown, requestId: string): value is TripReceipt {
+  if (!value || typeof value !== 'object') return false
+  return 'requestId' in value && value.requestId === requestId && 'saved' in value && value.saved === true &&
+    'profile' in value && typeof value.profile === 'string' && Object.hasOwn(TRAVELER_PROFILES, value.profile)
+}

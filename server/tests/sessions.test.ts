@@ -37,34 +37,34 @@ async function setup() {
 
 test('flujo completo: formulario y perfil no avisan; cita pagada produce un único aviso con todas las respuestas', async () => {
   const f = await setup()
-  assert.equal(f.count('session_notifications'), 0); assert.equal(f.sent.length, 1)
+  assert.equal(f.count('session_notifications'), 0); assert.equal(f.sent.length, 0)
   await f.ready()
-  assert.equal(f.sent.length, 1); assert.equal(f.count('session_notifications'), 1)
+  assert.equal(f.sent.length, 0); assert.equal(f.count('session_notifications'), 1)
   await f.tick(); await f.tick(); await f.ingest(f.payment()); await f.tick()
-  assert.equal(f.sent.length, 2); assert.equal(f.accepted.size, 2)
+  assert.equal(f.sent.length, 1); assert.equal(f.accepted.size, 1)
   assert.equal(f.notice()?.status, 'accepted')
-  const payload = f.sent[1].payload
+  const payload = f.sent[0].payload
   assert.deepEqual(payload.to, ['ariana@example.test'])
-  for (const text of ['40 €', 'Europe/Madrid', '10:00', 'booking@example.test', 'traveler@example.test', 'Japón', 'No facilitado', 'https://meet.google.com/example', f.id]) assert.ok(String(payload.text).includes(text), text)
+  for (const text of ['40 €', 'Europe/Madrid', '10:00', 'booking@example.test', 'Japón', 'No facilitado', 'https://meet.google.com/example', f.id]) assert.ok(String(payload.text).includes(text), text)
   for (const question of TRIP_QUESTIONS) assert.ok(String(payload.text).includes(question.title))
   assert.doesNotMatch(JSON.stringify(payload), /puntuaciones|aportaciones|retry_token|resultadoOrientativo/)
-  assert.equal((await readRequest(f.env, f.id))?.email_status, 'accepted')
+  assert.equal((await readRequest(f.env, f.id))?.email_status, 'not_requested')
 })
 
 for (const order of ['booking-first','payment-first'] as const) test(`reserva/pago en cualquier orden y duplicados: ${order}`, async () => {
   const f = await setup()
   const [first, second] = order === 'booking-first' ? [f.booking(), f.payment()] : [f.payment(), f.booking()]
-  await f.ingest(first); await f.tick(); assert.equal(f.sent.length, 1)
+  await f.ingest(first); await f.tick(); assert.equal(f.sent.length, 0)
   await Promise.all([f.ingest(second), f.ingest(second), f.ingest(first)])
   await Promise.all([f.tick(), f.tick()])
   assert.equal(f.count('session_bookings'), 1); assert.equal(f.count('session_events'), 2)
-  assert.equal(f.count('session_notifications'), 1); assert.equal(f.sent.length, 2)
+  assert.equal(f.count('session_notifications'), 1); assert.equal(f.sent.length, 1)
 })
 
 test('eventos distintos concurrentes fusionan reserva y pago sin perder hechos', async () => {
   const f = await setup()
   await Promise.all([f.ingest(f.booking()), f.ingest(f.payment())])
-  await f.tick(); assert.equal(f.notice()?.status, 'accepted'); assert.equal(f.sent.length, 2)
+  await f.tick(); assert.equal(f.notice()?.status, 'accepted'); assert.equal(f.sent.length, 1)
 })
 
 test('pago pendiente o reserva pendiente esperan sin avisar', async () => {
@@ -72,7 +72,7 @@ test('pago pendiente o reserva pendiente esperan sin avisar', async () => {
     const f = await setup()
     await f.ingest(f.booking(kind === 'booking' ? { status: 'pending' } : {}))
     await f.ingest(f.payment(kind === 'payment' ? { status: 'pending' } : {}))
-    await f.tick(); assert.equal(f.sent.length, 1); assert.equal(f.count('session_notifications'), 0)
+    await f.tick(); assert.equal(f.sent.length, 0); assert.equal(f.count('session_notifications'), 0)
   }
 })
 
@@ -81,19 +81,19 @@ test('pendiente → confirmado con la misma marca temporal avanza sin falsa cont
   await f.ingest(f.booking({ eventKey: 'requested', status: 'pending' }))
   await f.ingest(f.payment({ eventKey: 'initiated', status: 'pending' }))
   await f.ready(); await f.tick()
-  assert.equal(f.notice()?.status, 'accepted'); assert.equal(f.sent.length, 2)
+  assert.equal(f.notice()?.status, 'accepted'); assert.equal(f.sent.length, 1)
 })
 
 test('una cancelación con la misma marca temporal es terminal', async () => {
   const f = await setup(); await f.ready()
   await f.ingest(f.booking({ eventKey: 'cancelled-at-same-time', status: 'cancelled' }))
-  await f.tick(); assert.equal(f.notice()?.status, 'suppressed'); assert.equal(f.sent.length, 1)
+  await f.tick(); assert.equal(f.notice()?.status, 'suppressed'); assert.equal(f.sent.length, 0)
 })
 
 test('cambio de pago confirmado bloquea la reserva y no emite un aviso obsoleto', async () => {
   const f = await setup(); await f.ready()
   assert.equal(await f.ingest(f.payment({ eventKey: 'different-payment', payment: { id: 'pi_other', bookingUid: f.base.bookingUid, amountCents: 4000, currency: 'EUR' } })), 'incident')
-  await f.tick(); assert.equal(f.notice()?.status, 'review_required'); assert.equal(f.sent.length, 1)
+  await f.tick(); assert.equal(f.notice()?.status, 'review_required'); assert.equal(f.sent.length, 0)
 })
 
 test('cancelación después de obtener lease y antes de contactar con Resend suprime el envío', async () => {
@@ -111,13 +111,13 @@ test('cancelación después de obtener lease y antes de contactar con Resend sup
     }
     return statement
   }
-  await f.tick(); assert.equal(f.notice()?.status, 'suppressed'); assert.equal(f.sent.length, 1)
+  await f.tick(); assert.equal(f.notice()?.status, 'suppressed'); assert.equal(f.sent.length, 0)
 })
 
 for (const [amount, currency] of [[3999, 'EUR'], [4001, 'EUR'], [4000, 'USD']] as const) test(`importe/moneda incorrectos ${amount} ${currency} quedan bloqueados`, async () => {
   const f = await setup(); await f.ingest(f.booking())
   assert.equal(await f.ingest(f.payment({ payment: { id: 'pi_test_1', bookingUid: f.base.bookingUid, amountCents: amount, currency } })), 'incident')
-  await f.tick(); assert.equal(f.sent.length, 1); assert.equal(f.count('session_notifications'), 0)
+  await f.tick(); assert.equal(f.sent.length, 0); assert.equal(f.count('session_notifications'), 0)
 })
 
 test('referencia desconocida o pago de otra cita registran incidencia sin datos personales', async () => {
@@ -127,7 +127,7 @@ test('referencia desconocida o pago de otra cita registran incidencia sin datos 
   assert.equal(await f.ingest(f.payment({ payment: { id: 'pi_test_1', bookingUid: 'another-booking', amountCents: 4000, currency: 'EUR' } })), 'incident')
   const events = JSON.stringify(f.db.db.prepare('SELECT * FROM session_events').all())
   assert.doesNotMatch(events, /traveler@|booking@|Japón|naturaleza|meet\.google/)
-  await f.tick(); assert.equal(f.sent.length, 1)
+  await f.tick(); assert.equal(f.sent.length, 0)
 })
 
 test('no vincula por email y detecta cambio de referencia o de identificador de pago', async () => {
@@ -147,13 +147,13 @@ test('un pago no puede reutilizarse para dos reservas, incluso concurrentes', as
   await Promise.all([f.ingest(f.payment()), f.ingest(f.payment({ eventKey: 'second-payment', bookingUid: 'cal-booking-2', payment: { id: 'pi_test_1', bookingUid: 'cal-booking-2', amountCents: 4000, currency: 'EUR' } }))])
   assert.equal(f.count('session_notifications'), 1)
   assert.equal(f.db.db.prepare("SELECT COUNT(*) AS n FROM session_events WHERE incident_code = 'PAYMENT_ID_CONFLICT'").get()?.n, 1)
-  await f.tick(); assert.equal(f.sent.length, 1); assert.equal(f.notice()?.status, 'review_required')
+  await f.tick(); assert.equal(f.sent.length, 0); assert.equal(f.notice()?.status, 'review_required')
 })
 
 test('clave de evento reutilizada con datos distintos bloquea el aviso pendiente', async () => {
   const f = await setup(); await f.ready()
   assert.equal(await f.ingest(f.payment({ payment: { id: 'pi_test_1', bookingUid: f.base.bookingUid, amountCents: 1, currency: 'EUR' } })), 'incident')
-  await f.tick(); assert.equal(f.notice()?.status, 'review_required'); assert.equal(f.sent.length, 1)
+  await f.tick(); assert.equal(f.notice()?.status, 'review_required'); assert.equal(f.sent.length, 0)
 })
 
 test('eventos antiguos no degradan confirmaciones; cancelación conocida impide avisar', async () => {
@@ -163,7 +163,7 @@ test('eventos antiguos no degradan confirmaciones; cancelación conocida impide 
   assert.equal((await readBooking(f.env, f.base.bookingUid))?.payment_status, 'confirmed')
   await f.ingest(f.booking({ eventKey: 'cancelled', status: 'cancelled', occurredAt: f.io.now() + 1 }))
   await f.ingest(f.booking({ eventKey: 'late-created', occurredAt: f.io.now() + 2 }))
-  await f.tick(); assert.equal(f.notice()?.status, 'suppressed'); assert.equal(f.sent.length, 1)
+  await f.tick(); assert.equal(f.notice()?.status, 'suppressed'); assert.equal(f.sent.length, 0)
 })
 
 test('el batch revierte evento, reserva y cola ante fallo y permite recuperar', async () => {
@@ -177,20 +177,20 @@ test('el batch revierte evento, reserva y cola ante fallo y permite recuperar', 
 
 test('fallo temporal se recupera por tick sin nuevos eventos y conserva contenido/destino/clave', async () => {
   const f = await setup(); await f.ready(); f.state.networkError = true
-  await f.tick(); const first = { ...f.sent[1] }; assert.equal(f.notice()?.status, 'failed')
-  f.advance(59999); await f.tick(); assert.equal(f.sent.length, 2)
+  await f.tick(); const first = { ...f.sent[0] }; assert.equal(f.notice()?.status, 'failed')
+  f.advance(59999); await f.tick(); assert.equal(f.sent.length, 1)
   f.env.ARIANA_EMAIL = 'different@example.test'; f.env.EMAIL_FROM = 'Different <different@example.test>'
   f.advance(1); f.state.networkError = false; await f.tick()
-  assert.deepEqual(f.sent[2], first); assert.equal(f.notice()?.status, 'accepted')
+  assert.deepEqual(f.sent[1], first); assert.equal(f.notice()?.status, 'accepted')
 })
 
 test('aceptación seguida de fallo D1 recupera la misma operación tras expirar el lease', async () => {
   const f = await setup(); await f.ready(); f.db.failAcceptedWrite = true
-  await f.tick(); assert.equal(f.notice()?.status, 'sending'); assert.equal(f.accepted.size, 2)
-  await f.tick(); assert.equal(f.sent.length, 2)
+  await f.tick(); assert.equal(f.notice()?.status, 'sending'); assert.equal(f.accepted.size, 1)
+  await f.tick(); assert.equal(f.sent.length, 1)
   f.advance(45001); await f.tick()
-  assert.equal(f.notice()?.status, 'accepted'); assert.equal(f.accepted.size, 2)
-  assert.deepEqual(f.sent[1], f.sent[2])
+  assert.equal(f.notice()?.status, 'accepted'); assert.equal(f.accepted.size, 1)
+  assert.deepEqual(f.sent[0], f.sent[1])
 })
 
 test('eventos sin cambios semánticos no impiden recuperar un envío incierto', async () => {
@@ -198,8 +198,8 @@ test('eventos sin cambios semánticos no impiden recuperar un envío incierto', 
   f.advance(45001)
   await f.ingest(f.booking({ eventKey: 'same-booking-facts', occurredAt: f.io.now() }))
   await f.ingest(f.payment({ eventKey: 'same-payment-facts', occurredAt: f.io.now() }))
-  await f.tick(); assert.equal(f.notice()?.status, 'accepted'); assert.equal(f.accepted.size, 2)
-  assert.deepEqual(f.sent[1], f.sent[2])
+  await f.tick(); assert.equal(f.notice()?.status, 'accepted'); assert.equal(f.accepted.size, 1)
+  assert.deepEqual(f.sent[0], f.sent[1])
 })
 
 test('409 concurrente y Retry-After largo se reintentan sin romper la ventana segura', async () => {
@@ -219,9 +219,9 @@ test('concurrencia de envío obtiene un único lease', async () => {
   let release!: () => void
   f.state.sendDelay = new Promise<void>(resolve => { release = resolve })
   const first = deliverSessionNotification(f.env, f.base.bookingUid, f.io)
-  for (let i = 0; i < 50 && f.sent.length < 2; i++) await new Promise(resolve => setTimeout(resolve, 1))
-  assert.equal(f.sent.length, 2)
-  await f.tick(); assert.equal(f.sent.length, 2); release(); await first
+  for (let i = 0; i < 50 && f.sent.length < 1; i++) await new Promise(resolve => setTimeout(resolve, 1))
+  assert.equal(f.sent.length, 1)
+  await f.tick(); assert.equal(f.sent.length, 1); release(); await first
   assert.equal(f.notice()?.status, 'accepted')
 })
 
@@ -233,8 +233,8 @@ test('cambio de cita antes del primer intento actualiza el contenido; después e
     await f.ingest(f.booking({ eventKey: 'rescheduled', occurredAt: f.io.now() + 1, appointment: { ...event.appointment!, start: '2027-03-29T09:00:00Z', end: '2027-03-29T09:40:00Z' } }))
     f.state.networkError = false; await f.tick()
     assert.equal(f.notice()?.status, attempted ? 'review_required' : 'accepted')
-    assert.equal(f.sent.length, 2)
-    if (!attempted) assert.match(String(f.sent[1].payload.text), /29 de marzo/)
+    assert.equal(f.sent.length, 1)
+    if (!attempted) assert.match(String(f.sent[0].payload.text), /29 de marzo/)
   }
 })
 
@@ -257,20 +257,20 @@ for (const code of [400,401,403,409,429,500]) test(`respuesta Resend ${code}: cl
 
 test('configuración y destinatarios bloquean sin consumir intentos; mock local nunca llama al proveedor', async () => {
   const f = await setup(); await f.ready(); f.env.BOOKING_NOTIFICATIONS_ENABLED = 'false'
-  await f.tick(); assert.equal(f.sent.length, 1)
+  await f.tick(); assert.equal(f.sent.length, 0)
   f.env.BOOKING_NOTIFICATIONS_ENABLED = 'true'; f.env.EMAIL_TEST_RECIPIENTS = 'traveler@example.test'
   await f.tick(); assert.equal(f.notice()?.error_code, 'EMAIL_RECIPIENT_NOT_ALLOWED'); assert.equal(f.notice()?.attempts, 0)
   assert.equal(f.notice()?.first_attempt_at, null)
-  f.env.EMAIL_MODE = 'disabled'; await f.tick(); assert.equal(f.sent.length, 1)
-  f.env.ENVIRONMENT = 'development'; f.env.EMAIL_MODE = 'resend'; await f.tick(); assert.equal(f.sent.length, 1)
-  f.env.EMAIL_MODE = 'mock'; await f.tick(); assert.equal(f.notice()?.status, 'simulated'); assert.equal(f.sent.length, 1)
-  f.env.ENVIRONMENT = 'production'; f.env.EMAIL_MODE = 'resend'; await f.tick(); assert.equal(f.sent.length, 1)
+  f.env.EMAIL_MODE = 'disabled'; await f.tick(); assert.equal(f.sent.length, 0)
+  f.env.ENVIRONMENT = 'development'; f.env.EMAIL_MODE = 'resend'; await f.tick(); assert.equal(f.sent.length, 0)
+  f.env.EMAIL_MODE = 'mock'; await f.tick(); assert.equal(f.notice()?.status, 'simulated'); assert.equal(f.sent.length, 0)
+  f.env.ENVIRONMENT = 'production'; f.env.EMAIL_MODE = 'resend'; await f.tick(); assert.equal(f.sent.length, 0)
 })
 
 test('restricción de pruebas evalúa el destinatario persistido tras un envío incierto', async () => {
   const f = await setup(); await f.ready(); f.state.networkError = true; await f.tick(); f.advance(60000)
   f.env.ARIANA_EMAIL = 'new@example.test'; f.env.EMAIL_TEST_RECIPIENTS = 'new@example.test'
-  await f.tick(); assert.equal(f.sent.length, 2); assert.equal(f.notice()?.attempts, 1)
+  await f.tick(); assert.equal(f.sent.length, 1); assert.equal(f.notice()?.attempts, 1)
   assert.equal(f.notice()?.error_code, 'EMAIL_RECIPIENT_NOT_ALLOWED')
 })
 
@@ -298,18 +298,6 @@ test('enlace Cal.com: configuración explícita, destino válido, referencia y s
   }
   assert.equal(bookingLink({ ...config, BOOKING_ENABLED: 'false' }, ref), undefined)
   assert.equal(bookingLink(config), undefined)
-})
-
-test('correos de perfil ya preparados conservan contenido/idempotencia y los antiguos no reciben enlaces', async () => {
-  const f = fixture(); f.state.networkError = true; await f.create()
-  const payload = f.sent[0]
-  f.env.BOOKING_ENABLED = 'true'; f.env.CAL_BOOKING_URL = 'https://cal.com/ariana/primera-sesion'
-  f.state.networkError = false; f.advance(6000); await f.retry(); assert.deepEqual(f.sent[1], payload)
-  const old = fixture()
-  old.env.EMAIL_MODE = 'disabled'; await old.create()
-  old.db.db.prepare('UPDATE trip_requests SET booking_reference = NULL WHERE id = ?').run(old.id)
-  old.env.EMAIL_MODE = 'resend'; old.env.BOOKING_ENABLED = 'true'; old.env.CAL_BOOKING_URL = f.env.CAL_BOOKING_URL
-  await old.retry(); assert.ok(!String(old.sent[0].payload.text).includes('https://cal.com/'))
 })
 
 test('52 opciones: mapeo legible completo y multiselección sin modificar el algoritmo', () => {
@@ -350,11 +338,18 @@ test('email interno escapa HTML, conserva saltos y por definir, rechaza URLs y z
 test('migración sobre solicitudes existentes mantiene filas/correos y valida restricciones SQL', async () => {
   const f = await setup(), old = new SqliteD1(['0001_trip_requests.sql'])
   const row = { ...f.db.db.prepare('SELECT * FROM trip_requests').get()! }; delete row.booking_reference
+  row.email = 'legacy@example.test'; row.email_status = 'pending'
   const keys = Object.keys(row)
   old.db.prepare(`INSERT INTO trip_requests (${keys.join(',')}) VALUES (${keys.map(() => '?').join(',')})`).run(...Object.values(row) as never[])
   old.db.exec(readFileSync(new URL('../../migrations/0002_first_sessions.sql', import.meta.url), 'utf8'))
   const migrated = { ...old.db.prepare('SELECT * FROM trip_requests').get()! }
   assert.equal(migrated.booking_reference, null); delete migrated.booking_reference; assert.deepEqual(migrated, row)
+  old.db.exec(readFileSync(new URL('../../migrations/0003_session_test_mode.sql', import.meta.url), 'utf8'))
+  old.db.prepare("INSERT INTO session_bookings (uid, request_id, booking_status, booking_at, payment_status, payment_at, revision, created_at, updated_at) VALUES (?, ?, 'confirmed', 1, 'pending', 1, 1, 1, 1)").run('existing-booking', f.id)
+  old.db.exec(readFileSync(new URL('../../migrations/0004_on_screen_profiles.sql', import.meta.url), 'utf8'))
+  assert.deepEqual({ ...old.db.prepare('SELECT * FROM trip_requests').get() }, { ...row, booking_reference: null })
+  assert.equal(old.db.prepare('SELECT request_id FROM session_bookings').get()?.request_id, f.id)
+  assert.deepEqual(old.db.prepare('PRAGMA foreign_key_check').all(), [])
   await f.ready()
   assert.throws(() => f.db.db.prepare('UPDATE session_bookings SET request_id = ?').run('missing-request'))
   assert.throws(() => f.db.db.prepare('UPDATE session_bookings SET amount_cents = ?').run(-1))
