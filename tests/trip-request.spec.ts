@@ -11,12 +11,12 @@ test('el antiguo paso de email recupera los detalles y envía solo los nuevos ca
   await expect(page).toHaveURL(/cuestionario\/detalles$/)
   await expect(page.locator('#trip-summary-destination')).toContainText('Japón')
   await expect(page.locator('input[type=email]')).toHaveCount(0)
-  await expect(page.getByRole('status')).toHaveText('Verificación preparada.')
   await page.getByRole('button', { name: 'Ver mi perfil viajero' }).click()
   await expect(page.locator('.trip-final h1')).toHaveText('El Cultural')
   expect(state.posts).toHaveLength(1)
   expect(state.posts[0]).not.toHaveProperty('email')
   expect(state.posts[0]).not.toHaveProperty('consent')
+  expect(state.posts[0]).not.toHaveProperty('turnstileToken')
 })
 
 test('valida detalles obligatorios y permite valores por definir', async ({ page }) => {
@@ -70,35 +70,24 @@ test('doble pulsación, recarga, revisión y reinicio no duplican el envío', as
   expect(draft.details).toEqual(emptyTripDetails()); expect(draft).not.toHaveProperty('email'); expect(draft.request).toBeNull()
 })
 
-test('recupera la verificación tras un error de carga y exige renovar un token caducado', async ({ page }) => {
+test('confirma el perfil sin consultar la configuración ni cargar Cloudflare Turnstile', async ({ page }) => {
   const state = await mockTripApi(page)
-  await page.route('**/api/trip-config',route => route.fulfill({ json:{ turnstileSiteKey:'fake-sitekey',localVerification:false } }))
-  let scripts = 0
-  await page.route(url => url.hostname === 'challenges.cloudflare.com',route => {
-    if (++scripts === 1) return route.abort('failed')
-    return route.fulfill({ contentType:'text/javascript',body:`window.turnstile={render:function(node,options){window.testVerification=options;node.textContent='Widget simulado';return 'test-widget'},remove:function(){}}` })
+  const verificationRequests: string[] = []
+  await page.route(url => url.pathname === '/api/trip-config' || url.hostname === 'challenges.cloudflare.com', route => {
+    verificationRequests.push(route.request().url())
+    return route.abort('failed')
   })
   await seedFinalDraft(page)
-  await page.emulateMedia({ reducedMotion:'reduce' })
-  await page.goto('/#crear-mi-viaje/cuestionario/detalles')
-  await expect(page.getByRole('status')).toContainText('No se ha podido preparar')
-  await page.getByRole('button',{ name:'Reintentar verificación' }).click()
-  await expect(page.getByText('Widget simulado')).toBeVisible()
-  await page.evaluate(() => {
-    const verification = (window as unknown as { testVerification: Record<string,(token?:string) => void> }).testVerification
-    verification.callback('expired-test-token'); verification['expired-callback']()
-  })
-  await page.locator('#trip-details-continue').click()
-  await expect(page.getByRole('alert')).toContainText('Completa la verificación')
-  expect(state.posts).toHaveLength(0)
-  await page.evaluate(() => (window as unknown as { testVerification:{ callback:(token:string) => void } }).testVerification.callback('renewed-test-token'))
+  await openDetails(page)
+  await expect(page.getByRole('button', { name:'Reintentar verificación' })).toHaveCount(0)
   await page.locator('#trip-details-continue').click()
   await expect(page.locator('.trip-final h1')).toHaveText('El Cultural')
-  expect(state.posts[0].turnstileToken).toBe('renewed-test-token')
+  expect(verificationRequests).toEqual([])
+  expect(state.posts).toHaveLength(1)
+  expect(state.posts[0]).not.toHaveProperty('turnstileToken')
 })
 
 test('un error de red conserva el intento y permite repetir la confirmación sin cambiar su identidad', async ({ page }) => {
-  await page.route('**/api/trip-config',route => route.fulfill({ json:{ turnstileSiteKey:null,localVerification:true } }))
   const attempts: Record<string,unknown>[] = []
   await page.route('**/api/trip-requests**',async route => {
     if (route.request().method() === 'GET') { await route.fulfill({ status:404,json:{ code:'REQUEST_NOT_FOUND' } }); return }

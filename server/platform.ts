@@ -21,9 +21,6 @@ export interface Env {
   EMAIL_FROM?: string
   REPLY_TO?: string
   PUBLIC_SITE_URL?: string
-  TURNSTILE_MODE?: string
-  TURNSTILE_SITE_KEY?: string
-  TURNSTILE_SECRET_KEY?: string
   WHATSAPP_URL?: string
   BOOKING_ENABLED?: string
   CAL_BOOKING_URL?: string

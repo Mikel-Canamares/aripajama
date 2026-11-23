@@ -36,23 +36,6 @@ function checkOrigin(request: Request, env: Env) {
   const allowed = env.PUBLIC_SITE_URL ? new URL(env.PUBLIC_SITE_URL).origin : new URL(request.url).origin
   if (!origin || (origin !== allowed && !(localDevelopment(request, env) && /^http:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(origin)))) throw new ApiError(403, 'ORIGIN_NOT_ALLOWED')
 }
-async function verifyTurnstile(request: Request, env: Env, token: unknown, io: Io) {
-  if (env.TURNSTILE_MODE === 'mock' && localDevelopment(request, env)) {
-    if (token !== 'local-test-token') throw new ApiError(403, 'VERIFICATION_FAILED')
-    return
-  }
-  if (!env.TURNSTILE_SECRET_KEY || !env.TURNSTILE_SITE_KEY || (env.ENVIRONMENT === 'production' && [env.TURNSTILE_SITE_KEY, env.TURNSTILE_SECRET_KEY].some(key => /^[123]x0+/.test(key)))) throw new ApiError(503, 'VERIFICATION_NOT_CONFIGURED')
-  if (typeof token !== 'string' || token.length < 1 || token.length > 2048) throw new ApiError(403, 'VERIFICATION_REQUIRED')
-  let valid = false
-  try {
-    const response = await io.fetch('https://challenges.cloudflare.com/turnstile/v0/siteverify', {
-      method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ secret: env.TURNSTILE_SECRET_KEY, response: token }), signal: AbortSignal.timeout(10000),
-    })
-    const result = await response.json() as { success?: boolean; hostname?: string; action?: string }
-    valid = response.ok && result.success === true && result.hostname === new URL(env.PUBLIC_SITE_URL || request.url).hostname && result.action === 'trip_request'
-  } catch { throw new ApiError(503, 'VERIFICATION_UNAVAILABLE') }
-  if (!valid) throw new ApiError(403, 'VERIFICATION_FAILED')
-}
 async function limit(request: Request, env: Env) {
   if (!env.REQUEST_LIMITER) {
     if (!localDevelopment(request, env)) throw new ApiError(503, 'RATE_LIMIT_NOT_CONFIGURED')
@@ -74,7 +57,7 @@ export function createHandler(io: Io = defaultIo) {
     const url = new URL(request.url)
     if (!url.pathname.startsWith('/api/')) return env.ASSETS ? env.ASSETS.fetch(request) : new Response('Not found', { status: 404 })
     try {
-      if (url.pathname === '/api/trip-config' && request.method === 'GET') return json({ turnstileSiteKey: env.TURNSTILE_SITE_KEY || null, localVerification: env.TURNSTILE_MODE === 'mock' && localDevelopment(request, env) })
+      if (url.pathname === '/api/health' && request.method === 'GET') return json({ ok: true })
       const testSession = url.pathname.match(/^\/api\/session-test\/([a-f0-9]{64})$/)
       if (testSession) {
         if (request.method === 'POST') { checkOrigin(request, env); await limit(request, env) }
@@ -87,7 +70,7 @@ export function createHandler(io: Io = defaultIo) {
       checkOrigin(request, env)
       await limit(request, env)
       const data = await body(request)
-      if (Object.keys(data).some(key => !['requestId','retryToken','answers','details','turnstileToken','website'].includes(key))) throw new ApiError(422, 'INVALID_REQUEST')
+      if (Object.keys(data).some(key => !['requestId','retryToken','answers','details','website'].includes(key))) throw new ApiError(422, 'INVALID_REQUEST')
       if (data.website) throw new ApiError(422, 'INVALID_REQUEST')
       if (typeof data.requestId !== 'string' || !ID.test(data.requestId) || typeof data.retryToken !== 'string' || !TOKEN.test(data.retryToken)) throw new ApiError(422, 'INVALID_REQUEST')
       const answers = mapCurrentAnswers(data.answers)
@@ -99,7 +82,6 @@ export function createHandler(io: Io = defaultIo) {
         if (existing.request_hash !== hash || existing.retry_token_hash !== tokenHash) throw new ApiError(409, 'REQUEST_CONFLICT')
         return json(receipt(existing))
       }
-      await verifyTurnstile(request, env, data.turnstileToken, io)
       const profile = calcularPerfil(answers)
       const now = io.now()
       const inserted = await env.DB.prepare(`INSERT INTO trip_requests

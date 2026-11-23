@@ -11,14 +11,16 @@ npm install
 npm run dev
 ```
 
-Abre la URL que muestra Vite, normalmente `http://localhost:5173`. El servidor escucha también en la red local para facilitar la revisión desde un móvil conectado a la misma Wi-Fi.
+`npm run dev` aplica las migraciones de D1 local, arranca la API en `http://127.0.0.1:8787` y, cuando está preparada, inicia Vite. Al detenerlo se cierran ambos servicios. Los datos locales se conservan en `.wrangler/state` y el correo está desactivado.
+
+Abre la URL que muestra Vite, normalmente `http://localhost:5173`. El servidor escucha también en la red local para facilitar la revisión desde un móvil conectado a la misma Wi-Fi. Para trabajar solo en pantallas estáticas está disponible `npm run dev:web`.
 
 ```sh
 npm run build     # TypeScript y compilación de producción → dist/
 npm run preview   # Previsualizar la compilación
 ```
 
-El frontend de `dist/` utiliza la raíz del dominio. Para registrar solicitudes y enviar perfiles se publica junto al Worker y D1, según [la guía de perfiles viajeros](docs/traveler-profiles.md). Un alojamiento exclusivamente estático permite ver la web, pero no procesar solicitudes.
+El frontend de `dist/` utiliza la raíz del dominio. Para calcular perfiles y registrar solicitudes se publica junto al Worker y D1, según [la guía de perfiles viajeros](docs/traveler-profiles.md). Un alojamiento exclusivamente estático permite ver la web, pero no procesar solicitudes.
 
 ## Experiencia de entrada
 
@@ -158,9 +160,9 @@ npm run test:frontend -- tests/about.spec.ts tests/journey.spec.ts tests/create-
 
 La [fase 1 de primera sesión](docs/first-session.md) incorpora la referencia opaca, reservas/pagos normalizados y aviso interno recuperable con formulario completo, solo tras cita confirmada y pago verificado de 40 €. La simulación de reservas anteriores se puede probar localmente con `npm run sessions:simulate`.
 
-Tras confirmar los detalles con «Ver mi perfil viajero», Cloudflare Workers valida Turnstile, calcula el perfil y guarda la solicitud en D1. La pantalla final muestra el nombre, la descripción y la ilustración del perfil principal. «Reservar mi cita» permanece desactivado hasta la integración del calendario.
+Tras confirmar los detalles con «Ver mi perfil viajero», Cloudflare Workers valida las respuestas y los detalles, calcula el perfil y guarda la solicitud en D1. El registro funciona sin Turnstile y conserva la comprobación de origen, el límite de frecuencia y el campo antispam. La pantalla final muestra el nombre, la descripción y la ilustración del perfil principal. «Reservar mi cita» permanece desactivado hasta la integración del calendario.
 
-La [guía de perfiles viajeros](docs/traveler-profiles.md) recoge los contratos y las pruebas. Para desarrollo local se utilizan `npm run db:local` y `npm run dev:api`. La migración `0004_on_screen_profiles.sql` conserva las reservas históricas y permite registrar el formulario sin email.
+La [guía de perfiles viajeros](docs/traveler-profiles.md) recoge los contratos y las pruebas. `npm run dev` prepara la base de datos y arranca ambos servicios; para ejecutarlos por separado se utilizan `npm run db:local`, `npm run dev:api` y `npm run dev:web`. La migración `0004_on_screen_profiles.sql` conserva las reservas históricas y permite registrar el formulario sin email.
 
 #### Cuestionario
 
@@ -168,7 +170,7 @@ El flujo se coordina en `src/screens/CreateTripFlow.tsx`; `QuestionnaireScreen.t
 
 Las rutas `/#crear-mi-viaje/cuestionario/1` hasta `/10`, y `/completado`, permiten entrada directa y recarga sin portada. Si faltan respuestas anteriores, se abre la primera pendiente. «Volver» y Escape regresan a la pregunta anterior y, desde la primera, a la presentación con foco en «Descubrir». El historial conserva scroll, foco y apariciones ya vistas. Las transiciones internas bloquean la interacción durante 160 ms de salida y 420 ms de entrada; con movimiento reducido terminan inmediatamente. Los cambios de hash externos también se atienden, incluidos los navegadores que no emiten `popstate` para ellos.
 
-El borrador versionado `aripajama:create-trip:v2` guarda respuestas, paso, detalles, perfil confirmado y estado privado de recuperación en `sessionStorage`, durante la sesión de la pestaña; recupera también los borradores v1. Se valida al recuperarlo: un borrador corrupto se descarta; si el almacenamiento está bloqueado, el flujo funciona en memoria. «Empezar de nuevo» limpia únicamente este borrador, sin borrar solicitudes ya registradas. El navegador puede restaurar sesiones de pestañas según su propia configuración. Las respuestas solo se envían al pulsar «Ver mi perfil viajero» tras la verificación antispam.
+El borrador versionado `aripajama:create-trip:v2` guarda respuestas, paso, detalles, perfil confirmado y estado privado de recuperación en `sessionStorage`, durante la sesión de la pestaña; recupera también los borradores v1. Se valida al recuperarlo: un borrador corrupto se descarta; si el almacenamiento está bloqueado, el flujo funciona en memoria. «Empezar de nuevo» limpia únicamente este borrador, sin borrar solicitudes ya registradas. El navegador puede restaurar sesiones de pestañas según su propia configuración. Las respuestas solo se envían al pulsar «Ver mi perfil viajero» con los detalles válidos.
 
 `src/questionnaire.css` adapta las opciones circulares de la primera pregunta a una, dos o tres columnas. Las siguientes usan una columna hasta 960 px; las escenas laterales decorativas se ocultan por debajo de 600 px y con texto ampliado cuando falta espacio. La cascada compartida respeta scroll, teclado y movimiento reducido; las selecciones no la reinician. Los fallos de imágenes mantienen el formulario operativo con fondo claro.
 

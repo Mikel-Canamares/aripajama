@@ -27,18 +27,20 @@ test('un identificador con otro contenido o token devuelve conflicto', async () 
 test('consulta y reintento exigen el token privado; no se publican perfiles ni previews', async () => {
   const f = fixture(); await f.create()
   assert.equal((await f.call(`/api/trip-requests/${f.id}`)).status,404)
-  assert.equal((await f.call(`/api/trip-requests/${f.id}/retry-email`,{ turnstileToken:'x' })).status,404)
+  assert.equal((await f.call(`/api/trip-requests/${f.id}/retry-email`,{})).status,404)
   assert.equal((await f.call('/api/email-preview')).status,404)
-  const config = await (await f.call('/api/trip-config')).json()
-  assert.deepEqual(Object.keys(config).sort(),['localVerification','turnstileSiteKey'])
+  assert.equal((await f.call('/api/trip-config')).status,404)
+  const health = await f.call('/api/health')
+  assert.deepEqual(await health.json(), { ok: true })
+  assert.equal(health.headers.get('Cache-Control'), 'no-store')
 })
-test('Turnstile exige éxito, hostname y acción; fallo no guarda ni envía', async () => {
-  for (const patch of [{ captcha:false },{ hostname:'attacker.example' },{ action:'another_form' }]) {
-    const f = fixture(); Object.assign(f.state,patch)
-    assert.equal((await f.create()).status,403)
-    assert.equal(f.sent.length,0)
-    assert.equal(f.db.db.prepare('SELECT COUNT(*) AS n FROM trip_requests').get()!.n,0)
-  }
+test('confirma sin Turnstile ni peticiones externas y conserva el campo antispam', async () => {
+  const f = fixture()
+  f.io.fetch = async () => { throw new Error('El registro no debe llamar a proveedores externos') }
+  assert.equal((await f.create({ ...f.payload(), website:'spam.example' })).status,422)
+  assert.equal(f.db.db.prepare('SELECT COUNT(*) AS n FROM trip_requests').get()!.n,0)
+  assert.equal((await f.create()).status,201)
+  assert.equal(f.sent.length,0)
 })
 test('rechaza origen, consentimiento, campos, respuestas y email no válidos', async () => {
   const f = fixture()
@@ -52,11 +54,11 @@ test('límite de frecuencia por origen de red', async () => {
   assert.equal((await f.create()).status,429)
   assert.equal(f.sent.length, 0)
 })
-test('controla tamaño, método y configuración de verificación', async () => {
+test('controla tamaño, método y configuración del límite de frecuencia', async () => {
   const f = fixture()
   assert.equal((await f.call('/api/trip-requests')).status,405)
   assert.equal((await f.create({ ...f.payload(),website:'x'.repeat(17000) })).status,413)
-  delete f.env.TURNSTILE_SECRET_KEY
+  delete f.env.REQUEST_LIMITER
   assert.equal((await f.create()).status,503)
   assert.equal(f.sent.length,0)
 })

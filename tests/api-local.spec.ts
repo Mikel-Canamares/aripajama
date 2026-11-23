@@ -4,7 +4,7 @@ import { filledDetails, finishUnknownDetails } from './trip-request-helpers'
 test('Worker y D1 locales guardan y recuperan la solicitud sin enviar correos reales', async ({ request }) => {
   const requestId = crypto.randomUUID().replaceAll('-','')
   const retryToken = crypto.randomUUID().replaceAll('-','') + crypto.randomUUID().replaceAll('-','')
-  const payload = { requestId,retryToken,answers:Object.fromEntries(TRIP_QUESTIONS.map(q => [q.id,[q.options[0].id]])),details:filledDetails(),website:'',turnstileToken:'local-test-token' }
+  const payload = { requestId,retryToken,answers:Object.fromEntries(TRIP_QUESTIONS.map(q => [q.id,[q.options[0].id]])),details:filledDetails(),website:'' }
   const headers = { Origin:'http://127.0.0.1:4173' }
   const response = await request.post('http://127.0.0.1:8787/api/trip-requests',{ data:payload,headers })
   expect(response.status()).toBe(201)
@@ -29,7 +29,7 @@ for (const width of [390, 1440]) test(`cuestionario completo con Worker y D1 a $
     await page.getByRole(question.mode === 'single' ? 'radio' : 'checkbox').first().check()
     await page.getByRole('button', { name: 'Continuar', exact: true }).click()
   }
-  await expect(page.getByRole('status')).toHaveText('Verificación preparada.')
+  await expect(page.locator('.trip-final h1')).toHaveText('Cuéntame los detalles prácticos.')
   await finishUnknownDetails(page)
   await expect(page.locator('.trip-final h1')).toHaveText('El Cultural')
   await expect(page.getByRole('button', { name: 'Reservar mi cita' })).toBeDisabled()

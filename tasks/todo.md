@@ -1,3 +1,19 @@
+## Perfil viajero · Retirar Turnstile y corregir arranque local · 23/11/2026 · Plan aprobado
+
+- [x] Revisar el formulario, la API, el arranque local y las pruebas afectadas.
+- [x] Retirar Turnstile del formulario y de la API conservando cálculo, validación y persistencia.
+- [x] Arrancar Vite y la API con `npm run dev`, actualizar pruebas y documentación.
+- [x] Verificar compilación y pruebas del recorrido completo; completar Review.
+
+### Review
+
+- **Resumen de cambios:** eliminado el componente Turnstile, sus estados y bloqueo del formulario, el token del envío y la validación externa del Worker. Retiradas las variables de Turnstile de la configuración activa. Se conservan el algoritmo del servidor, D1, validación de respuestas/detalles, origen, límite de frecuencia, campo antispam, identidad privada, recuperación e idempotencia. `/api/health` sustituye a la configuración del widget como comprobación de disponibilidad para las herramientas locales.
+- **Arranque local:** `npm run dev` ejecuta `scripts/dev.mjs`, aplica las migraciones locales y arranca el Worker antes de Vite. La API local utiliza `public/` para funcionar sin compilación previa, con correo desactivado y persistencia en `.wrangler/state`. El cierre detiene ambos servicios, incluidos los subprocesos de Wrangler en Windows. Las configuraciones Playwright utilizan `dev:web` y su Worker de pruebas aislado. Actualizados README y el flujo actual de la guía.
+- **Verificación:** `npm run build` correcto; `npm run test:server`: 80/80; `npm run test:e2e -- tests/api-local.spec.ts tests/trip-request.spec.ts tests/questionnaire.spec.ts --workers=2`: 66/66 en Chromium y WebKit, con recorrido completo real a 390 y 1440 px, seis perfiles, validación, recarga, reintentos e idempotencia. `npm run worker:check`: empaquetado local correcto. Prueba del nuevo arranque: proxy y API disponibles, registro 201 sin captcha, duplicado 200, recuperación privada 200 y ambos puertos libres tras ejecutar el manejador de SIGINT. Migraciones locales aplicadas correctamente.
+- **Incidencia de pruebas resuelta:** una prueba existente de borradores corruptos navegaba antes de inicializarse la pantalla en WebKit. Se espera al foco del título tras la recarga; tres repeticiones focalizadas y la ejecución final completa son correctas.
+- **Riesgos potenciales:** frontend y Worker deben actualizarse juntos porque el contrato ya no acepta el antiguo campo `turnstileToken`. El cálculo del perfil sigue requiriendo la API disponible.
+- **Siguientes pasos sugeridos:** reiniciar el desarrollo con `npm run dev` y revisar el perfil al confirmar los detalles. Publicar la nueva compilación y el Worker cuando corresponda; las verificaciones realizadas son locales.
+
 ## Hub · Composición centrada de Biblioteca · 20/11/2026
 
 - [x] Revisar el encuadre actual y la proporción de la ilustración original.

@@ -188,6 +188,7 @@ test('descarta borradores corruptos o con opciones ajenas al cuestionario', asyn
     await page.goto('/#crear-mi-viaje')
     await page.evaluate(({ key, raw }) => sessionStorage.setItem(key, raw), { key: DRAFT_KEY, raw })
     await page.reload()
+    await expect(page.locator('.create-trip h1')).toBeFocused()
     await page.goto(`/${root}10`)
     await expect(page).toHaveURL(/cuestionario\/1$/)
     await expect(title(page)).toBeFocused()

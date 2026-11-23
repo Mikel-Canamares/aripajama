@@ -18,8 +18,6 @@
   .trip-final__check { display: flex; gap: .7rem; align-items: flex-start; min-height: 44px; padding-block: .7rem; font: 400 1rem/1.5 'Manrope',sans-serif; overflow-wrap: anywhere; }
   .trip-final__check input { flex: 0 0 22px; width: 22px; height: 22px; margin: .1rem 0 0; accent-color: #a44a25; }
   .trip-final__error { color: #973b20; min-height: 1.5em; margin-block: 1rem; font-size: .95rem; overflow-wrap: anywhere; }
-  .trip-final__verification { min-height: 44px; margin-block: 1rem; max-width: 100%; }
-  .trip-final__verification p { font: 400 .85rem/1.5 'Manrope',sans-serif; color: #4b5159; overflow-wrap: anywhere; }
   .trip-final__profile { display: grid; align-items: center; gap: clamp(1rem, 4cqw, 2.5rem); margin-block: 2rem; }
   .trip-final__profile img { width: min(100%, 18rem); justify-self: center; mix-blend-mode: multiply; }
   .trip-final__profile .trip-final__intro { margin-block: 0 1.5rem; }

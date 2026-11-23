@@ -11,7 +11,7 @@ export default defineConfig({
     { name: 'desktop-webkit', testMatch: '**/*.desktop.ts', use: { ...devices['Desktop Safari'] } },
   ],
   webServer: [{
-    command: 'npm run dev -- --port 4173 --strictPort',
+    command: 'npm run dev:web -- --port 4173 --strictPort',
     url: 'http://127.0.0.1:4173',
     reuseExistingServer: !process.env.CI,
   }],

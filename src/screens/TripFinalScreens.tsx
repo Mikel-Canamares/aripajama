@@ -1,6 +1,5 @@
 import { useEffect, useLayoutEffect, useRef, useState, type ReactNode } from 'react'
 import { TRAVELER_PROFILES } from '../data/traveler-profiles'
-import { Turnstile } from '../components/Turnstile'
 import { TRAVEL_COMPANIES, tripDetailsErrors, type TripDetails, type TripReceipt } from '../data/trip-request'
 import { useRevealSequence } from '../hooks/useRevealSequence'
 import type { CreatePosition } from './CreateTripFlow'
@@ -43,9 +42,7 @@ const FIELDS = [
   { id: 'needs', title: 'Otras necesidades (opcional)', hint: 'Alimentación, movilidad, etc.' },
 ] as const
 type Common = Omit<FrameProps, 'title' | 'children'>
-type Verification = { generation: number; token: string; onToken: (value: string) => void; onRefreshVerification: () => void }
-export function TripDetailsScreen({ details, onChange, onContinue, error, generation, token, onToken, onRefreshVerification, ...props }: Common & Verification & { error: string; details: TripDetails; onChange: (value: TripDetails) => void; onContinue: () => void }) {
-  const [verificationMissing, setVerificationMissing] = useState(false)
+export function TripDetailsScreen({ details, onChange, onContinue, error, ...props }: Common & { error: string; details: TripDetails; onChange: (value: TripDetails) => void; onContinue: () => void }) {
   const [errors, setErrors] = useState<ReturnType<typeof tripDetailsErrors>>({})
   const [expanded, setExpanded] = useState<string[]>([])
   const update = (key: keyof TripDetails, value: string | boolean) => { onChange({ ...details, [key]: value }); setErrors(current => ({ ...current, [key]: undefined, [key.replace('Unknown', '')]: undefined })) }
@@ -65,8 +62,6 @@ export function TripDetailsScreen({ details, onChange, onContinue, error, genera
       if (first) {
         setExpanded(current => [...new Set([...current, first])])
         requestAnimationFrame(() => document.getElementById(`trip-${first}`)?.focus())
-      } else if (!token) {
-        setVerificationMissing(true)
       } else onContinue()
     }}>
       <fieldset className="trip-final__fields" disabled={props.busy}>
@@ -88,9 +83,7 @@ export function TripDetailsScreen({ details, onChange, onContinue, error, genera
           </div>
         </details>)}
       </fieldset>
-      <Turnstile generation={generation} onToken={onToken} />
-      {!token && <button type="button" className="questionnaire__secondary" onClick={onRefreshVerification}>Reintentar verificación</button>}
-      {(error || (verificationMissing && !token)) && <p className="trip-final__error" role="alert">{error || 'Completa la verificación antes de continuar.'}</p>}
+      {error && <p className="trip-final__error" role="alert">{error}</p>}
       <button disabled={props.busy} data-reveal="continue" id="trip-details-continue" type="submit" className="questionnaire__continue">{props.busy ? 'Preparando tu perfil…' : 'Ver mi perfil viajero'} <span aria-hidden="true">⟶</span></button>
     </form>
   </Frame>

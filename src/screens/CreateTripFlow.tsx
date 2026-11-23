@@ -119,14 +119,13 @@ export function CreateTripFlow({ active, onReady, onBack, onBusyChange }: {
     navigate(DETAILS_HASH, source)
   }
   const common = { active: active && stage === 'idle', onReady, onBack: back, position: route.position, entry: route.entry }
-  const verification = { generation: request.generation, token: request.token, onToken: request.onToken, onRefreshVerification: request.refreshVerification }
   return <div ref={rootRef} className="create-flow" data-stage={stage} inert={stage !== 'idle'} aria-hidden={stage !== 'idle'}>
     {isLanding ? <CreateTripScreen {...common} onDiscover={() => {
       const next = firstPending(answers)
       if (next >= 0) navigate(questionHash(next), 'create-trip-discover')
       else if (Object.keys(tripDetailsErrors(form.details)).length) openDetails('create-trip-discover')
       else navigate(form.receipt ? COMPLETE_HASH : DETAILS_HASH, 'create-trip-discover')
-    }} /> : isDetails ? <TripDetailsScreen key={route.entry} {...common} {...verification} busy={request.busy} error={request.error} details={form.details} onChange={details => request.edit({ details })} onContinue={() => void request.submit()} />
+    }} /> : isDetails ? <TripDetailsScreen key={route.entry} {...common} busy={request.busy} error={request.error} details={form.details} onChange={details => request.edit({ details })} onContinue={() => void request.submit()} />
       : completed && form.receipt ? <TripProfileScreen key={route.entry} {...common} receipt={form.receipt} onReview={() => navigate(questionHash(0), 'question-review')} onLanding={() => navigate(CREATE_ROOT, 'question-landing')} onRestart={() => { if (request.locked.current) return; resetTripDraft(); setAnswers({}); request.reset(); navigate(questionHash(0), 'question-restart') }} />
       : <QuestionnaireScreen key={route.entry} {...common} step={step} completed={false} answers={answers} onSelect={(id, selected) => { setAnswers(current => ({ ...current, [id]: selected })); request.edit({}) }} onContinue={() => step === 9 ? openDetails('question-continue') : navigate(questionHash(step + 1), 'question-continue')} onReview={() => {}} onLanding={() => {}} onRestart={() => {}} total={TRIP_QUESTIONS.length} />}
   </div>

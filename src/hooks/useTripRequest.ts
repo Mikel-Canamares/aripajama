@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { saveTripDraft, type DraftExtra, type RequestIdentity, type TripAnswers } from '../data/questionnaire'
 import { emptyTripDetails, isTripReceipt, type TripReceipt } from '../data/trip-request'
 
@@ -18,7 +18,6 @@ async function api(requestId: string, url: string, options: RequestInit): Promis
 }
 function message(code: string) {
   if (code === 'TOO_MANY_REQUESTS') return 'Se han realizado varios intentos. Espera un momento antes de volver a intentarlo.'
-  if (code.startsWith('VERIFICATION')) return 'No se ha podido completar la verificación. Vuelve a intentarlo; tus datos siguen en esta pestaña.'
   if (code === 'REQUEST_CONFLICT') return 'Estos datos no coinciden con el intento anterior. Revisa el formulario antes de continuar.'
   return 'No hemos podido confirmar el registro de tu solicitud. Tus datos siguen en esta pestaña; puedes volver a intentarlo.'
 }
@@ -33,10 +32,6 @@ export function useTripRequest({ draft, answers, step, active, onSaved }: {
   const locked = useRef(false)
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState('')
-  const [generation, setGeneration] = useState(0)
-  const [token, setToken] = useState('')
-  const onToken = useCallback((value: string) => setToken(value), [])
-  const refreshVerification = () => { setToken(''); setGeneration(current => current + 1) }
   useEffect(() => { saveTripDraft(answers, step, form) }, [answers, step, form])
   function edit(value: Partial<DraftExtra>) { setForm(current => ({ ...current, ...value, request: null, receipt: null })); setError('') }
   function apply(result: TripReceipt, request: RequestIdentity) {
@@ -51,7 +46,7 @@ export function useTripRequest({ draft, answers, step, active, onSaved }: {
     } catch { return null }
   }
   async function submit() {
-    if (!active || locked.current || !token) return
+    if (!active || locked.current) return
     locked.current = true; setBusy(true); setError('')
     const request = form.request || identity()
     const prepared = { ...form, request }
@@ -64,16 +59,16 @@ export function useTripRequest({ draft, answers, step, active, onSaved }: {
       if (!result) {
         result = await api(request.id, '/api/trip-requests', {
           method: 'POST', headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ requestId: request.id, retryToken: request.token, answers, details: form.details, turnstileToken: token, website: '' }),
+          body: JSON.stringify({ requestId: request.id, retryToken: request.token, answers, details: form.details, website: '' }),
         })
         apply(result, request)
       }
     } catch (failure) {
       result = await checkStatus(request)
       if (!result) setError(message(failure instanceof Error ? failure.message : 'SERVICE_UNAVAILABLE'))
-    } finally { locked.current = false; setBusy(false); refreshVerification() }
+    } finally { locked.current = false; setBusy(false) }
     if (result && latest.current.request?.id === request.id) savedCallback.current()
   }
-  return { form, edit, busy, locked, error, generation, token, onToken, refreshVerification, submit,
+  return { form, edit, busy, locked, error, submit,
     reset: () => { setForm({ details: emptyTripDetails(), request: null, receipt: null }); setError('') } }
 }

@@ -18,7 +18,6 @@ export async function seedFinalDraft(page: Page, options: { details?: TripDetail
 }
 export async function mockTripApi(page: Page, profile: ProfileId = 'cultural') {
   const state = { posts: [] as Record<string, unknown>[], release: null as Promise<void> | null }
-  await page.route('**/api/trip-config', route => route.fulfill({ json: { localVerification: true } }))
   await page.route('**/api/trip-requests', async route => {
     const data = route.request().postDataJSON()
     state.posts.push(data)
@@ -31,7 +30,6 @@ export async function openDetails(page: Page) {
   await page.emulateMedia({ reducedMotion: 'reduce' })
   await page.goto('/#crear-mi-viaje/cuestionario/detalles')
   await expect(page.locator('.trip-final h1')).toBeFocused()
-  await expect(page.getByRole('status')).toHaveText('Verificación preparada.')
 }
 export async function finishUnknownDetails(page: Page) {
   for (const id of ['destination','days','season','budget']) {

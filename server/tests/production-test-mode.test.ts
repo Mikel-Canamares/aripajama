@@ -28,21 +28,10 @@ async function setup() {
   return { ...f, create, link, get, confirm, notice }
 }
 
-test('el formulario usa Turnstile real aunque haya enlaces históricos de prueba', async () => {
+test('el formulario guarda sin Turnstile aunque haya enlaces históricos de prueba', async () => {
   const f = await setup()
-  const config = await (await f.call('/api/trip-config')).json()
-  assert.deepEqual(config, { turnstileSiteKey: f.env.TURNSTILE_SITE_KEY, localVerification: false })
-  const verify = f.io.fetch
-  f.io.fetch = (url, init) => {
-    assert.equal(JSON.parse(String(init?.body)).secret, f.env.TURNSTILE_SECRET_KEY)
-    return verify(url, init)
-  }
-  const secret = f.env.TURNSTILE_SECRET_KEY
-  f.env.TURNSTILE_SECRET_KEY = '1x0000000000000000000000000000000AA'
-  assert.equal((await f.call('/api/trip-requests', f.payload())).status, 503)
-  f.env.TURNSTILE_SECRET_KEY = secret
-  f.state.captcha = false
-  assert.equal((await f.call('/api/trip-requests', { ...f.payload(), turnstileToken: 'XXXX.DUMMY.TOKEN.XXXX' })).status, 403)
+  f.io.fetch = async () => { throw new Error('El formulario no necesita verificación ni correo externos') }
+  assert.equal((await f.create()).status, 201)
   assert.equal(f.sent.length, 0)
 })
 

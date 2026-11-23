@@ -4,15 +4,12 @@ ENVIRONMENT=development
 EMAIL_MODE=disabled
 EMAIL_TEST_RESTRICTED=true
 EMAIL_TEST_RECIPIENTS=mikel.canamares@gmail.com
-TURNSTILE_MODE=mock
 # For simulated email previews only, set EMAIL_MODE=mock.
 # Set production values through Cloudflare variables/secrets, not in this file.
 RESEND_API_KEY=
 EMAIL_FROM=Aripajama <perfil@notificaciones.aripajama.com>
 REPLY_TO=hola@aripajama.com
 PUBLIC_SITE_URL=
-TURNSTILE_SITE_KEY=
-TURNSTILE_SECRET_KEY=
 WHATSAPP_URL=
 # Local automated-development defaults; personal tests use the production Worker.
 BOOKING_ENABLED=false

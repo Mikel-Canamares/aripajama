@@ -44,16 +44,15 @@ export class SqliteD1 implements Database {
 }
 export function fixture() {
   const db = new SqliteD1()
-  const env: Env = { DB: db, ENVIRONMENT:'production', EMAIL_MODE:'resend', RESEND_API_KEY:'test-key-never-used-on-network', EMAIL_FROM:'Aripajama <test@example.test>', REPLY_TO:'test@example.test', PUBLIC_SITE_URL:'https://aripajama.example', TURNSTILE_SITE_KEY:'test-site-key', TURNSTILE_SECRET_KEY:'test-secret', REQUEST_LIMITER: { limit: async () => ({ success: true }) } }
+  const env: Env = { DB: db, ENVIRONMENT:'production', EMAIL_MODE:'resend', RESEND_API_KEY:'test-key-never-used-on-network', EMAIL_FROM:'Aripajama <test@example.test>', REPLY_TO:'test@example.test', PUBLIC_SITE_URL:'https://aripajama.example', REQUEST_LIMITER: { limit: async () => ({ success: true }) } }
   env.EMAIL_TEST_RESTRICTED = 'true'
   env.EMAIL_TEST_RECIPIENTS = 'traveler@example.test'
   let now = 1800000000000
   const sent: { key: string; payload: Record<string, unknown> }[] = []
   const accepted = new Map<string, string>()
-  const state = { providerStatus:200, captcha:true, hostname:'aripajama.example', action:'trip_request', networkError:false, sendDelay: null as Promise<void> | null }
+  const state = { providerStatus:200, networkError:false, sendDelay: null as Promise<void> | null }
   const io: Io = { now: () => now, fetch: async (input, init) => {
     const url = String(input)
-    if (url === 'https://challenges.cloudflare.com/turnstile/v0/siteverify') return Response.json({ success:state.captcha, hostname:state.hostname, action:state.action })
     if (url !== 'https://api.resend.com/emails') throw new Error(`Unexpected network destination: ${url}`)
     const key = new Headers(init?.headers).get('Idempotency-Key')!
     const payload = JSON.parse(init!.body as string)
@@ -67,10 +66,10 @@ export function fixture() {
   const handler = createHandler(io)
   const id = 'request_fixture_000000000001'
   const token = 'a'.repeat(64)
-  const payload = () => ({ requestId:id, retryToken:token, answers:currentAnswers(), details:details(), turnstileToken:'test-token', website:'' })
+  const payload = () => ({ requestId:id, retryToken:token, answers:currentAnswers(), details:details(), website:'' })
   const call = (path: string, data?: unknown, headers: Record<string,string> = {}, method = data === undefined ? 'GET' : 'POST') => handler(new Request(`https://aripajama.example${path}`, { method, headers:{ Origin:'https://aripajama.example', ...(data === undefined ? {} : { 'Content-Type':'application/json' }), ...headers }, ...(data === undefined ? {} : { body:JSON.stringify(data) }) }), env)
   const create = (data: unknown = payload()) => call('/api/trip-requests', data)
-  const retry = () => call(`/api/trip-requests/${id}/retry-email`, { turnstileToken:'fresh-token' }, { Authorization:`Bearer ${token}` })
+  const retry = () => call(`/api/trip-requests/${id}/retry-email`, {}, { Authorization:`Bearer ${token}` })
   const status = () => call(`/api/trip-requests/${id}`, undefined, { Authorization:`Bearer ${token}` })
   return { db, env, io, state, sent, accepted, id, token, payload, handler, call, create, retry, status, advance:(ms: number) => { now += ms } }
 }

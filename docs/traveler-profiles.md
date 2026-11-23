@@ -2,15 +2,36 @@
 
 ## Flujo actual
 
-Las diez preguntas conducen a los detalles del viaje. «Ver mi perfil viajero» valida esos datos y Turnstile. El servidor calcula y guarda la solicitud sin email, con estado interno `not_requested`. Devuelve el identificador del perfil principal. La pantalla `/completado` muestra su descripción e ilustración y el botón desactivado «Reservar mi cita». La antigua ruta `/email` recupera el borrador en detalles.
+Las diez preguntas conducen a los detalles del viaje. «Ver mi perfil viajero» valida esos datos y los envía directamente, sin Turnstile ni peticiones a `/api/trip-config`. El servidor calcula y guarda la solicitud sin email, con estado interno `not_requested`. Devuelve el identificador del perfil principal. La pantalla `/completado` muestra su descripción e ilustración y el botón desactivado «Reservar mi cita». La antigua ruta `/email` recupera el borrador en detalles.
 
 | Operación | Contrato actual |
 | --- | --- |
-| `GET /api/trip-config` | Clave pública de Turnstile e indicador de verificación local. |
-| `POST /api/trip-requests` | Recibe respuestas, detalles, identidad de recuperación, campo antispam y token Turnstile. Devuelve `{ requestId, saved: true, profile }`. Repetir la confirmación con la misma identidad y contenido devuelve el mismo registro. |
+| `GET /api/health` | Devuelve `{ ok: true }` para comprobar que la API está escuchando. |
+| `POST /api/trip-requests` | Recibe respuestas, detalles, identidad de recuperación y campo antispam `website` vacío. Devuelve `{ requestId, saved: true, profile }`. Repetir la confirmación con la misma identidad y contenido devuelve el mismo registro. |
 | `GET /api/trip-requests/:id` | Recupera el mismo recibo con el token privado en la cabecera de autorización. |
 
-El formulario usa Turnstile real en producción y el límite por origen de red. Para actualizar una instalación existente, aplicar la migración D1 `0004_on_screen_profiles.sql` antes de activar el Worker actualizado. La clave secreta y la clave de sitio de Turnstile deben pertenecer al dominio de producción.
+El formulario conserva la comprobación de origen, el límite por origen de red, el campo antispam, el límite de tamaño y la validación estricta. La recuperación requiere el token privado. Las claves y variables de Turnstile ya no intervienen en el registro. Para actualizar una instalación existente, aplicar la migración D1 `0004_on_screen_profiles.sql` antes de activar el Worker actualizado.
+
+### Arranque local actual
+
+```sh
+npm install
+npm run dev
+```
+
+El comando aplica las migraciones locales en `.wrangler/state`, arranca el Worker en `127.0.0.1:8787` con correo desactivado y espera a `/api/health` antes de iniciar Vite. Vite redirige `/api` al Worker. Ctrl+C cierra los dos servicios. No requiere una compilación previa: la API local usa `public/` como directorio de recursos; la publicación sigue usando `dist/`.
+
+Para arrancarlos por separado: `npm run db:local`, `npm run dev:api` en una terminal y `npm run dev:web` en otra. Ejecutar solo Vite deja el cálculo y guardado sin servicio y provoca `ECONNREFUSED 127.0.0.1:8787` al confirmar el formulario.
+
+Comprobaciones del flujo actual:
+
+```sh
+npm run build
+npm run test:server
+npm run test:e2e -- tests/api-local.spec.ts tests/trip-request.spec.ts tests/questionnaire.spec.ts --workers=2
+```
+
+Playwright arranca Vite con `dev:web` y su propio Worker con D1 aislada en `.wrangler/test-state`.
 
 ## Archivo del flujo anterior por correo
 

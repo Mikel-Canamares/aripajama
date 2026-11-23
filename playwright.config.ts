@@ -15,12 +15,12 @@ export default defineConfig({
     { name: 'mobile-webkit', use: { ...devices['iPhone 13'], browserName: 'webkit' } },
   ],
   webServer: [{
-    command: 'npm run dev -- --port 4173 --strictPort',
+    command: 'npm run dev:web -- --port 4173 --strictPort',
     url: 'http://127.0.0.1:4173',
     reuseExistingServer: !process.env.CI,
   }, {
     command: 'npm run dev:api:test',
-    url: 'http://127.0.0.1:8787/api/trip-config',
+    url: 'http://127.0.0.1:8787/api/health',
     timeout: 120_000,
     reuseExistingServer: !process.env.CI,
   }, {
