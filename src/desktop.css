@@ -70,24 +70,18 @@
     .journey__card:has(.journey__card-link):hover { transform: none; }
     .journey__back { display: none; }
 
-    /* Reuse each destination's upper-right artwork as a triptych panel. */
     .journey__scene {
-      display: block; position: relative; grid-column: 1 / -1; width: 100%; height: 100%; min-height: 18rem;
-      overflow: hidden; isolation: isolate;
+      display: block; grid-column: 1 / -1; width: 100%; height: 100%; min-height: 18rem;
+      background: #faf0e3 center top / cover no-repeat;
     }
     .journey__card--about .journey__scene {
-      background: #fff url('/media/about/header-art.webp') right center / 165% auto no-repeat;
+      background-image: url('/media/hub/about.webp');
     }
     .journey__card--library .journey__scene {
-      background: #fff;
-    }
-    .journey__card--library .journey__scene::before {
-      content: ''; position: absolute; top: 50%; left: 0; width: 100%; aspect-ratio: 941 / 560;
-      transform: translateY(-50%);
-      background: url('/media/library/background.webp') right top / 100% auto no-repeat;
+      background-image: url('/media/hub/library.webp');
     }
     .journey__card--create .journey__scene {
-      background: #fff url('/media/create-trip/background.webp') right top / 160% auto no-repeat;
+      background-image: url('/media/hub/create.webp');
     }
 
     .about__content { width: var(--spread-width); max-width: none; padding-bottom: 2rem; }
@@ -201,7 +195,7 @@
     @container (max-width: 46rem) {
       .journey__cards { grid-template-columns: minmax(0,1fr); }
       .journey__card { grid-column: auto; min-height: 0; }
-      .journey__scene { height: 12rem; min-height: 0; }
+      .journey__scene { height: 12rem; min-height: 0; background-position: center 40%; }
       .questionnaire__form { display: block; }
       .questionnaire__responses { margin-top: 1.5rem; }
       .create-trip__actions { grid-column: 1 / -1; }

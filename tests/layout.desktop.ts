@@ -11,8 +11,13 @@ async function enterHub(page: Page) {
 }
 
 test('muestra el tríptico completo y cambia de composición en 1024 px', async ({ page }) => {
+  const hubImages = ['/media/hub/about.webp', '/media/hub/library.webp', '/media/hub/create.webp']
   const requests = new Set<string>()
+  const loaded = new Set<string>()
   page.on('request', request => requests.add(new URL(request.url()).pathname))
+  page.on('response', response => {
+    if (response.ok()) loaded.add(new URL(response.url()).pathname)
+  })
   await enterHub(page)
   for (const [width, height] of [[1366, 768], [1024, 768], [1440, 900], [1920, 1080]]) {
     await page.setViewportSize({ width, height })
@@ -25,12 +30,15 @@ test('muestra el tríptico completo y cambia de composición en 1024 px', async 
       expect(box.height).toBeCloseTo(first.height, 0)
       expect(box.x).toBeGreaterThanOrEqual(first.x + index * first.width - 1)
       expect(box.y + box.height).toBeLessThan(height)
-      await expect(card.locator('.journey__scene')).toBeVisible()
+      const scene = card.locator('.journey__scene')
+      await expect(scene).toBeVisible()
+      await expect(scene).toHaveCSS('background-image', `url("${new URL(hubImages[index], page.url())}")`)
       await expect(card.getByRole('button')).toBeInViewport({ ratio: .99 })
     }
     await expect(page.locator('.journey__title')).toBeInViewport({ ratio: .99 })
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true)
   }
+  await expect.poll(() => hubImages.every(path => loaded.has(path))).toBe(true)
   expect(requests.has('/media/hub-clean.webp')).toBe(false)
   await page.setViewportSize({ width: 1023, height: 768 })
   await expect(page.locator('.journey__scene').first()).toBeHidden()
@@ -39,7 +47,7 @@ test('muestra el tríptico completo y cambia de composición en 1024 px', async 
 
 test('mantiene las tres entradas con arte fallido, teclado y texto al 200 %', async ({ page }) => {
   await page.route('**/media/about/footer-ribbons.webp', route => route.abort())
-  await page.route('**/media/library/background.webp', route => route.abort())
+  await page.route('**/media/hub/library.webp', route => route.abort())
   await enterHub(page)
   await expect(page.locator('.journey')).toHaveAttribute('data-artwork', 'error')
   await page.addStyleTag({ content: 'html { font-size: 200% }' })
