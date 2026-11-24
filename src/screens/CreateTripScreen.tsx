@@ -30,8 +30,10 @@ const STEPS = [
   {
     icon: 'document', title: 'Lo hacemos realidad', text: 'Recibes tu viaje final con enlaces y guía práctica para reservar.',
     details: <>
-      <p>En la tercera videollamada te entrego tu itinerario día a día y repasamos la guía de reservas. Tendrás los enlaces directos y los pasos para reservar por tu cuenta los alojamientos, transportes y actividades que hayas elegido.</p>
-      <p>También recibirás un kit de preparación del viaje, adaptado a tu destino, tus fechas y tu ruta. Incluye qué llevar en la maleta, qué documentación preparar, si necesitas visado, qué vacunas son obligatorias o recomendadas y qué conviene revisar al elegir tu seguro de viaje.</p>
+      <p>En la tercera videollamada repasamos juntos todo lo que he preparado para tu viaje.</p>
+      <p><strong>Tu itinerario</strong><br />Recibes tu itinerario día a día.</p>
+      <p><strong>Tu guía de reservas</strong><br />Tendrás los enlaces directos y los pasos para reservar por tu cuenta los alojamientos, transportes y actividades que hayas elegido.</p>
+      <p><strong>Tu kit de preparación</strong><br />Está adaptado a tu destino, tus fechas y tu ruta. Incluye qué llevar en la maleta, qué documentación preparar, si necesitas visado, qué vacunas son obligatorias o recomendadas y qué conviene revisar al elegir tu seguro de viaje.</p>
     </>,
   },
 ]
@@ -124,13 +126,12 @@ export function CreateTripScreen({ active, onReady, onBack, onDiscover, position
         <article data-reveal="" data-reveal-frame="" data-reveal-group="" className="create-trip__card create-trip__card--discover">
           <h2 data-reveal="">Quiero empezar mi viaje</h2>
           <p data-reveal="">Responde a 10 preguntas, descubre tu perfil viajero y cuéntame qué tienes en mente.</p>
-          <button data-reveal="" id="create-trip-discover" onClick={onDiscover}>Descubrir <span aria-hidden="true">⟶</span></button>
+          <button data-reveal="" id="create-trip-discover" onClick={onDiscover}>Descubrir</button>
         </article>
         <article data-reveal="" data-reveal-frame="" data-reveal-group="" className="create-trip__card create-trip__card--contact">
           <h2 data-reveal="">Tengo dudas antes de empezar</h2>
           <p data-reveal="">A través de WhatsApp puedes preguntarme lo que necesites.</p>
-          <button data-reveal="" disabled aria-describedby="create-trip-contact-pending">Hablemos <WhatsAppIcon /></button>
-          <small data-reveal="" id="create-trip-contact-pending">WhatsApp próximamente</small>
+          <button data-reveal="" disabled>Hablemos <WhatsAppIcon /></button>
         </article>
       </section>
       <footer className="create-trip__footer" aria-label="Nuestra forma de acompañarte">

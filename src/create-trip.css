@@ -42,11 +42,8 @@
   .create-trip__card h2 { margin: 0 0 .55em; font: 600 clamp(1.35rem, 3.8cqw, 2.3rem)/1 var(--font-editorial); letter-spacing: -.045em; }
   .create-trip__card p { margin-bottom: 1rem; max-width: 24em; font: 400 clamp(1rem, 2.8cqw, 1.7rem)/1.12 var(--font-editorial); }
   .create-trip__card button { display: flex; align-items: center; justify-content: center; gap: .6em; margin-top: auto; width: 100%; max-width: 350px; min-height: 44px; padding: .55rem .45rem; border: 1px solid #a34d2a; border-radius: 999px; background: linear-gradient(120deg, #a44c29, #b66c45); color: #fff; font: 400 clamp(.7rem, 2.3cqw, 1.1rem)/1.25 'Manrope', sans-serif; letter-spacing: .12em; text-transform: uppercase; opacity: 1; }
-  .create-trip__card button > span { font-size: 1.5em; line-height: 1; }
   .create-trip__card--contact button { border-color: #192337; background: #ffffffa6; color: #192337; }
   .create-trip__card button svg { width: 1.8em; height: 1.8em; flex-shrink: 0; }
-  .create-trip__card small { margin-top: .55rem; font: 400 clamp(.65rem, 1.6cqw, .8rem)/1.4 'Manrope', sans-serif; color: #54463b; }
-  .create-trip__card--contact small { color: #344c5b; }
   .create-trip__footer { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); margin-block: 0 1rem; }
   .create-trip__footer p { display: flex; align-items: center; gap: .7em; padding-inline: 9%; font: 400 clamp(.6rem, 1.65cqw, .9rem)/1.6 'Manrope', sans-serif; letter-spacing: .08em; text-transform: uppercase; color: #25374a; }
   .create-trip__footer p:first-child { padding-left: 0; }
@@ -83,7 +80,6 @@
     .create-trip__process { max-width: 1000px; margin-inline: auto; }
     .create-trip__step-details { max-width: 46rem; margin-inline: auto; }
     .create-trip__actions { gap: 2rem; margin: 5.5rem 2% 4rem; }
-    .create-trip__card, .create-trip__card--contact { background: #ffffffb8; border-color: #cf9878; }
     .create-trip__card p { max-width: 18em; }
     .create-trip__footer { margin-bottom: 3rem; }
   }

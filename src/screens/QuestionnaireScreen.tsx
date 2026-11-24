@@ -98,7 +98,7 @@ export function QuestionnaireScreen({ active, onReady, step, total, completed, a
             })}
           </fieldset>
           <p className="questionnaire__error" id="question-error" role="alert">{error ? 'Selecciona al menos una opción para continuar' : ''}</p>
-          <button data-reveal="continue" id="question-continue" className="questionnaire__continue" type="submit">Continuar <span aria-hidden="true">⟶</span></button>
+          <button data-reveal="continue" id="question-continue" className="questionnaire__continue" type="submit">Continuar</button>
         </div>
       </form>}
     </div>

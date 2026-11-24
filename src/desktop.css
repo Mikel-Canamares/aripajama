@@ -151,13 +151,13 @@
     .create-trip__header p { max-width: 21em; font-size: clamp(1.4rem, 2.2vw, 2rem); }
     .create-trip__header .create-trip__rule { margin: 1rem 0; }
     .create-trip__actions {
-      grid-row: 3; grid-column: 1 / 10; align-items: stretch; gap: var(--spread-gap); margin: 0 0 3rem;
+      grid-row: 4; grid-column: 1 / -1; align-items: stretch; gap: var(--spread-gap); margin: 3rem 0;
     }
-    .create-trip__card { align-items: flex-start; text-align: left; padding: 1.15rem 1.5rem; background: #fffcf7f2; }
+    .create-trip__card { padding: 1.15rem 1.5rem; }
     .create-trip__card h2 { font-size: 1.7rem; margin-bottom: .45rem; }
     .create-trip__card p { max-width: none; font-size: 1.15rem; }
-    .create-trip__card button { width: fit-content; padding-inline: 1.15rem; font-size: .78rem; }
-    .create-trip__process { grid-row: 4; }
+    .create-trip__card button { padding-inline: 1.15rem; font-size: .78rem; }
+    .create-trip__process { grid-row: 3; }
     .create-trip__step p { font-size: clamp(1.2rem, 1.55vw, 1.5rem); }
     .create-trip__footer { margin-top: 3rem; }
 
