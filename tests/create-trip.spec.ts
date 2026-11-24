@@ -58,12 +58,50 @@ test('conserva los textos, los cuatro pasos y habilita únicamente el cuestionar
   await page.goto('/#crear-mi-viaje')
   await expect(title(page)).toHaveText('No hay dosformas igualesde viajar.')
   await expect(page.locator('.create-trip__steps > li')).toHaveCount(4)
-  await expect(page.locator('.create-trip__step h3')).toHaveText(['Te descubro', 'Lo imaginamos juntos', 'Diseño tu itinerario', 'Lo hacemos realidad'])
+  await expect(page.locator('.create-trip__step-title')).toHaveText(['Te descubro', 'Lo imaginamos juntos', 'Diseño tu itinerario', 'Lo hacemos realidad'])
   await expect(page.getByRole('button', { name: 'Descubrir', exact: true })).toBeEnabled()
   await expect(page.getByRole('button', { name: 'Hablemos', exact: true })).toBeDisabled()
   await expect(page.locator('#create-trip-discover-pending')).toHaveCount(0)
   await expect(page.locator('#create-trip-contact-pending')).toBeVisible()
   await expect(page.locator('.create-trip a, .create-trip input, .create-trip form')).toHaveCount(0)
+})
+
+test('despliega un solo paso, conserva los textos completos y permite cerrarlo con teclado', async ({ page }) => {
+  await page.emulateMedia({ reducedMotion: 'reduce' })
+  await page.goto('/#crear-mi-viaje')
+  await expect(title(page)).toBeFocused()
+  const toggles = page.locator('.create-trip__step-toggle')
+  const panels = page.locator('.create-trip__step-details')
+  await expect(page.locator('.create-trip__step-toggle[aria-expanded="false"]')).toHaveCount(4)
+  await expect(page.locator('.create-trip__step-details:visible')).toHaveCount(0)
+  for (let index = 0; index < 4; index++) {
+    const toggle = toggles.nth(index)
+    await toggle.click()
+    await expect(toggle).toHaveAttribute('aria-expanded', 'true')
+    await expect(toggle).toHaveAttribute('aria-controls', await panels.nth(index).getAttribute('id') as string)
+    await expect(panels.nth(index)).toBeVisible()
+    await expect(page.locator('.create-trip__step-toggle[aria-expanded="true"]')).toHaveCount(1)
+    if (index > 0) await expect(panels.nth(index - 1)).toBeHidden()
+  }
+  await expect(panels.nth(3)).toContainText('qué vacunas son obligatorias o recomendadas')
+  await toggles.nth(3).press('Enter')
+  await expect(panels.nth(3)).toBeHidden()
+  await expect(toggles.nth(3)).toBeFocused()
+  await toggles.nth(0).focus()
+  await page.keyboard.press('Space')
+  await expect(panels.nth(0)).toContainText('A través de diez preguntas')
+  await expect(panels.nth(0)).toContainText('preparar nuestra primera conversación.')
+  await page.keyboard.press('Tab')
+  await expect(toggles.nth(1)).toBeFocused()
+  await page.keyboard.press('Enter')
+  await expect(panels.nth(1)).toContainText('dedicamos una hora')
+  await expect(panels.nth(1).locator('.create-trip__consultation strong')).toHaveText('40 €')
+  await expect(panels.nth(1)).toContainText('esos 40 € se descuentan del total')
+  await toggles.nth(2).click()
+  await expect(panels.nth(2)).toContainText('revisamos una estimación de lo que te costaría el viaje.')
+  await expect(panels.nth(2)).toContainText('antes de entregarte la versión final.')
+  await page.getByRole('button', { name: 'Descubrir', exact: true }).click()
+  await expect(page).toHaveURL(/#crear-mi-viaje\/cuestionario\/1$/)
 })
 
 test('anima la entrada y el regreso desde scroll, sin interacción durante el cambio', async ({ page }) => {
@@ -154,8 +192,13 @@ test('se adapta a móvil, tablet y escritorio sin desbordamientos', async ({ pag
     const steps = await page.locator('.create-trip__step').all()
     const first = (await steps[0].boundingBox())!
     const second = (await steps[1].boundingBox())!
-    if (viewport.width >= 900) expect(second.y).toBe(first.y)
-    else expect(second.y).toBeGreaterThanOrEqual(first.y + first.height)
+    expect(second.y).toBeGreaterThanOrEqual(first.y + first.height)
+    for (const toggle of await page.locator('.create-trip__step-toggle').all()) {
+      await toggle.click()
+      expect(await page.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth)).toBe(true)
+      const overflowing = await page.locator('.create-trip__step-details:visible p, .create-trip__step-toggle').evaluateAll(elements => elements.filter(el => el.scrollWidth > el.clientWidth + 1).map(el => el.textContent))
+      expect(overflowing).toEqual([])
+    }
     const cards = await page.locator('.create-trip__card').all()
     const cardOne = (await cards[0].boundingBox())!
     const cardTwo = (await cards[1].boundingBox())!
@@ -172,6 +215,12 @@ test('mantiene textos y controles al ampliar el texto al 200 %', async ({ page }
   await expect(title(page)).toBeFocused()
   await expect(page.locator('.create-trip')).toHaveAttribute('data-background', 'ready')
   await page.addStyleTag({ content: 'html { font-size: 200%; }' })
+  for (const toggle of await page.locator('.create-trip__step-toggle').all()) {
+    await toggle.click()
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth)).toBe(true)
+    const overflowing = await page.locator('.create-trip__step-details:visible p, .create-trip__step-toggle').evaluateAll(elements => elements.filter(el => el.scrollWidth > el.clientWidth + 1).map(el => el.textContent))
+    expect(overflowing).toEqual([])
+  }
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth)).toBe(true)
   const overflowing = await page.locator('.create-trip h1, .create-trip h2, .create-trip h3, .create-trip p, .create-trip button, .create-trip small').evaluateAll(elements => elements.filter(el => el.scrollWidth > el.clientWidth + 1).map(el => ({ text: el.textContent, width: el.clientWidth, scrollWidth: el.scrollWidth })))
   expect(overflowing).toEqual([])
