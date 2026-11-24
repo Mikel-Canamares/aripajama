@@ -594,6 +594,9 @@
   .catalog__filters { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: .7rem; margin-bottom: 1.4rem; color: #795745; font-size: .75rem; line-height: 1.6; }
   .catalog__filters button { display: inline-flex; align-items: center; gap: .8rem; min-height: 44px; padding: .3rem .7rem; border: 1px solid #dbc7b6; border-radius: 999px; background: #fffaf4e6; font-size: .7rem; }
   .catalog__group { margin-bottom: 1.8rem; }
+  .catalog__country-group { margin-bottom: 1.4rem; }
+  .catalog__country-heading { margin: .8rem 0 .6rem; color: #82430e; font: 500 1.6rem/1.2 var(--font-editorial); overflow-wrap: anywhere; }
+  .catalog__state-heading { margin: .6rem 0 .5rem; color: #6f3e24; font: 500 1.3rem/1.2 var(--font-editorial); overflow-wrap: anywhere; }
   .catalog__group-heading { position: relative; display: flex; align-items: center; min-height: 92px; margin-bottom: .6rem; }
   .catalog__group-heading > div { position: relative; z-index: 1; }
   .catalog__group-heading h2 { display: flex; align-items: center; gap: 1rem; margin: 0; color: #82430e; font: 500 clamp(1.9rem, 5cqw, 2.6rem)/1 var(--font-editorial); text-transform: uppercase; }
@@ -603,7 +606,7 @@
   .catalog__trips { margin: 0; padding: 0; list-style: none; column-gap: 1.1rem; }
   .catalog__trip { display: grid; grid-template-columns: minmax(0, 1fr) 66px; align-items: center; gap: .65rem; min-height: 74px; margin-bottom: .65rem; padding: .35rem .7rem; break-inside: avoid; border: 1px solid #dfcfc2; border-radius: 12px; background: linear-gradient(120deg, #fffefce6, #faf6efcc); box-shadow: 0 10px 24px -18px #95745470; }
   .catalog__trip-copy { min-width: 0; }
-  .catalog__trip-copy h3 { margin: 0; color: #17100b; font: 600 clamp(1.2rem, 3cqw, 1.55rem)/1.05 var(--font-editorial); letter-spacing: -.035em; overflow-wrap: anywhere; }
+  .catalog__trip-copy > :first-child { margin: 0; color: #17100b; font: 600 clamp(1.2rem, 3cqw, 1.55rem)/1.05 var(--font-editorial); letter-spacing: -.035em; overflow-wrap: anywhere; }
   .catalog__trip-copy p { margin-top: .15rem; color: #594539; font: 400 clamp(1rem, 2.6cqw, 1.15rem)/1.15 var(--font-editorial); }
   .catalog__trip .catalog__art { height: 66px; }
   .catalog__empty { padding-block: 2rem; color: #795745; font-size: .9rem; line-height: 1.7; }
@@ -670,7 +673,7 @@
     .catalog__trips { column-count: 3; }
     .catalog__countries { grid-template-columns: repeat(3, minmax(0, 1fr)); }
     .catalog__country > span:first-child { font-size: 1.7rem; }
-    .catalog__trip-copy h3 { font-size: 1.4rem; }
+    .catalog__trip-copy > :first-child { font-size: 1.4rem; }
   }
   @media (hover: hover) and (pointer: fine) {
     .catalog__country:hover, .library__browse-card:not(:disabled):hover, .library__continent:not(:disabled):hover { transform: translateY(-2px); border-color: #b88661; box-shadow: 0 10px 26px -12px #987d5766; }

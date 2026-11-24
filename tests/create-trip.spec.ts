@@ -60,9 +60,10 @@ test('conserva los textos, los cuatro pasos y habilita únicamente el cuestionar
   await expect(page.locator('.create-trip__steps > li')).toHaveCount(4)
   await expect(page.locator('.create-trip__step-title')).toHaveText(['Te descubro', 'Lo imaginamos juntos', 'Diseño tu itinerario', 'Lo hacemos realidad'])
   await expect(page.getByRole('button', { name: 'Descubrir', exact: true })).toBeEnabled()
-  await expect(page.getByRole('button', { name: 'Hablemos', exact: true })).toBeDisabled()
+  await expect(page.getByRole('button', { name: 'Próximamente', exact: true })).toBeDisabled()
+  await expect(page.getByRole('button', { name: 'Hablemos', exact: true })).toHaveCount(0)
   await expect(page.locator('#create-trip-discover-pending')).toHaveCount(0)
-  await expect(page.locator('#create-trip-contact-pending')).toBeVisible()
+  await expect(page.locator('#create-trip-contact-pending')).toHaveCount(0)
   await expect(page.locator('.create-trip a, .create-trip input, .create-trip form')).toHaveCount(0)
 })
 
@@ -181,6 +182,15 @@ test('se adapta a móvil, tablet y escritorio sin desbordamientos', async ({ pag
     await expect(title(page)).toBeFocused()
     await expect(page.locator('.create-trip')).toHaveAttribute('data-background', 'ready')
     await expect.poll(() => page.locator('.create-trip img').evaluateAll(images => images.every(image => (image as HTMLImageElement).complete && (image as HTMLImageElement).naturalWidth > 0))).toBe(true)
+    if (viewport.width <= 576) {
+      for (const text of await page.locator('.create-trip__header p, .create-trip__step-summary, .create-trip__step-details p, .create-trip__card p').all()) {
+        await expect(text).toHaveCSS('text-align', 'justify')
+        await expect(text).toHaveCSS('text-align-last', 'left')
+        await expect(text).toHaveCSS('hyphens', 'none')
+        await expect(text).toHaveCSS('overflow-wrap', 'normal')
+        await expect(text).toHaveCSS('word-break', 'normal')
+      }
+    }
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth)).toBe(true)
     for (const control of await page.locator('.create-trip button').all()) {
       const box = (await control.boundingBox())!

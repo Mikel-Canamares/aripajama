@@ -131,7 +131,7 @@ export function CreateTripScreen({ active, onReady, onBack, onDiscover, position
         <article data-reveal="" data-reveal-frame="" data-reveal-group="" className="create-trip__card create-trip__card--contact">
           <h2 data-reveal="">Tengo dudas antes de empezar</h2>
           <p data-reveal="">A través de WhatsApp puedes preguntarme lo que necesites.</p>
-          <button data-reveal="" disabled>Hablemos <WhatsAppIcon /></button>
+          <button data-reveal="" disabled>Próximamente <WhatsAppIcon /></button>
         </article>
       </section>
       <footer className="create-trip__footer" aria-label="Nuestra forma de acompañarte">

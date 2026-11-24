@@ -1,6 +1,6 @@
 import { expect, test } from '@playwright/test'
 import sharp from 'sharp'
-import { CONTINENTS, COUNTRIES, TRIPS, illustratedIcon, readLibraryView, selectTrips } from '../src/data/library'
+import { CONTINENTS, COUNTRIES, TRIPS, groupTrips, illustratedIcon, readLibraryView, selectTrips, type Trip } from '../src/data/library'
 import { COUNTRY_ART, COMPOSITE_ART, REGIONAL_ART } from '../src/data/library-icons'
 import { openIntroWithMediaError } from './intro-helpers'
 
@@ -25,13 +25,59 @@ test('catálogo íntegro: países, viajes, relaciones y contadores sin duplicado
     expect(COUNTRY_ART[country.code]).toBeDefined()
   }
   expect(CONTINENTS.map(continent => selectTrips({ page: 'trips', continent: continent.id }).length)).toEqual([27, 5, 5, 2])
-  expect(selectTrips({ page: 'trips', country: 'DE' }).map(trip => trip.id)).toEqual(['berlin', 'austria-tirol-baviera'])
+  expect(selectTrips({ page: 'trips', country: 'DE' }).map(trip => trip.id)).toEqual(['austria-tirol-baviera', 'berlin'])
   expect(selectTrips({ page: 'trips', country: 'IT' }).map(trip => trip.id)).toContain('croacia-venecia')
   expect(selectTrips({ page: 'trips', country: 'SG' }).map(trip => trip.id)).toEqual(['malasia-singapur'])
   for (const hash of ['#biblioteca/viajes?pais=XX', '#biblioteca/viajes?pais=', '#biblioteca/viajes?pais=ES&pais=AT', '#biblioteca/viajes?otro=filtro']) {
     expect(readLibraryView(hash)).toEqual({ page: 'invalid' })
   }
 })
+
+test('agrupa estados explícitos y ordena estados, títulos y subtítulos sin mutar los datos', () => {
+  const base = TRIPS.find(trip => trip.id === 'estados-unidos-este')!
+  const trips: Trip[] = [
+    { ...base, id: 'texas', title: 'Austin', state: { country: 'US', name: 'Texas' } },
+    { ...base, id: 'yosemite', title: 'Yosemite', state: { country: 'US', name: 'California' } },
+    { ...base, id: 'oeste', subtitle: 'Costa Oeste' },
+    { ...base, id: 'angeles', title: 'Los Ángeles', state: { country: 'US', name: 'California' } },
+    { ...base, id: 'este', subtitle: 'Costa Este' },
+  ]
+  const before = structuredClone(trips)
+  const groups = groupTrips(trips)
+  expect(groups.map(group => group.country.name)).toEqual(['Estados Unidos'])
+  expect(groups[0].states.map(state => state.name)).toEqual(['', 'California', 'Texas'])
+  expect(groups[0].states.map(state => state.trips.map(trip => trip.id))).toEqual([['este', 'oeste'], ['angeles', 'yosemite'], ['texas']])
+  expect(trips).toEqual(before)
+  const multiCountry: Trip = { ...base, countries: ['US', 'MX'], state: { country: 'US', name: 'Texas' } }
+  expect(groupTrips([multiCountry], 'MX')[0].states[0].name).toBe('')
+})
+
+for (const continent of CONTINENTS) {
+  test(`${continent.name}: países y viajes alfabéticos, agrupados y sin duplicados`, async ({ page }) => {
+    await page.emulateMedia({ reducedMotion: 'reduce' })
+    await page.goto(`/#biblioteca/viajes?continente=${continent.id}`)
+    const expected = groupTrips(TRIPS.filter(trip => trip.continent === continent.id))
+    const names = expected.map(group => group.country.name)
+    expect(names).toEqual([...names].sort((a, b) => a.localeCompare(b, 'es')))
+    await expect(page.locator('.catalog__country-heading')).toHaveText(names)
+    const ids = expected.flatMap(group => group.states.flatMap(state => state.trips.map(trip => trip.id)))
+    expect(new Set(ids).size).toBe(ids.length)
+    await expect(page.locator('.catalog__total')).toHaveText(`${ids.length} viajes`)
+    expect(await page.locator('.catalog__trip').evaluateAll(items => items.map(item => item.getAttribute('data-trip')))).toEqual(ids)
+    for (const group of expected) {
+      const titles = group.states.flatMap(state => state.trips.map(trip => trip.title))
+      expect(titles).toEqual([...titles].sort((a, b) => a.localeCompare(b, 'es')))
+    }
+    if (continent.id === 'asia') {
+      expect(names).toEqual(['Filipinas', 'Japón', 'Malasia', 'Tailandia', 'Vietnam'])
+      expect(ids).toEqual(['filipinas', 'japon', 'malasia-singapur', 'tailandia', 'vietnam'])
+    }
+    if (continent.id === 'america') {
+      expect(names).toEqual(['Colombia', 'Estados Unidos', 'México', 'Perú'])
+      expect(ids).toEqual(['colombia', 'estados-unidos-este', 'estados-unidos-oeste', 'riviera-maya', 'peru'])
+    }
+  })
+}
 
 test('cada ilustración es un recurso WebP transparente de alta resolución', async ({ request }) => {
   const sources = new Set([
@@ -117,7 +163,7 @@ test('filtra por continente desde la portada y elimina el filtro', async ({ page
   await expect(page.locator('.catalog__group')).toHaveCount(4)
   await expect(page.locator('.catalog__number, .catalog__trip[value], ol.catalog__trips')).toHaveCount(0)
   await expect(page.getByRole('button', { name: /Tipo de viaje/ })).toHaveCount(0)
-  await expect(page.locator('.catalog__trip').first()).toContainText('Galicia')
+  await expect(page.locator('.catalog__trip').first()).toContainText('Berlín')
   await expect(page.locator('.catalog__trip').last()).toContainText('Túnez')
   await expect(page.locator('.library__background')).toHaveAttribute('src', '/media/library/background.webp')
 })

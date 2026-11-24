@@ -40,8 +40,32 @@ for (const id of Object.keys(TRAVELER_PROFILES) as ProfileId[]) test(`presenta e
   const illustration = page.locator('.trip-final__profile img')
   await expect(illustration).toHaveAttribute('src', `/media/email/${id}-art.jpg`)
   await expect.poll(() => illustration.evaluate(img => (img as HTMLImageElement).naturalWidth)).toBeGreaterThan(0)
+  await expect(illustration).toBeVisible()
+  await expect(illustration).toHaveCSS('opacity', '1')
   await expect(page.getByRole('button', { name: 'Reservar mi cita' })).toBeDisabled()
   await expect(page.getByText('Reservas disponibles próximamente')).toBeVisible()
+})
+
+test('muestra la imagen en el primer resultado aunque cargue tarde, con animaciones activas', async ({ page }) => {
+  await mockTripApi(page)
+  await seedFinalDraft(page)
+  await openDetails(page)
+  await page.emulateMedia({ reducedMotion: 'no-preference' })
+  let release!: () => void
+  const held = new Promise<void>(resolve => { release = resolve })
+  await page.route('**/media/email/cultural-art.jpg', async route => { await held; await route.continue() })
+  try {
+    await page.locator('#trip-details-continue').click()
+    await expect(page.locator('.trip-final h1')).toHaveText('El Cultural')
+    await expect(page.locator('.trip-final h1')).toBeFocused()
+    const illustration = page.locator('.trip-final__profile img')
+    await expect(illustration).toHaveAttribute('data-reveal-state', 'shown')
+    release()
+    await expect.poll(() => illustration.evaluate(img => (img as HTMLImageElement).naturalWidth)).toBeGreaterThan(0)
+    await expect(illustration).toHaveCSS('opacity', '1')
+    await expect(illustration).toBeInViewport()
+    await expect(page.getByText(TRAVELER_PROFILES.cultural.description)).toBeVisible()
+  } finally { release() }
 })
 
 test('doble pulsación, recarga, revisión y reinicio no duplican el envío', async ({ page }) => {

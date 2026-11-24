@@ -79,8 +79,16 @@
 
 @layer responsive {
   @container (max-width: 36rem) {
+    .about__section { grid-template-columns: clamp(24px, 5.1cqw, 32px) minmax(0, 1fr) clamp(24px, 5.1cqw, 32px); column-gap: clamp(8px, 2cqw, 12px); }
+    .about__number { --about-column-gap: clamp(8px, 2cqw, 12px); grid-column: 1; grid-row: 1; }
+    .about__copy { grid-row: 1; width: 100%; }
+    .about__copy p { text-align: justify; text-align-last: left; overflow-wrap: normal; word-break: normal; }
     .about__portrait { width: min(95%, 28rem); margin-top: .75rem; }
+    .about__photo--portrait { left: 30%; }
     .about__collage, .about__collage--travel { width: 100%; margin-top: 1rem; }
+    /* Centre the visible photo bounds, including their rotations, rather than the empty canvas. */
+    .about__collage--photography > .about__photo { translate: 1.5cqw 0; }
+    .about__collage--travel > .about__photo { translate: 5.25cqw 0; }
     .about__signature { width: min(90%, 19rem); }
     .about__closing { margin-top: 1.5rem; padding-bottom: max(3rem, env(safe-area-inset-bottom)); }
   }

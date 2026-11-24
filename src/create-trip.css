@@ -43,6 +43,7 @@
   .create-trip__card p { margin-bottom: 1rem; max-width: 24em; font: 400 clamp(1rem, 2.8cqw, 1.7rem)/1.12 var(--font-editorial); }
   .create-trip__card button { display: flex; align-items: center; justify-content: center; gap: .6em; margin-top: auto; width: 100%; max-width: 350px; min-height: 44px; padding: .55rem .45rem; border: 1px solid #a34d2a; border-radius: 999px; background: linear-gradient(120deg, #a44c29, #b66c45); color: #fff; font: 400 clamp(.7rem, 2.3cqw, 1.1rem)/1.25 'Manrope', sans-serif; letter-spacing: .12em; text-transform: uppercase; opacity: 1; }
   .create-trip__card--contact button { border-color: #192337; background: #ffffffa6; color: #192337; }
+  .create-trip__card button:disabled { cursor: default; }
   .create-trip__card button svg { width: 1.8em; height: 1.8em; flex-shrink: 0; }
   .create-trip__footer { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); margin-block: 0 1rem; }
   .create-trip__footer p { display: flex; align-items: center; gap: .7em; padding-inline: 9%; font: 400 clamp(.6rem, 1.65cqw, .9rem)/1.6 'Manrope', sans-serif; letter-spacing: .08em; text-transform: uppercase; color: #25374a; }
@@ -60,6 +61,16 @@
 }
 
 @layer responsive {
+  @container (max-width: 36rem) {
+    .create-trip__header p, .create-trip__step-summary, .create-trip__step-details p, .create-trip__card p {
+      text-align: justify;
+      text-align-last: left;
+      hyphens: none;
+      overflow-wrap: normal;
+      word-break: normal;
+      line-height: 1.45;
+    }
+  }
   @media (max-width: 599px) {
     .create-trip__footer p { flex-direction: column; align-items: center; padding-inline: .4rem; text-align: center; }
     .create-trip__footer svg { width: 28px; }

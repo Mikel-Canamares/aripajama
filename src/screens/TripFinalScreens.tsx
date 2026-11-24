@@ -94,7 +94,7 @@ export function TripProfileScreen({ receipt, onReview, onLanding, onRestart, ...
   const profile = TRAVELER_PROFILES[receipt.profile]
   return <Frame {...props} title={profile.title} eyebrow="Tu perfil viajero">
     <section className="trip-final__profile" aria-labelledby="trip-final-title">
-      <img data-reveal="profile-art" src={`/media/email/${receipt.profile}-art.jpg`} alt="" />
+      <img data-reveal="profile-art" src={`/media/email/${receipt.profile}-art.jpg`} width="384" height="687" alt="" />
       <div data-reveal="profile-copy">
         <p className="trip-final__intro">{profile.description}</p>
         <button type="button" className="questionnaire__continue" disabled aria-describedby="booking-availability">Reservar mi cita</button>

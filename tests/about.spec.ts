@@ -150,6 +150,39 @@ test('se adapta de 280 a 1440 px, con controles táctiles y sin desbordamientos'
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth)).toBe(true)
     const overflow = await page.locator('.about h1, .about h2, .about p').evaluateAll(elements => elements.filter(el => el.scrollWidth > el.clientWidth + 1).map(el => el.textContent))
     expect(overflow).toEqual([])
+    if (viewport.width <= 576) {
+      for (const copy of await page.locator('.about__copy').all()) {
+        const box = (await copy.boundingBox())!
+        expect(Math.abs(box.x - (viewport.width - box.x - box.width))).toBeLessThan(2)
+        for (const paragraph of await copy.locator('p').all()) {
+          await expect(paragraph).toHaveCSS('text-align', 'justify')
+          await expect(paragraph).toHaveCSS('text-align-last', 'left')
+          await expect(paragraph).toHaveCSS('hyphens', 'none')
+          await expect(paragraph).toHaveCSS('overflow-wrap', 'normal')
+          await expect(paragraph).toHaveCSS('word-break', 'normal')
+          const splitWords = await paragraph.evaluate(element => {
+            const text = element.firstChild!
+            const range = document.createRange()
+            return [...text.textContent!.matchAll(/\S+/g)].filter(match => {
+              range.setStart(text, match.index!)
+              range.setEnd(text, match.index! + match[0].length)
+              return range.getClientRects().length > 1
+            }).map(match => match[0])
+          })
+          expect(splitWords).toEqual([])
+        }
+      }
+      for (const group of await page.locator('.about__portrait, .about__signature, .about__collage').all()) {
+        const bounds = await group.evaluate(element => {
+          const photos = [...element.querySelectorAll('.about__photo')]
+          const boxes = (photos.length ? photos : [element]).map(photo => photo.getBoundingClientRect())
+          return { left: Math.min(...boxes.map(box => box.left)), right: Math.max(...boxes.map(box => box.right)) }
+        })
+        expect(Math.abs((bounds.left + bounds.right) / 2 - viewport.width / 2), `${await group.getAttribute('class')} at ${viewport.width}px`).toBeLessThan(4)
+        expect(bounds.left).toBeGreaterThanOrEqual(0)
+        expect(bounds.right).toBeLessThanOrEqual(viewport.width)
+      }
+    }
     const closing = (await page.locator('.about__closing').boundingBox())!
     for (const photo of await page.locator('.about__collage--travel .about__photo').all()) {
       const box = (await photo.boundingBox())!
