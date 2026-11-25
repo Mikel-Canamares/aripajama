@@ -1,6 +1,43 @@
 # Perfiles viajeros y solicitudes
 
-## Flujo y archivos
+## Flujo actual
+
+Las diez preguntas conducen a los detalles del viaje. «Ver mi perfil viajero» valida esos datos y los envía directamente, sin Turnstile ni peticiones a `/api/trip-config`. El servidor calcula y guarda la solicitud sin email, con estado interno `not_requested`. Devuelve el identificador del perfil principal. La pantalla `/completado` muestra su descripción e ilustración y el botón desactivado «Reservar mi cita». La antigua ruta `/email` recupera el borrador en detalles.
+
+| Operación | Contrato actual |
+| --- | --- |
+| `GET /api/health` | Devuelve `{ ok: true }` para comprobar que la API está escuchando. |
+| `POST /api/trip-requests` | Recibe respuestas, detalles, identidad de recuperación y campo antispam `website` vacío. Devuelve `{ requestId, saved: true, profile }`. Repetir la confirmación con la misma identidad y contenido devuelve el mismo registro. |
+| `GET /api/trip-requests/:id` | Recupera el mismo recibo con el token privado en la cabecera de autorización. |
+
+El formulario conserva la comprobación de origen, el límite por origen de red, el campo antispam, el límite de tamaño y la validación estricta. La recuperación requiere el token privado. Las claves y variables de Turnstile ya no intervienen en el registro. Para actualizar una instalación existente, aplicar la migración D1 `0004_on_screen_profiles.sql` antes de activar el Worker actualizado.
+
+### Arranque local actual
+
+```sh
+npm install
+npm run dev
+```
+
+El comando aplica las migraciones locales en `.wrangler/state`, arranca el Worker en `127.0.0.1:8787` con correo desactivado y espera a `/api/health` antes de iniciar Vite. Vite redirige `/api` al Worker. Ctrl+C cierra los dos servicios. No requiere una compilación previa: la API local usa `public/` como directorio de recursos; la publicación sigue usando `dist/`.
+
+Para arrancarlos por separado: `npm run db:local`, `npm run dev:api` en una terminal y `npm run dev:web` en otra. Ejecutar solo Vite deja el cálculo y guardado sin servicio y provoca `ECONNREFUSED 127.0.0.1:8787` al confirmar el formulario.
+
+Comprobaciones del flujo actual:
+
+```sh
+npm run build
+npm run test:server
+npm run test:e2e -- tests/api-local.spec.ts tests/trip-request.spec.ts tests/questionnaire.spec.ts --workers=2
+```
+
+Playwright arranca Vite con `dev:web` y su propio Worker con D1 aislada en `.wrangler/test-state`.
+
+## Archivo del flujo anterior por correo
+
+Las secciones que siguen documentan el diseño anterior, sus plantillas y sus verificaciones históricas. El endpoint de reenvío y las instrucciones de activación del envío del perfil pertenecen a esa versión.
+
+### Flujo y archivos anteriores
 
 Se conservan las diez preguntas y sus 52 opciones. Después de la décima se abre `/#crear-mi-viaje/cuestionario/detalles`, después `/email` y, únicamente cuando hay constancia del registro, `/completado`. Los cinco primeros detalles requieren un valor o «Aún por definir»; las otras necesidades son opcionales. El presupuesto es un importe positivo en euros por persona. No se pide nombre.
 
@@ -17,7 +54,7 @@ El navegador guarda el borrador en `sessionStorage`, clave `aripajama:create-tri
 
 La clasificación valida las diez respuestas, promedia la selección múltiple incluyendo ceros, aplica pesos y normaliza con los máximos teóricos E=45, C=40,5, A=35,5, T=48, L=20 y G=38. Aplica elegibilidad, desempates sin redondeo, avisos y señal de resultado orientativo conforme al PDF. Compañía y transporte son neutros; los detalles prácticos no cambian el perfil. Los resultados internos, el perfil secundario, las puntuaciones, avisos y versión se guardan en D1 y no se devuelven al navegador. Vite tampoco sirve los fuentes privados en desarrollo.
 
-## API y estados
+### API y estados
 
 | Operación | Contrato |
 | --- | --- |
@@ -53,7 +90,7 @@ Validación local del 27/10/2026: `npm run test:server` pasa **75/75** pruebas (
 
 Las escrituras comprueban origen, JSON y tamaño máximo de 16 KiB, campos permitidos, validación estricta y consentimiento explícito para recibir este correo. Turnstile se verifica en servidor con hostname y acción `trip_request`; el modo simulado exige desarrollo y petición local. Hay límite de 20 operaciones por minuto mediante binding de Cloudflare y un máximo SQL de cinco registros nuevos por email y hora. No se imprimen respuestas ni errores privados del proveedor en logs. Las respuestas API usan `no-store`. No hay secretos `VITE_*`.
 
-## Desarrollo local sin envíos reales
+### Desarrollo local sin envíos reales
 
 Se recomienda **Node 24** (validado con 24.22.1; las pruebas SQL usan `node:sqlite`). Wrangler es la única nueva dependencia de desarrollo; se emplea `fetch` nativo para Resend y Turnstile. `undici` se fija mediante override para evitar la versión transitoria vulnerable.
 
@@ -92,7 +129,7 @@ Las pruebas de servidor usan SQL real en SQLite en memoria, reloj y peticiones e
 
 No se ha desplegado, realizado ninguna operación Git ni enviado un correo real. Sigue pendiente la comprobación en clientes de correo reales y dispositivos físicos.
 
-## Correos, recursos y revisión visual
+### Correos, recursos y revisión visual
 
 ```sh
 npm run assets:profiles
@@ -108,13 +145,13 @@ Las imágenes individuales son PNG/JPEG para clientes de correo, y WebP en las n
 
 Los textos definitivos de los seis perfiles y los próximos pasos ya están incorporados. No faltan ilustraciones para funcionar; su nitidez y el recorte lateral están limitados por las referencias rasterizadas. Para un acabado de imprenta o cambios sustanciales de composición convendrían los originales de las ilustraciones separadas. WhatsApp se menciona como en las referencias, pero solo se enlaza si se configura una URL real permitida; el botón «Hablemos» de la web permanece pendiente.
 
-## Preparación de Cloudflare y Resend (no ejecutada)
+### Preparación de Cloudflare y Resend (no ejecutada)
 
 1. En Cloudflare, crear un Worker con Static Assets y una base D1 llamada `aripajama-trip-requests`. Sustituir el UUID vacío de `wrangler.jsonc` por el `database_id` real. Mantener los bindings `DB`, `ASSETS` y `REQUEST_LIMITER`. Aplicar `migrations/0001_trip_requests.sql` en la base remota antes de publicar. El comando local no modifica esa base.
 2. Crear un widget Turnstile con el hostname definitivo. Registrar su clave pública y guardar la clave secreta en los secretos del Worker. No usar claves de prueba en producción; mantener acción `trip_request`. La API y la SPA deben estar en el mismo origen.
 3. En Resend, verificar el dominio de envío con los registros DNS que indique su panel y crear una API key con permiso de envío. Elegir emisor y buzón real de respuesta. No se ha creado ninguna cuenta, dominio ni clave desde este proyecto.
 4. Configurar las variables de la tabla siguiente; mantener `EMAIL_MODE=disabled` hasta revisar la configuración y autorizar una prueba real. Publicar con el proceso de Cloudflare que se apruebe más adelante. Verificar que `https://<dominio>/media/email/...` carga públicamente sin autenticación, incluidos logo, imágenes y fuente, antes de activar correo.
-5. Tras autorización expresa, activar `EMAIL_MODE=resend`, probar con una dirección controlada y revisar aceptación en D1/Resend y recepción en Gmail, Outlook y Apple Mail. No confundir aceptación con entrega. La promesa de propuesta en 24–48h sigue siendo una tarea humana; la aplicación no genera ni envía presupuestos.
+5. Tras autorización expresa, activar `EMAIL_MODE=resend`, probar con una dirección controlada y revisar aceptación en D1/Resend y recepción en Gmail, Outlook y Apple Mail. No confundir aceptación con entrega. La plantilla actual sustituye la promesa de propuesta en 24–48h por una primera sesión de 40 €, previa a la propuesta. La aplicación no genera ni envía presupuestos. Véase [primera sesión](first-session.md) para configuración, estados y límites de la fase 1.
 
 Comandos de referencia para ejecutar **más adelante**, con acceso y publicación autorizados:
 

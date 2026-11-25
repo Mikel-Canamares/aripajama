@@ -1,17 +1,19 @@
 import { useEffect, useLayoutEffect, useRef, useState } from 'react'
-import { COMPLETE_HASH, CREATE_ROOT, DETAILS_HASH, EMAIL_HASH, QUESTION_ROOT, TRIP_QUESTIONS, firstPending, loadTripDraft, questionHash, resetTripDraft, safeCreateHash } from '../data/questionnaire'
+import { COMPLETE_HASH, CREATE_ROOT, DETAILS_HASH, QUESTION_ROOT, TRIP_QUESTIONS, firstPending, loadTripDraft, questionHash, resetTripDraft, safeCreateHash } from '../data/questionnaire'
 import { tripDetailsErrors } from '../data/trip-request'
 import { useTripRequest } from '../hooks/useTripRequest'
 import { revealEntry } from '../hooks/useRevealSequence'
 import { useReducedMotion } from '../hooks/useReducedMotion'
 import { CreateTripScreen } from './CreateTripScreen'
 import { QuestionnaireScreen } from './QuestionnaireScreen'
-import { TripDetailsScreen, TripEmailScreen, TripReceiptScreen } from './TripFinalScreens'
+import { TripDetailsScreen, TripProfileScreen } from './TripFinalScreens'
 import '../questionnaire.css'
 
 export type CreatePosition = { scroll: number; focus?: string }
 
-export function CreateTripFlow({ active, onReady, onBack }: { active: boolean; onReady: () => void; onBack: () => void }) {
+export function CreateTripFlow({ active, onReady, onBack, onBusyChange }: {
+  active: boolean; onReady: () => void; onBack: () => void; onBusyChange: (busy: boolean) => void
+}) {
   const [draft] = useState(loadTripDraft)
   const [answers, setAnswers] = useState(draft.answers)
   const [route, setRoute] = useState(() => {
@@ -25,11 +27,15 @@ export function CreateTripFlow({ active, onReady, onBack }: { active: boolean; o
   const reducedMotion = useReducedMotion()
   const isLanding = route.hash === CREATE_ROOT
   const isDetails = route.hash === DETAILS_HASH
-  const isEmail = route.hash === EMAIL_HASH
   const completed = route.hash === COMPLETE_HASH
-  const step = isLanding ? 0 : completed || isDetails || isEmail ? 10 : Number(route.hash.slice(QUESTION_ROOT.length)) - 1
-  const request = useTripRequest({ draft, answers, step, active: active && stage === 'idle', completed, onSaved: () => { if (isEmail) navigate(COMPLETE_HASH, 'trip-email-submit') } })
+  const step = isLanding ? 0 : completed || isDetails ? 10 : Number(route.hash.slice(QUESTION_ROOT.length)) - 1
+  const request = useTripRequest({ draft, answers, step, active: active && stage === 'idle', onSaved: () => { if (isDetails) navigate(COMPLETE_HASH, 'trip-details-continue') } })
   const { form } = request
+
+  useEffect(() => {
+    onBusyChange(request.busy)
+    return () => onBusyChange(false)
+  }, [request.busy, onBusyChange])
 
   function remember(sourceId?: string) {
     const focus = sourceId || (document.activeElement as HTMLElement | null)?.id
@@ -49,7 +55,7 @@ export function CreateTripFlow({ active, onReady, onBack }: { active: boolean; o
   function back() {
     if (!active || stage !== 'idle' || request.locked.current) return
     if (isLanding) { onBack(); return }
-    const previous = completed ? EMAIL_HASH : isEmail ? DETAILS_HASH : isDetails ? questionHash(9) : step === 0 ? CREATE_ROOT : questionHash(step - 1)
+    const previous = completed ? DETAILS_HASH : isDetails ? questionHash(9) : step === 0 ? CREATE_ROOT : questionHash(step - 1)
     if (history.state?.createDepth > 0 && history.state?.createPrevious === previous) history.back()
     else navigate(previous, undefined, true)
   }
@@ -113,16 +119,14 @@ export function CreateTripFlow({ active, onReady, onBack }: { active: boolean; o
     navigate(DETAILS_HASH, source)
   }
   const common = { active: active && stage === 'idle', onReady, onBack: back, position: route.position, entry: route.entry }
-  const verification = { generation: request.generation, token: request.token, onToken: request.onToken, onRefreshVerification: request.refreshVerification }
   return <div ref={rootRef} className="create-flow" data-stage={stage} inert={stage !== 'idle'} aria-hidden={stage !== 'idle'}>
     {isLanding ? <CreateTripScreen {...common} onDiscover={() => {
       const next = firstPending(answers)
       if (next >= 0) navigate(questionHash(next), 'create-trip-discover')
       else if (Object.keys(tripDetailsErrors(form.details)).length) openDetails('create-trip-discover')
-      else navigate(form.receipt ? COMPLETE_HASH : EMAIL_HASH, 'create-trip-discover')
-    }} /> : isDetails ? <TripDetailsScreen key={route.entry} {...common} details={form.details} onChange={details => request.edit({ details })} onContinue={() => navigate(EMAIL_HASH, 'trip-details-continue')} />
-      : isEmail ? <TripEmailScreen key={route.entry} {...common} {...verification} busy={request.busy} email={form.email} consent={form.consent} onEmail={email => request.edit({ email })} onConsent={consent => request.edit({ consent })} onSubmit={() => void request.submit()} error={request.error} />
-      : completed && form.receipt ? <TripReceiptScreen key={route.entry} {...common} {...verification} busy={request.busy} receipt={form.receipt} email={form.email} error={request.error} onRetry={() => void request.submit(true)} onCheck={() => { void request.checkStatus() }} onReview={() => navigate(questionHash(0), 'question-review')} onLanding={() => navigate(CREATE_ROOT, 'question-landing')} onRestart={() => { if (request.locked.current) return; resetTripDraft(); setAnswers({}); request.reset(); navigate(questionHash(0), 'question-restart') }} />
+      else navigate(form.receipt ? COMPLETE_HASH : DETAILS_HASH, 'create-trip-discover')
+    }} /> : isDetails ? <TripDetailsScreen key={route.entry} {...common} busy={request.busy} error={request.error} details={form.details} onChange={details => request.edit({ details })} onContinue={() => void request.submit()} />
+      : completed && form.receipt ? <TripProfileScreen key={route.entry} {...common} receipt={form.receipt} onReview={() => navigate(questionHash(0), 'question-review')} onLanding={() => navigate(CREATE_ROOT, 'question-landing')} onRestart={() => { if (request.locked.current) return; resetTripDraft(); setAnswers({}); request.reset(); navigate(questionHash(0), 'question-restart') }} />
       : <QuestionnaireScreen key={route.entry} {...common} step={step} completed={false} answers={answers} onSelect={(id, selected) => { setAnswers(current => ({ ...current, [id]: selected })); request.edit({}) }} onContinue={() => step === 9 ? openDetails('question-continue') : navigate(questionHash(step + 1), 'question-continue')} onReview={() => {}} onLanding={() => {}} onRestart={() => {}} total={TRIP_QUESTIONS.length} />}
   </div>
 }

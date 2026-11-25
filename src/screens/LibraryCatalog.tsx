@@ -1,5 +1,5 @@
 import { useState, type RefObject } from 'react'
-import { CONTINENTS, COUNTRIES, illustratedIcon, selectTrips, type IconTone, type LibraryView } from '../data/library'
+import { CONTINENTS, COUNTRIES, groupTrips, illustratedIcon, selectTrips, type IconTone, type LibraryView } from '../data/library'
 import { LibraryIcon } from '../components/LibraryIcon'
 import { TRIP_DETAILS } from '../data/trip-details'
 
@@ -34,7 +34,7 @@ export function LibraryCatalog({ view, titleRef, onNavigate }: {
     {view.page === 'countries' ? <ul className="catalog__countries" aria-label="Países de la biblioteca">
       {COUNTRIES.map(item => <li key={item.code}>
         <button data-reveal="" data-reveal-frame="" data-reveal-group="" id={`country-${item.code}`} className="catalog__country" onClick={() => onNavigate(`#biblioteca/viajes?pais=${item.code}`, `country-${item.code}`)}>
-          <span data-reveal="">{item.name}</span><ArtIcon icon={item.code} tone={item.tone} /><span data-reveal="" className="catalog__arrow" aria-hidden="true">→</span>
+          <span data-reveal="">{item.name}</span><ArtIcon icon={item.code} tone={item.tone} />
         </button>
       </li>)}
     </ul> : view.page === 'invalid' ? <div className="catalog__empty" role="status"><p data-reveal="">Este enlace no corresponde a un país o filtro de la biblioteca.</p><button data-reveal="" className="text-button" onClick={() => onNavigate('#biblioteca/viajes')}>Ver todos los viajes</button></div> : <>
@@ -45,9 +45,15 @@ export function LibraryCatalog({ view, titleRef, onNavigate }: {
         if (!items.length) return null
         return <section key={group.id} className={`catalog__group catalog__group--${group.id}`} aria-labelledby={`group-${group.id}`}>
           <header data-reveal-group="" className="catalog__group-heading"><div><h2 data-reveal="" id={`group-${group.id}`}>{group.name}</h2><p data-reveal="">{items.length} {items.length === 1 ? 'viaje' : 'viajes'}</p></div><img data-reveal="" src={`/media/library/${group.id}.svg`} width="360" height="360" alt="" /></header>
-          <ul className="catalog__trips" aria-label={`Viajes de ${group.name}`}>
-            {items.map(trip => <li data-reveal="" data-reveal-frame="" data-reveal-group="" key={trip.id} className={`catalog__trip${TRIP_DETAILS[trip.id] ? ' catalog__trip--available' : ''}`} data-trip={trip.id}>
-              <div className="catalog__trip-copy"><h3 data-reveal="">{trip.title}</h3>{(trip.subtitle || trip.days) && <p data-reveal="">{trip.subtitle || `${trip.days} días`}</p>}</div>
+          {groupTrips(items, country?.code).map(({ country: destination, states }) => <section key={destination.code} className="catalog__country-group" aria-labelledby={`group-country-${destination.code}`}>
+            <h3 data-reveal="" id={`group-country-${destination.code}`} className="catalog__country-heading">{destination.name}</h3>
+            {states.map(state => {
+              const TripHeading = state.name ? 'h5' : 'h4'
+              return <div key={state.name} className="catalog__state-group">
+              {state.name && <h4 data-reveal="" className="catalog__state-heading">{state.name}</h4>}
+              <ul className="catalog__trips" aria-label={`Viajes de ${destination.name}${state.name ? `, ${state.name}` : ''}`}>
+            {state.trips.map(trip => <li data-reveal="" data-reveal-frame="" data-reveal-group="" key={trip.id} className={`catalog__trip${TRIP_DETAILS[trip.id] ? ' catalog__trip--available' : ''}`} data-trip={trip.id}>
+              <div className="catalog__trip-copy"><TripHeading data-reveal="">{trip.title}</TripHeading>{trip.subtitle && <p data-reveal="">{trip.subtitle}</p>}</div>
               <ArtIcon icon={trip.icon} tone={trip.tone} />
               {TRIP_DETAILS[trip.id] && <a id={`trip-${trip.id}`} className="catalog__trip-link" href={`#biblioteca/viajes/${trip.id}`} aria-label={`Descubrir ${trip.title}${trip.subtitle ? `, ${trip.subtitle}` : ''}${trip.days ? `, ${trip.days} días` : ''}`} onClick={event => {
                 if (event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return
@@ -56,6 +62,8 @@ export function LibraryCatalog({ view, titleRef, onNavigate }: {
               }} />}
             </li>)}
           </ul>
+            </div>})}
+          </section>)}
         </section>
       })}
       <p data-reveal="" className="library__notice catalog__detail-notice">Cada viaje tiene su historia. Descubre sus rutas, etapas y láminas originales.</p>

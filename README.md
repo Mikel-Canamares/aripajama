@@ -11,14 +11,16 @@ npm install
 npm run dev
 ```
 
-Abre la URL que muestra Vite, normalmente `http://localhost:5173`. El servidor escucha también en la red local para facilitar la revisión desde un móvil conectado a la misma Wi-Fi.
+`npm run dev` aplica las migraciones de D1 local, arranca la API en `http://127.0.0.1:8787` y, cuando está preparada, inicia Vite. Al detenerlo se cierran ambos servicios. Los datos locales se conservan en `.wrangler/state` y el correo está desactivado.
+
+Abre la URL que muestra Vite, normalmente `http://localhost:5173`. El servidor escucha también en la red local para facilitar la revisión desde un móvil conectado a la misma Wi-Fi. Para trabajar solo en pantallas estáticas está disponible `npm run dev:web`.
 
 ```sh
 npm run build     # TypeScript y compilación de producción → dist/
 npm run preview   # Previsualizar la compilación
 ```
 
-El frontend de `dist/` utiliza la raíz del dominio. Para registrar solicitudes y enviar perfiles se publica junto al Worker y D1, según [la guía de perfiles viajeros](docs/traveler-profiles.md). Un alojamiento exclusivamente estático permite ver la web, pero no procesar solicitudes.
+El frontend de `dist/` utiliza la raíz del dominio. Para calcular perfiles y registrar solicitudes se publica junto al Worker y D1, según [la guía de perfiles viajeros](docs/traveler-profiles.md). Un alojamiento exclusivamente estático permite ver la web, pero no procesar solicitudes.
 
 ## Experiencia de entrada
 
@@ -26,7 +28,7 @@ El frontend de `dist/` utiliza la raíz del dominio. Para registrar solicitudes 
 - La secuencia empieza **en el primer segundo del vídeo**, según el tiempo real de reproducción, no según el tiempo de carga de la página.
 - Primero se dibuja **Aripajama**: una máscara SVG sigue los trazos de la imagen original, ya preparada con fondo transparente. No se usa una fuente de sustitución.
 - Después aparecen **Travel Planner**, **El mundo,**, **a tu manera.**, **VIAJES DISEÑADOS CONTIGO** y, por último, **COMENCEMOS →**. La composición vertical sitúa la marca arriba a la derecha y el titular burdeos con su segunda línea en cursiva taupe a media altura, sobre el fondo blanco del globo y las cintas doradas.
-- El botón se habilita al finalizar su fundido o al terminar el vídeo, lo que ocurra primero. Con el vídeo actual, de **7,5 s**, el final completa la composición y la deja operativa, conservando el último fotograma.
+- Los textos y el botón entran en una **cascada continua**, con fundidos de 1 s que se solapan suavemente y entradas separadas aproximadamente medio segundo. «Comencemos» aparece al final y queda completamente visible y operativo hacia el **segundo 6,6**, antes del segundo 7 y del final del vídeo.
 - «Comencemos» abre el hub con un fundido cruzado de **800 ms**; «Volver a la portada» regresa suavemente y vuelve a iniciar la introducción. Una recarga también la reinicia.
 - Si el navegador bloquea la reproducción automática, aparece «Reproducir introducción». Si el vídeo falla al cargar o decodificar, se muestra el fotograma inicial y se habilita «Comencemos».
 - El vídeo y la secuencia de la portada se reproducen también con **movimiento reducido**. Esta preferencia sí se aplica al fundido hacia y desde el hub y a las pantallas interiores.
@@ -36,13 +38,13 @@ El frontend de `dist/` utiliza la raíz del dominio. Para registrar solicitudes 
 | Elemento | Inicio desde el comienzo del vídeo |
 | --- | --- |
 | Escritura del logo | 1 s |
-| Travel Planner | 4 s |
-| El mundo, | 4,65 s |
-| a tu manera. | 5,35 s |
-| Viajes diseñados contigo | 6,25 s |
-| Comencemos | 7,2 s; disponible al terminar el vídeo (7,5 s) |
+| Travel Planner | 3,55 s |
+| El mundo, | 4,05 s |
+| a tu manera. | 4,55 s |
+| Viajes diseñados contigo | 5,05 s |
+| Comencemos | 5,6 s; disponible al completar su fundido (6,6 s) |
 
-La frecuencia de eventos del navegador puede desplazar ligeramente el inicio. El contenido sigue siendo texto HTML salvo el nombre de marca; las fuentes se sirven localmente, sin peticiones a Google Fonts.
+Si el primer evento de reproducción llega tarde, sus retardos se compensan con el tiempo real del vídeo para mantener la secuencia alineada. El contenido sigue siendo texto HTML salvo el nombre de marca; las fuentes se sirven localmente, sin peticiones a Google Fonts.
 
 ## Diseño del hub
 
@@ -156,17 +158,19 @@ npm run test:frontend -- tests/about.spec.ts tests/journey.spec.ts tests/create-
 
 #### Perfiles y registro de solicitudes
 
-El final conecta detalles prácticos y email con una API de **Cloudflare Workers + D1**. El servidor valida las respuestas y calcula los seis perfiles del PDF v1.0.0; guarda el resultado privado y prepara un email HTML/texto con Resend. La web distingue solicitud guardada, correo aceptado para entrega, fallo y configuración pendiente, y permite reintentar con idempotencia y verificación Turnstile. No expone puntuaciones al navegador.
+La [fase 1 de primera sesión](docs/first-session.md) incorpora la referencia opaca, reservas/pagos normalizados y aviso interno recuperable con formulario completo, solo tras cita confirmada y pago verificado de 40 €. La simulación de reservas anteriores se puede probar localmente con `npm run sessions:simulate`.
 
-La [guía de perfiles viajeros](docs/traveler-profiles.md) documenta archivos, recursos, estados, pruebas, variables y preparación de Cloudflare/Resend. Para pruebas locales se utilizan `npm run db:local`, `npm run dev:api` (envío desactivado) o `npm run dev:api:mock` (simulado). `npm run emails:preview` abre los seis correos únicamente en `127.0.0.1:4321`; no publica una nueva página. La activación de envíos reales y el despliegue están pendientes de configuración y autorización.
+Tras confirmar los detalles con «Ver mi perfil viajero», Cloudflare Workers valida las respuestas y los detalles, calcula el perfil y guarda la solicitud en D1. El registro funciona sin Turnstile y conserva la comprobación de origen, el límite de frecuencia y el campo antispam. La pantalla final muestra el nombre, la descripción y la ilustración del perfil principal. «Reservar mi cita» permanece desactivado hasta la integración del calendario.
+
+La [guía de perfiles viajeros](docs/traveler-profiles.md) recoge los contratos y las pruebas. `npm run dev` prepara la base de datos y arranca ambos servicios; para ejecutarlos por separado se utilizan `npm run db:local`, `npm run dev:api` y `npm run dev:web`. La migración `0004_on_screen_profiles.sql` conserva las reservas históricas y permite registrar el formulario sin email.
 
 #### Cuestionario
 
-El flujo se coordina en `src/screens/CreateTripFlow.tsx`; `QuestionnaireScreen.tsx` presenta una pregunta por pantalla. Los textos, el orden y las 52 opciones de las referencias están en `src/data/questionnaire.ts`. Las preguntas 1–8 permiten seleccionar varias opciones; las preguntas 9 y 10 utilizan radios. Todas exigen al menos una respuesta. Las tarjetas completas son etiquetas de controles nativos, con marca, borde y fondo de selección. No hay avance automático. Al terminar se abren los detalles prácticos, el email y la confirmación real del registro.
+El flujo se coordina en `src/screens/CreateTripFlow.tsx`; `QuestionnaireScreen.tsx` presenta una pregunta por pantalla. Los textos, el orden y las 52 opciones de las referencias están en `src/data/questionnaire.ts`. Las preguntas 1–8 permiten seleccionar varias opciones; las preguntas 9 y 10 utilizan radios. Todas exigen al menos una respuesta. Las tarjetas completas son etiquetas de controles nativos, con marca, borde y fondo de selección. No hay avance automático. Al terminar se abren los detalles prácticos y, tras el registro, el perfil viajero.
 
 Las rutas `/#crear-mi-viaje/cuestionario/1` hasta `/10`, y `/completado`, permiten entrada directa y recarga sin portada. Si faltan respuestas anteriores, se abre la primera pendiente. «Volver» y Escape regresan a la pregunta anterior y, desde la primera, a la presentación con foco en «Descubrir». El historial conserva scroll, foco y apariciones ya vistas. Las transiciones internas bloquean la interacción durante 160 ms de salida y 420 ms de entrada; con movimiento reducido terminan inmediatamente. Los cambios de hash externos también se atienden, incluidos los navegadores que no emiten `popstate` para ellos.
 
-El borrador versionado `aripajama:create-trip:v2` guarda respuestas, paso, detalles, email y estado privado de recuperación en `sessionStorage`, durante la sesión de la pestaña; recupera también los borradores v1. Se valida al recuperarlo: un borrador corrupto se descarta; si el almacenamiento está bloqueado, el flujo funciona en memoria. «Empezar de nuevo» limpia únicamente este borrador, sin borrar solicitudes ya registradas. El navegador puede restaurar sesiones de pestañas según su propia configuración. Las respuestas solo se envían al confirmar el email y el consentimiento, tras la verificación antispam.
+El borrador versionado `aripajama:create-trip:v2` guarda respuestas, paso, detalles, perfil confirmado y estado privado de recuperación en `sessionStorage`, durante la sesión de la pestaña; recupera también los borradores v1. Se valida al recuperarlo: un borrador corrupto se descarta; si el almacenamiento está bloqueado, el flujo funciona en memoria. «Empezar de nuevo» limpia únicamente este borrador, sin borrar solicitudes ya registradas. El navegador puede restaurar sesiones de pestañas según su propia configuración. Las respuestas solo se envían al pulsar «Ver mi perfil viajero» con los detalles válidos.
 
 `src/questionnaire.css` adapta las opciones circulares de la primera pregunta a una, dos o tres columnas. Las siguientes usan una columna hasta 960 px; las escenas laterales decorativas se ocultan por debajo de 600 px y con texto ampliado cuando falta espacio. La cascada compartida respeta scroll, teclado y movimiento reducido; las selecciones no la reinician. Los fallos de imágenes mantienen el formulario operativo con fondo claro.
 
@@ -249,7 +253,7 @@ npm run assets:library-trips -- "D:\ARIPAJAMA\RECURSOS\WEB\WEB\Biblioteca de via
 
 `scripts/trip-asset-manifest.mjs` identifica cada fuente por un prefijo de nombre único y define recortes específicos de portada, mapa, cierre y cada etapa. `scripts/prepare-library-trips.mjs` conserva los PNG byte por byte, genera WebP y escribe las dimensiones en `src/data/trip-assets.ts`. Este archivo es generado; los textos se editan en `src/data/library-trip-details.ts`. El detalle original de Tailandia permanece en `src/data/trip-details.ts`.
 
-Los recortes proceden exclusivamente de los PNG aportados. Los mapas son ilustraciones y mantienen sus etiquetas integradas; la lista de etapas proporciona el orden cronológico en HTML. No se infieren transportes ni duraciones de trayecto. La biblioteca contiene 153 PNG originales (374 MiB, bajo demanda) y 366 WebP (25,8 MiB en conjunto, repartidos entre las 39 fichas). Las fotos recortadas tienen resolución limitada; para futuros encuadres más grandes conviene incorporar originales separados. La selección de fuentes, las diferencias editoriales y los casos especiales están documentados en [`docs/library-trips.md`](docs/library-trips.md).
+Los recortes proceden exclusivamente de los PNG aportados. Los mapas son ilustraciones y mantienen sus etiquetas integradas; la lista de etapas proporciona el orden cronológico en HTML. No se infieren transportes ni duraciones de trayecto. La biblioteca contiene 154 PNG originales, bajo demanda, y 366 WebP repartidos entre las 39 fichas. Las fotos recortadas tienen resolución limitada; para futuros encuadres más grandes conviene incorporar originales separados. La selección de fuentes, las diferencias editoriales y los casos especiales están documentados en [`docs/library-trips.md`](docs/library-trips.md).
 
 Para habilitar otro viaje, añadir su detalle en `TRIP_DETAILS` usando el identificador existente del catálogo y preparar sus imágenes y láminas. La disponibilidad del enlace y la validación de su ruta se derivan de ese registro. No añadir enlaces a fichas incompletas ni inventar duraciones que no figuren en el contenido.
 

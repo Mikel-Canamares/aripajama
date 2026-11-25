@@ -7,6 +7,7 @@ import '@fontsource/cormorant-garamond/latin-700.css'
 import '@fontsource/manrope/latin-400.css'
 import './styles.css'
 import { App } from './App'
+import './desktop.css'
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>

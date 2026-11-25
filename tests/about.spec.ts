@@ -91,17 +91,26 @@ test('comparte transiciones y apariciones; el regreso desde scroll conserva la s
   expect(await page.evaluate(() => window.scrollY)).toBe(0)
 })
 
-test('conserva los textos y los quince marcos blancos sin cargar fotografías', async ({ page }) => {
+test('conserva los textos y las quince fotografías de álbum', async ({ page }) => {
   await page.emulateMedia({ reducedMotion: 'reduce' })
   await page.goto('/#quien-soy')
   await expect(title(page)).toBeFocused()
   await expect(page.locator('.about__section')).toHaveCount(4)
   await expect(page.locator('.about__number')).toHaveText(['01', '02', '03', '04'])
   await expect(page.locator('.about__photo')).toHaveCount(15)
-  await expect(page.locator('.about__photo img')).toHaveCount(0)
+  await expect(page.locator('.about__photo img')).toHaveCount(15)
+  await expect(page.locator('.about__collage--photography .about__photo img')).toHaveCount(6)
+  await expect(page.locator('.about__collage--travel .about__photo img')).toHaveCount(8)
+  const portrait = page.locator('[data-photo-id="portrait"]')
+  await expect(portrait).not.toHaveAttribute('aria-hidden', 'true')
+  await expect(portrait.locator('img')).toHaveAttribute('alt', 'Ariana sentada en una gran mano de piedra, con montañas al fondo')
+  await expect.poll(() => portrait.locator('img').evaluate(image => (image as HTMLImageElement).naturalWidth)).toBeGreaterThan(0)
   for (const frame of await page.locator('.about__photo').all()) {
     await expect(frame).toHaveCSS('background-color', 'rgb(255, 255, 255)')
-    await expect(frame).toHaveAttribute('aria-hidden', 'true')
+    await frame.scrollIntoViewIfNeeded()
+    await expect(frame).not.toHaveAttribute('aria-hidden', 'true')
+    await expect(frame.locator('img')).toHaveAttribute('alt', /.+/)
+    await expect.poll(() => frame.locator('img').evaluate(image => (image as HTMLImageElement).naturalWidth)).toBeGreaterThan(0)
   }
   await expect(page.locator('.about__section--origin')).toContainText('Hoy su letra forma parte de Aripajama')
   await expect(page.locator('.about__section--photography')).toContainText('No solo fotografío lugares, también personas')
@@ -136,10 +145,51 @@ test('se adapta de 280 a 1440 px, con controles táctiles y sin desbordamientos'
     await page.reload()
     await expect(title(page)).toBeFocused()
     await page.evaluate(() => document.fonts.ready)
-    await expect.poll(() => page.locator('.about img').evaluateAll(images => images.every(image => (image as HTMLImageElement).complete))).toBe(true)
+    for (const collage of await page.locator('.about__collage').all()) await collage.scrollIntoViewIfNeeded()
+    await expect.poll(() => page.locator('.about img').evaluateAll(images => images.every(image => (image as HTMLImageElement).complete && (image as HTMLImageElement).naturalWidth > 0))).toBe(true)
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth)).toBe(true)
     const overflow = await page.locator('.about h1, .about h2, .about p').evaluateAll(elements => elements.filter(el => el.scrollWidth > el.clientWidth + 1).map(el => el.textContent))
     expect(overflow).toEqual([])
+    if (viewport.width <= 576) {
+      for (const copy of await page.locator('.about__copy').all()) {
+        const box = (await copy.boundingBox())!
+        expect(Math.abs(box.x - (viewport.width - box.x - box.width))).toBeLessThan(2)
+        for (const paragraph of await copy.locator('p').all()) {
+          await expect(paragraph).toHaveCSS('text-align', 'justify')
+          await expect(paragraph).toHaveCSS('text-align-last', 'left')
+          await expect(paragraph).toHaveCSS('hyphens', 'none')
+          await expect(paragraph).toHaveCSS('overflow-wrap', 'normal')
+          await expect(paragraph).toHaveCSS('word-break', 'normal')
+          const splitWords = await paragraph.evaluate(element => {
+            const text = element.firstChild!
+            const range = document.createRange()
+            return [...text.textContent!.matchAll(/\S+/g)].filter(match => {
+              range.setStart(text, match.index!)
+              range.setEnd(text, match.index! + match[0].length)
+              return range.getClientRects().length > 1
+            }).map(match => match[0])
+          })
+          expect(splitWords).toEqual([])
+        }
+      }
+      for (const group of await page.locator('.about__portrait, .about__signature, .about__collage').all()) {
+        const bounds = await group.evaluate(element => {
+          const photos = [...element.querySelectorAll('.about__photo')]
+          const boxes = (photos.length ? photos : [element]).map(photo => photo.getBoundingClientRect())
+          return { left: Math.min(...boxes.map(box => box.left)), right: Math.max(...boxes.map(box => box.right)) }
+        })
+        expect(Math.abs((bounds.left + bounds.right) / 2 - viewport.width / 2), `${await group.getAttribute('class')} at ${viewport.width}px`).toBeLessThan(4)
+        expect(bounds.left).toBeGreaterThanOrEqual(0)
+        expect(bounds.right).toBeLessThanOrEqual(viewport.width)
+      }
+    }
+    const closing = (await page.locator('.about__closing').boundingBox())!
+    for (const photo of await page.locator('.about__collage--travel .about__photo').all()) {
+      const box = (await photo.boundingBox())!
+      expect(box.x).toBeGreaterThanOrEqual(0)
+      expect(box.x + box.width).toBeLessThanOrEqual(viewport.width)
+      expect(box.y + box.height).toBeLessThan(closing.y)
+    }
     for (const control of await page.locator('.about button').all()) {
       const box = (await control.boundingBox())!
       expect(box.width).toBeGreaterThanOrEqual(44)
@@ -165,6 +215,8 @@ test('mantiene la lectura y Volver con texto al 200 %', async ({ page }, testInf
     expect(overflow).toEqual([])
     await expect(backButton(page)).toBeInViewport()
     await expect(page.locator('.about button')).toHaveCount(1)
+    for (const collage of await page.locator('.about__collage').all()) await collage.scrollIntoViewIfNeeded()
+    await expect.poll(() => page.locator('.about__photo img').evaluateAll(images => images.every(image => (image as HTMLImageElement).naturalWidth > 0))).toBe(true)
     await page.evaluate(() => window.scrollTo(0, 0))
     await page.screenshot({ path: testInfo.outputPath(`about-text-200-${width}.png`), fullPage: true })
   }

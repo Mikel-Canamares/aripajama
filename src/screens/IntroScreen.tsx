@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
+import type { CSSProperties } from 'react'
 import { Brand } from '../components/Brand'
 
 // Time relative to the actual media clock, not time since page load.
@@ -8,11 +9,11 @@ const POSTER = '/media/portada-inicio.webp'
 export function IntroScreen({ onEnter }: { onEnter: () => void }) {
   const videoRef = useRef<HTMLVideoElement>(null)
   const [revealed, setRevealed] = useState(false)
+  const [revealOffset, setRevealOffset] = useState(0)
   const [videoFailed, setVideoFailed] = useState(false)
-  const [videoEnded, setVideoEnded] = useState(false)
   const [blocked, setBlocked] = useState(false)
   const [buttonReady, setButtonReady] = useState(false)
-  const showImmediately = videoFailed || videoEnded
+  const showImmediately = videoFailed
   const showComposition = revealed || showImmediately
 
   const playVideo = () => {
@@ -36,7 +37,9 @@ export function IntroScreen({ onEnter }: { onEnter: () => void }) {
 
   const syncReveal = () => {
     const video = videoRef.current
-    if (video && video.currentTime >= REVEAL_AT) {
+    if (video && !revealed && video.currentTime >= REVEAL_AT) {
+      // Media events may arrive late; keep the CSS sequence aligned with the video.
+      setRevealOffset(video.currentTime - REVEAL_AT)
       setRevealed(true)
     }
   }
@@ -44,6 +47,7 @@ export function IntroScreen({ onEnter }: { onEnter: () => void }) {
   return (
     <main
       className="intro screen"
+      style={{ '--intro-offset': `${revealOffset}s` } as CSSProperties}
       data-revealed={showComposition}
       data-immediate={showImmediately}
       aria-label="Bienvenido a Aripajama"
@@ -65,7 +69,7 @@ export function IntroScreen({ onEnter }: { onEnter: () => void }) {
             tabIndex={-1}
             onTimeUpdate={syncReveal}
             onPlaying={() => setBlocked(false)}
-            onEnded={() => setVideoEnded(true)}
+            onEnded={() => setRevealed(true)}
             onError={() => { setVideoFailed(true); setBlocked(false) }}
           />
         )}

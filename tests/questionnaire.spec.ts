@@ -35,6 +35,37 @@ test('Descubrir abre el cuestionario y Volver restaura su foco y scroll', async 
   await expect(discover).toBeFocused()
 })
 
+test('la primera pregunta usa tarjetas rectangulares y escenas como las siguientes', async ({ page }) => {
+  await open(page)
+  const options = page.locator('.questionnaire__option')
+  await expect(options).toHaveCount(5)
+  for (const width of [390, 1280]) {
+    await page.setViewportSize({ width, height: 900 })
+    for (let index = 0; index < 5; index++) {
+      const option = options.nth(index)
+      await expect(option).toHaveCSS('display', 'grid')
+      await expect(option).toHaveCSS('border-radius', '20px')
+      const box = await option.boundingBox()
+      expect(box!.width).toBeGreaterThan(box!.height)
+      const icon = option.locator('.questionnaire__icon')
+      await expect(icon).toHaveCSS('object-fit', 'cover')
+      await expect(icon).toHaveCSS('border-radius', '50%')
+      const iconBox = await icon.boundingBox()
+      expect(Math.abs(iconBox!.width - iconBox!.height)).toBeLessThan(1)
+      const scene = option.locator('.questionnaire__scene')
+      await expect(scene).toHaveAttribute('src', `/media/questionnaire/q2-${[1, 2, 4, 3, 5][index]}-scene.webp`)
+      if (width >= 600) {
+        await scene.scrollIntoViewIfNeeded()
+        await expect(scene).toBeVisible()
+        await expect.poll(() => scene.evaluate(image => (image as HTMLImageElement).naturalWidth)).toBeGreaterThan(0)
+      } else {
+        await expect(scene).toBeHidden()
+      }
+    }
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true)
+  }
+})
+
 test('exige respuesta, permite varias selecciones y no avanza automáticamente', async ({ page }) => {
   await open(page)
   await expect(page.getByRole('progressbar')).toHaveAttribute('value', '1')
@@ -136,14 +167,14 @@ test('recupera scroll, foco, selecciones e historial entre preguntas', async ({ 
 
 test('regresa al hub desde una presentación abierta después del cierre', async ({ page }) => {
   await mockTripApi(page)
-  await seedFinalDraft(page, { receipt: 'accepted' })
+  await seedFinalDraft(page, { profile: 'cultural' })
   await page.emulateMedia({ reducedMotion: 'reduce' })
   await openIntroWithMediaError(page)
   await page.getByRole('button', { name: 'Comencemos' }).click()
   const hub = page.getByRole('button', { name: 'Crear mi viaje', exact: true })
   await hub.click()
   await page.locator('#create-trip-discover').click()
-  await expect(title(page)).toHaveText('Tu perfil está en camino.')
+  await expect(title(page)).toHaveText('El Cultural')
   await page.getByRole('button', { name: 'Volver a Crear mi viaje', exact: true }).click()
   await expect(page.locator('#create-trip-discover')).toBeFocused()
   await page.keyboard.press('Escape')
@@ -157,6 +188,7 @@ test('descarta borradores corruptos o con opciones ajenas al cuestionario', asyn
     await page.goto('/#crear-mi-viaje')
     await page.evaluate(({ key, raw }) => sessionStorage.setItem(key, raw), { key: DRAFT_KEY, raw })
     await page.reload()
+    await expect(page.locator('.create-trip h1')).toBeFocused()
     await page.goto(`/${root}10`)
     await expect(page).toHaveURL(/cuestionario\/1$/)
     await expect(title(page)).toBeFocused()

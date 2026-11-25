@@ -5,6 +5,7 @@ import { JourneyScreen } from './screens/JourneyScreen'
 import { LibraryScreen } from './screens/LibraryScreen'
 import { CreateTripFlow } from './screens/CreateTripFlow'
 import { AboutScreen } from './screens/AboutScreen'
+import { DesktopNavigation, MobileNavigation } from './components/SectionNavigation'
 
 type Destination = 'library' | 'create' | 'about'
 
@@ -21,6 +22,7 @@ export function App() {
   const [navigation, setNavigation] = useState<'hub' | 'preparing' | 'entering' | Destination | 'returning'>(() => readDestination() || 'hub')
   const [destination, setDestination] = useState<Destination>(() => readDestination() || 'library')
   const [destinationReady, setDestinationReady] = useState(false)
+  const [requestBusy, setRequestBusy] = useState(false)
   const [exitScroll, setExitScroll] = useState(0)
   const [restoreFocus, setRestoreFocus] = useState<Destination | null>(null)
   const reducedMotion = useReducedMotion()
@@ -91,11 +93,14 @@ export function App() {
   const introActive = phase === 'intro' || phase === 'preparing'
 
   function openDestination(next: Destination) {
-    if (navigation !== 'hub') return
+    if (navigation !== 'hub' && navigation !== destination) return
+    if (navigation === next) return
+    const fromHub = phase === 'journey' && navigation === 'hub'
+    setPhase('journey')
     setDestination(next)
     setDestinationReady(false)
     setRestoreFocus(null)
-    const state = next === 'library' ? { libraryDepth: 0 } : next === 'create' ? { createFromHub: true } : { aboutFromHub: true }
+    const state = next === 'library' ? { libraryDepth: 0 } : next === 'create' ? { createFromHub: fromHub } : { aboutFromHub: fromHub }
     const hash = next === 'library' ? '#biblioteca' : next === 'create' ? '#crear-mi-viaje' : '#quien-soy'
     history.pushState(state, '', hash)
     setNavigation('preparing')
@@ -176,14 +181,26 @@ export function App() {
               }
             }}
           >
+            <DesktopNavigation current={destination} busy={requestBusy} onNavigate={openDestination} onHub={() => {
+              if (navigation !== destination) return
+              history.pushState(null, '', window.location.pathname + window.location.search)
+              setExitScroll(window.scrollY)
+              setRestoreFocus(destination)
+              setNavigation('returning')
+            }} />
             {destination === 'library'
               ? <LibraryScreen active={navigation === 'library'} onReady={handleDestinationReady} onBack={returnToHub} />
               : destination === 'about' ? <AboutScreen active={navigation === 'about'} onReady={handleDestinationReady} onBack={returnToHub} />
-              : <CreateTripFlow active={navigation === 'create'} onReady={handleDestinationReady} onBack={returnToHub} />}
+              : <CreateTripFlow active={navigation === 'create'} onReady={handleDestinationReady} onBack={returnToHub} onBusyChange={setRequestBusy} />}
           </div>}
           </div>
         </div>
       )}
+      {phase === 'journey' && <MobileNavigation
+        current={navigation === 'hub' ? 'hub' : destination}
+        disabled={requestBusy || (navigation !== 'hub' && navigation !== destination)}
+        onNavigate={openDestination}
+      />}
     </div>
   )
 }

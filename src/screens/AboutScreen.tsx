@@ -82,7 +82,10 @@ export function AboutScreen({ active, onReady, onBack }: { active: boolean; onRe
           <p data-reveal="">Hoy su letra forma parte de Aripajama y su manera de soñar sigue acompañándome en cada viaje.</p>
         </div>
         <div className="about__signature" data-reveal-group="">
-          <img data-reveal="" src="/media/about/signature.webp" width="165" height="77" alt="Aripajama, con la letra de mi padre" onError={event => { event.currentTarget.style.visibility = 'hidden' }} />
+          <span data-reveal="" className="about__signature-sticker">
+            <img className="about__signature-paper" src="/media/about/signature-paper.webp" width="165" height="77" alt="" onError={event => { event.currentTarget.style.visibility = 'hidden' }} />
+            <img className="about__signature-logo" src="/brand/aripajama.webp" width="1380" height="480" alt="Aripajama, con la letra de mi padre" onError={event => { event.currentTarget.style.visibility = 'hidden' }} />
+          </span>
           <img data-reveal="" className="about__mountains" src="/media/about/mountains.webp" width="126" height="47" alt="" onError={event => { event.currentTarget.style.visibility = 'hidden' }} />
         </div>
       </section>
@@ -90,7 +93,17 @@ export function AboutScreen({ active, onReady, onBack }: { active: boolean; onRe
       <section className="about__section about__section--photography" aria-labelledby="about-photography">
         <span data-reveal="" className="about__number" aria-hidden="true">03</span>
         <div className="about__copy" data-reveal-group="">
-          <h2 data-reveal="" id="about-photography" tabIndex={-1}>La fotografía,<br />mi otra forma de viajar.</h2>
+          <div className="about__photography-heading">
+            <h2 data-reveal="" id="about-photography" tabIndex={-1}>La fotografía,<br />mi otra forma de viajar.</h2>
+            <a data-reveal="" className="about__instagram" href="https://www.instagram.com/arianagponce?hvrq=MXA3bTg2ZHUwYm0xdg%3D%3D&utm_source=qr" target="_blank" rel="noopener noreferrer" aria-label="Ver las fotografías de Ariana en Instagram (se abre en una pestaña nueva)">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" aria-hidden="true">
+                <rect x="3" y="3" width="18" height="18" rx="5" />
+                <circle cx="12" cy="12" r="4" />
+                <circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none" />
+              </svg>
+              <span>Instagram</span>
+            </a>
+          </div>
           <span data-reveal="" className="about__rule" aria-hidden="true" />
           <p data-reveal="">Desde hace años construyo mi pequeño diario visual. La fotografía me permite capturar momentos, contar historias y volver a sentir lo vivido.</p>
           <p data-reveal="">No solo fotografío lugares, también personas, detalles, luces, comidas, caminos, culturas y todo lo que hace que un viaje sea único.</p>

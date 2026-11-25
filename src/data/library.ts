@@ -49,6 +49,7 @@ export type Trip = {
   subtitle?: string
   continent: ContinentId
   countries: readonly CountryCode[]
+  state?: { country: CountryCode; name: string }
   days?: number
   icon: string
   tone: IconTone
@@ -119,7 +120,23 @@ export function readLibraryView(hash: string): LibraryView {
 
 export function selectTrips(view: LibraryView): readonly Trip[] {
   if (view.page !== 'trips') return TRIPS
-  return TRIPS.filter(trip => (!view.country || trip.countries.includes(view.country)) && (!view.continent || trip.continent === view.continent)).sort((a, b) => a.order - b.order)
+  const trips = TRIPS.filter(trip => (!view.country || trip.countries.includes(view.country)) && (!view.continent || trip.continent === view.continent))
+  return groupTrips(trips, view.country).flatMap(group => group.states.flatMap(state => state.trips))
+}
+
+export function groupTrips(trips: readonly Trip[], country?: CountryCode) {
+  const compare = (a: string, b: string) => a.localeCompare(b, 'es')
+  return [...COUNTRIES].sort((a, b) => compare(a.name, b.name)).flatMap(item => {
+    // A multi-country itinerary belongs to its first country unless explicitly filtered.
+    const items = trips.filter(trip => (country ?? trip.countries[0]) === item.code && trip.countries.includes(item.code))
+    if (!items.length) return []
+    const stateName = (trip: Trip) => trip.state?.country === item.code ? trip.state.name : ''
+    const states = [...new Set(items.map(stateName))].sort(compare).map(name => ({
+      name,
+      trips: items.filter(trip => stateName(trip) === name).sort((a, b) => compare(a.title, b.title) || compare(a.subtitle ?? '', b.subtitle ?? '') || compare(a.id, b.id)),
+    }))
+    return [{ country: item, states }]
+  })
 }
 
 export function illustratedIcon(icon: string, tone: IconTone) {

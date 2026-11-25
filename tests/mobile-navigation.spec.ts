@@ -1,0 +1,110 @@
+import { expect, test } from '@playwright/test'
+
+test.beforeEach(async ({ page }) => {
+  await page.emulateMedia({ reducedMotion: 'reduce' })
+  await page.goto('/#biblioteca')
+  await expect(page.getByRole('heading', { name: 'Biblioteca de viajes' })).toBeFocused()
+})
+
+test('abre el desplegable y lo cierra sin abandonar la pantalla', async ({ page }) => {
+  const menu = page.getByRole('navigation', { name: 'Navegación principal' })
+  const toggle = page.getByRole('button', { name: 'Abrir menú' })
+  await expect(menu).toBeHidden()
+  await toggle.click()
+  await expect(menu).toBeVisible()
+  await expect(menu.getByRole('link', { name: 'Portada', exact: true })).toHaveCount(0)
+  await expect(page.getByRole('button', { name: 'Cerrar menú' })).toHaveAttribute('aria-expanded', 'true')
+  await expect(menu.getByRole('link', { name: 'Biblioteca de viajes' })).toHaveAttribute('aria-current', 'page')
+  await page.keyboard.press('Tab')
+  await expect(menu.getByRole('link', { name: 'Quién soy' })).toBeFocused()
+  await page.keyboard.press('Escape')
+  await expect(menu).toBeHidden()
+  await expect(toggle).toBeFocused()
+  await expect(page).toHaveURL(/#biblioteca$/)
+  await toggle.click()
+  await page.mouse.click(5, 350)
+  await expect(menu).toBeHidden()
+})
+
+test('navega entre secciones y conserva el historial', async ({ page }) => {
+  const menu = page.getByRole('navigation', { name: 'Navegación principal' })
+  await page.getByRole('button', { name: 'Abrir menú' }).click()
+  await menu.getByRole('link', { name: 'Quién soy' }).click()
+  await expect(page).toHaveURL(/#quien-soy$/)
+  await expect(page.locator('.navigation')).toHaveAttribute('data-navigation', 'about')
+  await expect(menu).toBeHidden()
+  await page.goBack()
+  await expect(page.locator('.navigation')).toHaveAttribute('data-navigation', 'library')
+  await page.getByRole('button', { name: 'Abrir menú' }).click()
+  await menu.getByRole('link', { name: 'Crear mi viaje' }).click()
+  await expect(page).toHaveURL(/#crear-mi-viaje$/)
+  await expect(page.locator('.navigation')).toHaveAttribute('data-navigation', 'create')
+  await page.getByRole('button', { name: 'Abrir menú' }).click()
+  await menu.getByRole('link', { name: 'Biblioteca de viajes' }).click()
+  await expect(page.locator('.navigation')).toHaveAttribute('data-navigation', 'library')
+})
+
+test('no muestra el menú en la portada, tampoco al volver desde el recorrido', async ({ page }) => {
+  await page.goto('/')
+  await expect(page.locator('.experience')).toHaveAttribute('data-phase', 'intro')
+  await expect(page.locator('.mobile-navigation')).toHaveCount(0)
+  await page.getByRole('button', { name: 'Comencemos' }).click()
+  await expect(page.locator('.experience')).toHaveAttribute('data-phase', 'journey')
+  await expect(page.getByRole('button', { name: 'Abrir menú' })).toBeVisible()
+  await page.getByRole('button', { name: 'Volver a la portada' }).focus()
+  await page.keyboard.press('Enter')
+  await expect(page.locator('.experience')).toHaveAttribute('data-phase', 'intro')
+  await expect(page.locator('.mobile-navigation')).toHaveCount(0)
+})
+
+for (const width of [390, 1366]) {
+  test(`vuelve a la biblioteca desde un continente y una ficha con historial a ${width} px`, async ({ page }) => {
+    await page.setViewportSize({ width, height: 844 })
+    const menu = page.getByRole('navigation', { name: 'Navegación principal' })
+    const library = page.locator('.library')
+    const home = page.getByRole('heading', { name: 'Biblioteca de viajes' })
+    await page.locator('#library-asia').click()
+    await expect(page.getByRole('heading', { name: 'Asia', level: 1, exact: true })).toBeFocused()
+
+    for (const view of ['trips', 'detail']) {
+      if (view === 'detail') {
+        await page.locator('#trip-tailandia').click()
+        await expect(library.locator('h1')).toBeFocused()
+      }
+      const origin = page.url()
+      await expect(library).toHaveAttribute('data-view', view)
+      if (width < 768) await page.getByRole('button', { name: 'Abrir menú' }).click()
+      await menu.getByRole('link', { name: 'Biblioteca de viajes' }).click()
+      await expect(page).toHaveURL(/#biblioteca$/)
+      await expect(library).toHaveAttribute('data-view', 'home')
+      await expect(home).toBeFocused()
+      expect(await page.evaluate(() => window.scrollY)).toBe(0)
+      if (width < 768) await expect(menu).toBeHidden()
+      await page.goBack()
+      await expect(page).toHaveURL(origin)
+      await expect(library).toHaveAttribute('data-view', view)
+      await expect(library.locator('h1')).toBeFocused()
+    }
+    await page.goForward()
+    await expect(page).toHaveURL(/#biblioteca$/)
+    await expect(home).toBeFocused()
+  })
+}
+
+test('encaja en móvil estrecho y horizontal y se oculta en escritorio', async ({ page }, testInfo) => {
+  for (const size of [{ width: 280, height: 568 }, { width: 390, height: 844 }, { width: 740, height: 360 }]) {
+    await page.setViewportSize(size)
+    const toggle = page.getByRole('button', { name: 'Abrir menú' })
+    await toggle.click()
+    const menu = page.getByRole('navigation', { name: 'Navegación principal' })
+    await expect(menu).toBeInViewport({ ratio: 1 })
+    const bounds = (await page.getByRole('button', { name: 'Cerrar menú' }).boundingBox())!
+    expect(bounds.width).toBeGreaterThanOrEqual(44)
+    expect(bounds.x + bounds.width).toBeLessThanOrEqual(size.width)
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true)
+    await page.screenshot({ path: testInfo.outputPath(`menu-${size.width}.png`) })
+    await page.getByRole('button', { name: 'Cerrar menú' }).click()
+  }
+  await page.setViewportSize({ width: 1440, height: 900 })
+  await expect(page.getByRole('button', { name: 'Abrir menú' })).toBeHidden()
+})

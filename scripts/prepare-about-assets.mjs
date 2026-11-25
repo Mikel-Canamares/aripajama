@@ -15,7 +15,7 @@ const assets = [
   { name: 'footer-ribbons', box: [0, 1554, 941, 118], polygon: '0,0 110,15 200,40 335,100 430,118 530,118 650,85 780,52 941,42 941,118 0,118' },
   { name: 'cotton', box: [309, 348, 83, 128], polygon: '0,0 60,0 66,28 61,36 54,43 48,52 41,65 40,128 0,128' },
   { name: 'note', box: [475, 371, 213, 110], polygon: '4,52 183,4 210,85 27,108' },
-  { name: 'signature', box: [333, 670, 165, 77] },
+  { name: 'signature-paper', box: [333, 670, 165, 77] },
   { name: 'mountains', box: [497, 671, 126, 47] },
   { name: 'camera-note', box: [604, 911, 160, 125], polygon: '0,0 160,0 160,125 50,125 50,70 0,50' },
 ]
@@ -33,6 +33,36 @@ for (const { name, box: [left, top, width, height], polygon } of assets) {
     // Remove the edge-connected backdrop. Keep enclosed illustration highlights
     // and feather the palest watercolor so crops blend into the page naturally.
     const data = await image.raw().toBuffer()
+    if (name === 'signature-paper') {
+      // Keep the original paper; replace its printed lettering with the shared logo in HTML.
+      const ink = new Uint8Array(width * height)
+      for (let y = 10; y < height - 8; y++) {
+        for (let x = 20; x < width - 15; x++) {
+          const offset = (y * width + x) * 4
+          if (Math.max(data[offset], data[offset + 1], data[offset + 2]) >= 236) continue
+          for (let dy = -2; dy <= 2; dy++) {
+            for (let dx = -2; dx <= 2; dx++) ink[(y + dy) * width + x + dx] = 1
+          }
+        }
+      }
+      for (let y = 1; y < height - 1; y++) {
+        for (let x = 1; x < width - 1; x++) {
+          if (!ink[y * width + x]) continue
+          const color = [0, 0, 0]
+          let weight = 0
+          for (const [dx, dy] of [[-1, 0], [1, 0], [0, -1], [0, 1]]) {
+            let nx = x + dx, ny = y + dy, distance = 1
+            while (nx > 0 && nx < width - 1 && ny > 0 && ny < height - 1 && ink[ny * width + nx]) {
+              nx += dx; ny += dy; distance++
+            }
+            const offset = (ny * width + nx) * 4
+            for (let channel = 0; channel < 3; channel++) color[channel] += data[offset + channel] / distance
+            weight += 1 / distance
+          }
+          for (let channel = 0; channel < 3; channel++) data[(y * width + x) * 4 + channel] = Math.round(color[channel] / weight)
+        }
+      }
+    }
     const visited = new Uint8Array(width * height)
     const queue = []
     function visit(x, y) {

@@ -1,3 +1,552 @@
+## Perfil viajero · Retirar Turnstile y corregir arranque local · 23/11/2026 · Plan aprobado
+
+- [x] Revisar el formulario, la API, el arranque local y las pruebas afectadas.
+- [x] Retirar Turnstile del formulario y de la API conservando cálculo, validación y persistencia.
+- [x] Arrancar Vite y la API con `npm run dev`, actualizar pruebas y documentación.
+- [x] Verificar compilación y pruebas del recorrido completo; completar Review.
+
+### Review
+
+- **Resumen de cambios:** eliminado el componente Turnstile, sus estados y bloqueo del formulario, el token del envío y la validación externa del Worker. Retiradas las variables de Turnstile de la configuración activa. Se conservan el algoritmo del servidor, D1, validación de respuestas/detalles, origen, límite de frecuencia, campo antispam, identidad privada, recuperación e idempotencia. `/api/health` sustituye a la configuración del widget como comprobación de disponibilidad para las herramientas locales.
+- **Arranque local:** `npm run dev` ejecuta `scripts/dev.mjs`, aplica las migraciones locales y arranca el Worker antes de Vite. La API local utiliza `public/` para funcionar sin compilación previa, con correo desactivado y persistencia en `.wrangler/state`. El cierre detiene ambos servicios, incluidos los subprocesos de Wrangler en Windows. Las configuraciones Playwright utilizan `dev:web` y su Worker de pruebas aislado. Actualizados README y el flujo actual de la guía.
+- **Verificación:** `npm run build` correcto; `npm run test:server`: 80/80; `npm run test:e2e -- tests/api-local.spec.ts tests/trip-request.spec.ts tests/questionnaire.spec.ts --workers=2`: 66/66 en Chromium y WebKit, con recorrido completo real a 390 y 1440 px, seis perfiles, validación, recarga, reintentos e idempotencia. `npm run worker:check`: empaquetado local correcto. Prueba del nuevo arranque: proxy y API disponibles, registro 201 sin captcha, duplicado 200, recuperación privada 200 y ambos puertos libres tras ejecutar el manejador de SIGINT. Migraciones locales aplicadas correctamente.
+- **Incidencia de pruebas resuelta:** una prueba existente de borradores corruptos navegaba antes de inicializarse la pantalla en WebKit. Se espera al foco del título tras la recarga; tres repeticiones focalizadas y la ejecución final completa son correctas.
+- **Riesgos potenciales:** frontend y Worker deben actualizarse juntos porque el contrato ya no acepta el antiguo campo `turnstileToken`. El cálculo del perfil sigue requiriendo la API disponible.
+- **Siguientes pasos sugeridos:** reiniciar el desarrollo con `npm run dev` y revisar el perfil al confirmar los detalles. Publicar la nueva compilación y el Worker cuando corresponda; las verificaciones realizadas son locales.
+
+## Hub · Composición centrada de Biblioteca · 20/11/2026
+
+- [x] Revisar el encuadre actual y la proporción de la ilustración original.
+- [x] Centrar la composición del planeta con más aire alrededor, equilibrándola con Quién soy.
+- [x] Revisar capturas de escritorio y completar Review.
+
+### Review
+
+- **Resumen de cambios:** `src/desktop.css` presenta el tramo ilustrado del fondo de Biblioteca en una franja centrada verticalmente, conservando su proporción y reduciendo la ampliación del 160 % al 100 %. El planeta y las cintas quedan a la altura de la composición de Quién soy, con espacio blanco por encima y por debajo.
+- **Verificación:** capturas revisadas a 1024, 1366 y 1920 px. Prueba existente de composición del tríptico: 2/2 correctas en Chromium y WebKit, incluyendo 1024, 1366, 1440 y 1920 px. `git diff --check`: correcto.
+- **Riesgos potenciales:** el planeta conserva el recorte lateral del recurso original; el encuadre central utiliza solo la cabecera ilustrada, omitiendo la zona blanca de la imagen vertical.
+- **Siguientes pasos sugeridos:** revisar el nuevo equilibrio visual en el monitor habitual.
+
+## Hub · Ajuste de ilustraciones del tríptico · 20/11/2026
+
+- [x] Localizar la brújula decorativa y el encuadre del globo.
+- [x] Retirar la brújula de Crear mi viaje y bajar la ilustración de Biblioteca.
+- [x] Verificar visualmente el resultado y completar Review.
+
+### Review
+
+- **Resumen de cambios:** `src/desktop.css` elimina el pseudoelemento de la brújula en Crear mi viaje y desplaza hacia abajo el fondo de Biblioteca entre 32 y 64 px según la altura disponible, reduciendo el espacio blanco inferior.
+- **Verificación:** capturas actualizadas a 1024, 1366, 1920 y 390 px; revisión visual a 1366 y 1920 px con la brújula retirada y el globo más bajo. Se mantienen las dimensiones de las tarjetas. `git diff --check`: correcto.
+- **Riesgos potenciales:** mínimos; ajuste decorativo localizado en los estilos de escritorio.
+- **Siguientes pasos sugeridos:** revisar el encuadre en el monitor habitual.
+
+## Hub · Tríptico de escritorio · 20/11/2026 · Plan aprobado
+
+- [x] Revisar las ilustraciones superiores de cada módulo y los estilos actuales.
+- [x] Usar las ilustraciones originales de Quién soy, Biblioteca y Crear mi viaje.
+- [x] Ocultar «Volver a la portada» en escritorio, subir el título y alargar las tres tarjetas.
+- [x] Verificar compilación, navegación y composición responsive; completar Review.
+
+### Review
+
+- **Resumen de cambios:** `src/desktop.css` reutiliza la cabecera ilustrada de Quién soy y el globo con cintas de Biblioteca, junto a las montañas de Crear mi viaje. Las tarjetas pasan a paneles verticales de igual altura (entre 28 y 38 rem, adaptados a la altura de pantalla), con una franja inferior común para alinear títulos y flechas. El título se sitúa cerca del borde superior y «Volver a la portada» se oculta en escritorio. Se conserva la adaptación con texto ampliado. `tests/layout.desktop.ts` actualiza el recurso bloqueado en la prueba de fallo de ilustración.
+- **Verificación:** `npm run build` correcto. `npm run test:frontend -- tests/layout.desktop.ts tests/journey.spec.ts --workers=2`: 20/20 correctas en Chromium y WebKit, incluyendo navegación, teclado, texto al 200 % y adaptación móvil. Tras ajustar la alineación inferior, se repitieron las 6 pruebas de escritorio y la compilación, todas correctas. Capturas revisadas a 1024, 1366 y 1920 px; tarjetas completas y sin desbordamiento en los tamaños comprobados. `git diff --check`: correcto.
+- **Riesgos potenciales:** el encuadre de las ilustraciones varía con las proporciones disponibles; en pantallas de poca altura el contenido permite desplazamiento vertical.
+- **Siguientes pasos sugeridos:** revisar el acabado del tríptico en el monitor habitual.
+
+## Biblioteca · Regreso desde el menú móvil · 20/11/2026 · Plan aprobado
+
+- [x] Localizar la causa y revisar el comportamiento del menú de escritorio.
+- [x] Permitir que el menú móvil abra la portada de la biblioteca desde sus vistas internas.
+- [x] Verificar continentes, fichas, historial y navegación de escritorio.
+- [x] Revisar el diff y completar Review con los resultados.
+
+### Review
+
+- **Resumen de cambios:** `src/components/SectionNavigation.tsx` permite seguir el enlace a la raíz de la sección activa cuando la URL corresponde a una vista interna, reutilizando el comportamiento del menú de escritorio y cerrando el desplegable. Resuelve el bloqueo causado por enviar esa pulsación al manejador que ignora la sección ya activa. `tests/mobile-navigation.spec.ts` añade cobertura del regreso desde Asia y la ficha de Tailandia a 390 y 1366 px, con foco, scroll inicial, cierre del menú y navegación Atrás/Adelante.
+- **Verificación:** `npm run build` correcto. `npm run test:frontend -- tests/mobile-navigation.spec.ts --workers=2`: 12/12 correctas en Chromium y WebKit. La primera ejecución detectó un selector ambiguo de la prueba nueva, corregido limitándolo al título principal. `git diff --check`: sin errores de espacios.
+- **Riesgos potenciales:** ajuste localizado en el enlace de la sección activa; comparte la navegación nativa ya utilizada en escritorio.
+- **Siguientes pasos sugeridos:** comprobar el regreso en el dispositivo habitual.
+
+## Menú de navegación · Cristal suave integrado · 20/11/2026 · Plan aprobado
+
+- [x] Revisar los estilos actuales y registrar el plan aprobado.
+- [x] Aplicar fondo crema neutro al 50–55 %, desenfoque de 14 px y borde y sombra más suaves.
+- [x] Verificar encuadres y legibilidad sobre texto y fotografías.
+- [x] Completar Review con los resultados.
+
+### Review
+
+- **Resumen de cambios:** `src/styles.css` sustituye el fondo beige al 80 % por un degradado crema neutro al 55–50 %, aumenta el desenfoque a 14 px con prefijo para Safari, reduce la opacidad del borde al 25 % y suaviza la sombra a `0 6px 20px #5945330f`. Texto y flechas conservan su opacidad completa.
+- **Verificación:** prueba responsive existente del menú: 2/2 correctas en Chromium y WebKit, a 280, 390 y 740 px, con ocultación en escritorio. Capturas de 390 px sobre texto y fotografía revisadas: buena legibilidad y desenfoque visible en Chromium. `git diff --check`: correcto.
+- **Riesgos potenciales:** WebKit de Playwright en este entorno Windows acepta el CSS pero no dibuja `backdrop-filter`, confirmado también en una página mínima independiente; sus capturas muestran el contenido posterior sin desenfoque y no permiten validar el acabado de Safari real.
+- **Siguientes pasos sugeridos:** comprobar el acabado en Safari/iPhone real.
+
+## Menú de navegación · Desplegable más traslúcido · 20/11/2026
+
+- [x] Revisar el fondo y los estilos actuales del menú abierto.
+- [x] Reducir la opacidad del fondo al 80 % y añadir desenfoque suave.
+- [x] Comprobar el diff y completar Review.
+
+### Review
+
+- **Resumen de cambios:** `src/styles.css` aplica un 80 % de opacidad a los dos tonos del fondo del desplegable y un desenfoque de 8 px al contenido situado detrás, con prefijo para Safari. Texto e iconos conservan su opacidad completa.
+- **Verificación:** diff revisado y `git diff --check` correcto; sin revisión visual en navegador.
+- **Riesgos potenciales:** el contraste percibido varía según el contenido situado detrás del menú.
+- **Siguientes pasos sugeridos:** revisar la transparencia en el dispositivo habitual.
+
+## Quién soy · Acercar la foto de Roma al collage · 20/11/2026
+
+- [x] Localizar la foto del Coliseo y revisar su posición en el collage inferior.
+- [x] Desplazarla hacia la izquierda y arriba para acercarla al resto de fotografías.
+- [x] Comprobar la adaptación responsive y completar Review.
+
+### Review
+
+- **Resumen de cambios:** `src/about.css` mueve la foto del Coliseo de `left: 78%; top: 35%` a `left: 66%; top: 22%`, acercándola al conjunto por arriba y por la izquierda.
+- **Verificación:** 2/2 pruebas responsive existentes correctas en Chromium y WebKit, con ocho tamaños entre 280 y 1440 px. Captura de 941 px revisada visualmente.
+- **Riesgos potenciales:** el marco se solapa ligeramente con la fotografía central, conforme al acabado de collage.
+- **Siguientes pasos sugeridos:** revisar la nueva posición en el dispositivo habitual.
+
+## Quién soy · Icono de Instagram más pequeño · 20/11/2026
+
+- [x] Reducir el icono de Instagram de 30 a 24 px.
+
+### Review
+
+- **Resumen de cambios:** `src/about.css` reduce el icono a 24 × 24 px, manteniendo la altura pulsable de 44 px del enlace.
+- **Riesgos potenciales:** mínimos; ajuste visual localizado.
+- **Siguientes pasos sugeridos:** revisar el tamaño visual.
+
+## Quién soy · Etiqueta Instagram · 20/11/2026
+
+- [x] Cambiar el texto visible «IG» por «Instagram».
+
+### Review
+
+- **Resumen de cambios:** `src/screens/AboutScreen.tsx` muestra «Instagram» junto al icono.
+- **Riesgos potenciales:** mínimos; cambio de etiqueta visible.
+- **Siguientes pasos sugeridos:** ninguno.
+
+## Quién soy · Etiqueta IG · 20/11/2026
+
+- [x] Cambiar el texto visible «ariana.gponce» por «IG».
+
+### Review
+
+- **Resumen de cambios:** `src/screens/AboutScreen.tsx` muestra «IG» junto al icono de Instagram.
+- **Riesgos potenciales:** mínimos; cambio de texto visible.
+- **Siguientes pasos sugeridos:** ninguno.
+
+## Quién soy · Instagram con nombre y tono de las montañas · 20/11/2026
+
+- [x] Revisar el enlace actual y la ilustración de las montañas.
+- [x] Alinear el enlace a la izquierda con el icono seguido de «ariana.gponce», ambos en dorado.
+- [x] Verificar la adaptación responsive y completar Review.
+
+### Review
+
+- **Resumen de cambios:** `src/screens/AboutScreen.tsx` añade el nombre visible «ariana.gponce» a la derecha del icono. `src/about.css` alinea el enlace a la izquierda bajo el título y aplica el tono dorado `--about-bronze` al icono y al nombre, acorde con las montañas superiores.
+- **Verificación:** 4/4 pruebas existentes correctas en Chromium y WebKit, entre 280 y 1440 px y con texto al 200 %. Captura móvil de 390 px revisada visualmente. `git diff --check`: sin errores de espacios.
+- **Riesgos potenciales:** el enlace ocupa una fila propia y aumenta ligeramente la altura del apartado.
+- **Siguientes pasos sugeridos:** revisar la disposición en el dispositivo habitual.
+
+## Quién soy · Instagram personal de Ariana · 20/11/2026
+
+- [x] Localizar el apartado de fotografía y revisar sus estilos.
+- [x] Añadir el icono de Instagram a la derecha del título, enlazado al perfil personal y con nombre accesible.
+- [x] Comprobar compilación y adaptación responsive; completar Review.
+
+### Review
+
+- **Resumen de cambios:** `src/screens/AboutScreen.tsx` añade el enlace aportado al Instagram personal de Ariana con un icono SVG junto al título de fotografía. Abre una pestaña nueva e incluye nombre accesible. `src/about.css` coloca el icono a la derecha, en burdeos, con área pulsable de 44 × 44 px y foco visible para teclado.
+- **Verificación:** `npm run build` correcto. Pruebas existentes de adaptación entre 280 y 1440 px y texto al 200 %: 4/4 correctas en Chromium y WebKit. Captura de 390 px revisada visualmente, con el icono a la derecha del título. `git diff --check`: sin errores de espacios.
+- **Riesgos potenciales:** en anchos reducidos el título puede ocupar más líneas al compartir espacio con el icono; las comprobaciones responsive pasan.
+- **Siguientes pasos sugeridos:** revisar el enlace y su aspecto en el dispositivo habitual.
+
+## Menú de navegación · Icono discreto y flechas compartidas · 20/11/2026 · Plan aprobado
+
+- [x] Revisar el botón móvil y localizar el icono y color de la flecha de Países.
+- [x] Reducir las rayas manteniendo 46 × 46 px de área pulsable y aplicar opacidad del 85 % dentro de los apartados, con menú cerrado y sin foco.
+- [x] Reutilizar la flecha SVG de Países en las tres opciones del desplegable.
+- [x] Completar Review; revisión visual a cargo del usuario.
+
+### Review
+
+- **Resumen de cambios:** `src/components/SectionNavigation.tsx` reutiliza `LibraryIcon` con su flecha circular en las tres opciones y expone el apartado actual para el estilo del botón. `src/styles.css` reduce las rayas de 20 a 18 px y su separación de 5 a 4 px, ajusta la transformación de cierre y conserva el área pulsable de 46 × 46 px. El botón cerrado dentro de los apartados tiene opacidad del 85 % y recupera la opacidad completa al abrirlo o recibir foco. Las flechas conservan el trazo SVG original y el color de Países (`#7c2220`); la opción activa sigue identificada mediante su texto y `aria-current`.
+- **Verificación:** sin pruebas ni revisión visual, conforme a la indicación del usuario de realizar su propia revisión.
+- **Riesgos potenciales:** la percepción del botón semitransparente depende del contenido sobre el que se sitúe.
+- **Siguientes pasos sugeridos:** revisión visual por el usuario en sus dispositivos.
+
+## Quién soy · Texto a la izquierda y margen de la pegatina · 20/11/2026 · Plan aprobado
+
+- [x] Revisar los estilos de párrafos y el margen de la pegatina Aripajama.
+- [x] Retirar la justificación y desactivar la separación silábica automática.
+- [x] Ampliar el margen superior de la pegatina y las montañas a 24–40 px.
+- [x] Documentar el resultado; revisión visual a cargo del usuario.
+
+### Review
+
+- **Resumen de cambios:** `src/about.css` alinea los párrafos a la izquierda y desactiva la separación silábica automática. El margen superior del conjunto de pegatina y montañas pasa de `.1rem` a `clamp(1.5rem, 4cqw, 2.5rem)` (24–40 px con el tamaño de texto habitual).
+- **Verificación:** sin pruebas ni revisión visual, según la indicación del usuario.
+- **Riesgos potenciales:** el margen añadido aumenta ligeramente la altura del segundo apartado.
+- **Siguientes pasos sugeridos:** revisión visual por el usuario.
+
+## Quién soy · Separación y texto justificado · 20/11/2026 · Plan aprobado
+
+- [x] Revisar los estilos de los cuatro apartados y localizar las excepciones de separación.
+- [x] Unificar los tres saltos con una separación adaptable de 48 a 72 px.
+- [x] Justificar los párrafos, alinear su última línea a la izquierda y activar separación silábica en español.
+- [x] Completar Review; la revisión visual queda a cargo del usuario por indicación expresa.
+
+### Review
+
+- **Resumen de cambios:** `src/about.css` aplica `clamp(3rem, 7cqw, 4.5rem)` a los tres saltos entre apartados y elimina las excepciones del tercero y de móvil. Los párrafos de los cuatro bloques se justifican con última línea a la izquierda y separación silábica automática, utilizando el idioma español ya declarado en el documento.
+- **Verificación:** no se han ejecutado pruebas ni realizado revisión visual, por indicación del usuario.
+- **Riesgos potenciales:** la separación silábica automática depende del soporte del navegador y de su diccionario de español.
+- **Siguientes pasos sugeridos:** el usuario revisará la separación y el espaciado entre palabras en sus dispositivos.
+
+## Quién soy · Ocho fotografías del collage inferior · 18/11/2026 · Plan aprobado
+
+- [x] Identificar las ocho fotos originales y su distribución en la referencia.
+- [x] Generar los WebP y conectar cada imagen con su marco y texto alternativo.
+- [x] Ajustar encuadres, tamaños y solapamientos y conservar el espacio de la frase final.
+- [x] Actualizar las comprobaciones existentes, verificar móvil y escritorio y completar Review.
+
+### Review
+
+- **Resumen de cambios:** `scripts/prepare-about-photos.mjs` incorpora los ocho originales del collage inferior y genera WebP independientes en `public/media/about/`. `src/data/about-photos.ts` conecta las imágenes con sus textos alternativos y encuadres. `src/about.css` reproduce la distribución de la referencia con escalada a la izquierda, museo y aurora en la parte superior, Coliseo a la derecha, manos verdes en primer plano y Japón, montaña y textiles en la parte inferior, conservando marcos blancos, inclinaciones y sombras de álbum.
+- **Verificación:** `npm run build` correcto. `npm run test:frontend -- tests/about.spec.ts --workers=2`: 16/16 correctas en Chromium y WebKit. Las comprobaciones existentes verifican ahora las quince fotografías, su carga diferida, ocho tamaños entre 280 y 1440 px, ausencia de fotos fuera de pantalla y separación entre los marcos inferiores y la frase de cierre; también se comprueba texto al 200 %. Revisadas visualmente capturas de 390 y 941 px. `git diff --check`: sin errores de espacios.
+- **Riesgos potenciales:** los solapamientos y pequeños recortes forman parte del diseño de referencia. Las ocho fotos nuevas suman unos 897 KiB y se cargan bajo demanda.
+- **Siguientes pasos sugeridos:** revisar los encuadres del álbum completo en el dispositivo habitual.
+
+## Quién soy · Fotografías del collage de fotografía · 18/11/2026 · Plan aprobado
+
+- [x] Identificar las seis fotos originales y su posición según la captura aportada.
+- [x] Generar versiones WebP optimizadas y conectarlas a los seis marcos.
+- [x] Ajustar proporciones, encuadres y solapamientos al acabado de álbum de la referencia.
+- [x] Actualizar las comprobaciones existentes, verificar móvil y escritorio y completar Review.
+
+### Review
+
+- **Resumen de cambios:** seis WebP independientes en `public/media/about/`, con generación reproducible mediante `node scripts/prepare-about-photos.mjs` desde los originales de `../RECURSOS/fotos quien soy`. `src/data/about-photos.ts` incorpora las fotos y sus textos alternativos. `src/about.css` adapta el collage a la referencia: montaña arriba a la izquierda, desierto en el lateral izquierdo, carretera abajo a la izquierda, buceo delante en el centro, glaciar arriba a la derecha y kayak en el extremo inferior derecho, con marcos blancos, sombras e inclinaciones.
+- **Verificación:** `npm run build` correcto. `npm run test:frontend -- tests/about.spec.ts --workers=2`: 16/16 pruebas correctas en Chromium y WebKit, incluida carga de las siete fotos de la pantalla, navegación, recursos fallidos, ocho tamaños responsive y texto al 200 %. Pruebas existentes actualizadas para activar y comprobar la carga diferida antes de las capturas. Revisadas visualmente las capturas de 390 y 941 px, con la nota de cámara legible. `git diff --check`: sin errores de espacios.
+- **Riesgos potenciales:** los marcos superponen intencionadamente pequeños fragmentos de las fotos, conforme a la referencia. Los seis recursos suman unos 693 KiB y se cargan bajo demanda.
+- **Siguientes pasos sugeridos:** revisar los encuadres en el dispositivo habitual.
+
+## Quién soy · Eliminar la superposición de letras antiguas · 18/11/2026
+
+- [x] Revisar el fondo generado y detectar que comparte la ruta del recurso antiguo.
+- [x] Generar el papel limpio con un nombre propio y actualizar la pegatina.
+- [x] Verificar el recurso y la composición en navegador; completar Review.
+
+### Review
+
+- **Resumen de cambios:** el papel limpio se genera ahora como `public/media/about/signature-paper.webp` y `AboutScreen.tsx` utiliza esa ruta exclusiva. Evita reutilizar una versión en caché de `signature.webp` con las letras anteriores. El logotipo oficial es la única capa de texto de la pegatina.
+- **Verificación:** inspección del papel sin letras y de la captura móvil con un único logotipo; ninguna referencia a la imagen antigua en los componentes o estilos. `npm run build` correcto y prueba responsive existente superada en Chromium y WebKit (2/2), ocho tamaños por navegador. `git diff --check`: sin errores de espacios.
+- **Riesgos potenciales:** cambio localizado en la ruta del fondo decorativo; la composición y las dimensiones se mantienen.
+- **Siguientes pasos sugeridos:** comprobar que la pegatina muestra una sola firma en el navegador habitual.
+
+## Quién soy · Logotipo oficial en la pegatina Aripajama · 18/11/2026
+
+- [x] Confirmar el logotipo y el color utilizados en la portada.
+- [x] Preparar el papel sin las letras antiguas e integrar el logotipo oficial.
+- [x] Verificar móvil y escritorio y completar Review.
+
+### Review
+
+- **Resumen de cambios:** `scripts/prepare-about-assets.mjs` retira las letras antiguas de la pegatina conservando su papel y genera `public/media/about/signature.webp`. `src/screens/AboutScreen.tsx` coloca encima el mismo recurso oficial `/brand/aripajama.webp` utilizado en la portada. `src/about.css` adapta el logotipo al papel, con inclinación de −8° y proporciones originales. `src/styles.css` comparte el tratamiento de color entre portada y pegatina.
+- **Verificación:** regeneración de recursos y `npm run build` correctos. Pruebas existentes responsive y de fallos decorativos: 4/4 correctas en Chromium y WebKit, con ocho encuadres por navegador entre 280 y 1440 px. Capturas de 390 y 941 px revisadas visualmente. `git diff --check`: sin errores de espacios.
+- **Riesgos potenciales:** el papel mantiene la resolución de la referencia original; el logotipo independiente conserva la definición del recurso oficial.
+- **Siguientes pasos sugeridos:** revisar el resultado en el dispositivo habitual.
+
+## Quién soy · Pegatina legible sobre la fotografía · 18/11/2026
+
+- [x] Revisar la mezcla de colores y la transparencia del recurso original.
+- [x] Retirar la mezcla y añadir un fondo de papel con la silueta de la pegatina.
+- [x] Verificar móvil y escritorio y completar Review.
+
+### Review
+
+- **Resumen de cambios:** `src/about.css` retira `mix-blend-mode: multiply` de la pegatina y añade un fondo de papel opaco recortado a su silueta original. La frase queda legible por encima de la fotografía, manteniendo posición, tamaño e inclinación.
+- **Verificación:** prueba responsive existente correcta en Chromium y WebKit (2/2), ocho encuadres por navegador entre 280 y 1440 px. Capturas de 390 y 941 px revisadas visualmente: frase completa visible sobre la foto. `git diff --check`: sin errores de espacios.
+- **Riesgos potenciales:** la pegatina cubre ahora la pequeña zona de la fotografía bajo su papel, conforme al acabado solicitado.
+- **Siguientes pasos sugeridos:** ninguno para este ajuste.
+
+## Quién soy · Primera fotografía de álbum · 18/11/2026
+
+- [x] Identificar el original de la fotografía aportada y revisar su marco.
+- [x] Incorporar una versión optimizada y encajarla en el primer hueco con el acabado de álbum.
+- [x] Adaptar las comprobaciones existentes, verificar la composición y completar Review.
+
+### Review
+
+- **Resumen de cambios:** `public/media/about/portrait.webp` incorpora la foto aportada desde `../RECURSOS/fotos quien soy/IMG_2406.jpeg`, optimizada a 1000 × 563 px (unos 185 KiB). `src/data/about-photos.ts` la conecta al primer marco con texto alternativo y encuadre centrado en Ariana y la mano de piedra. `src/about.css` ajusta la cinta para que se superponga al borde y parezca sujetar la foto al álbum, conservando el marco blanco, su inclinación y sombra.
+- **Verificación:** `npm run build` correcto; 6/6 pruebas existentes adaptadas en Chromium y WebKit, incluida carga de la foto, fallos de recursos y ocho tamaños de pantalla por navegador. Capturas de móvil (390 px) y referencia (941 px) revisadas visualmente. `git diff --check`: sin errores de espacios.
+- **Riesgos potenciales:** el marco recorta parte de los laterales del paisaje; Ariana permanece completa dentro del encuadre comprobado.
+- **Siguientes pasos sugeridos:** revisar el acabado en el dispositivo habitual.
+
+## Biblioteca · Eliminar el aviso de itinerarios · 18/11/2026
+
+- [x] Localizar el texto y revisar las referencias en las pruebas existentes.
+- [x] Retirar el aviso y su contenedor; adaptar las pruebas que lo utilizaban.
+- [x] Ejecutar las comprobaciones pertinentes y completar Review.
+
+### Review
+
+- **Resumen de cambios:** `src/screens/LibraryScreen.tsx` elimina el aviso de itinerarios y su contenedor. `tests/library.spec.ts` comprueba su ausencia y utiliza el pie de la biblioteca como destino de scroll.
+- **Verificación:** 6/6 pruebas existentes correctas en Chromium y WebKit: controles, regreso tras scroll y siete encuadres responsive por navegador. `git diff --check`: sin errores de espacios.
+- **Riesgos potenciales:** se reduce la altura del contenido al retirar el aviso; las comprobaciones de scroll y encuadres pasan.
+- **Siguientes pasos sugeridos:** ninguno para este ajuste.
+
+## Biblioteca · Países sin flechas junto a los mapas · 09/11/2026
+
+- [x] Comparar las tarjetas de países con las de continentes y todos los viajes.
+- [x] Retirar las flechas y su columna de las tarjetas de países.
+- [x] Verificar navegación y encuadres responsive; completar Review.
+
+### Review
+
+- **Resumen de cambios:** `src/screens/LibraryCatalog.tsx` elimina las flechas junto a los mapas de países. `src/styles.css` deja dos columnas (nombre y mapa) y retira los estilos y animaciones de esas flechas, igualando la presentación sin flechas del resto del catálogo.
+- **Verificación:** pruebas existentes de navegación por países y continentes y listados responsive: 6/6 correctas en Chromium y WebKit, con cuatro tamaños de pantalla por navegador (280, 390, 941 y 1440 px), sin desbordamientos. `git diff --check`: sin errores de espacios.
+- **Riesgos potenciales:** el mapa queda al extremo derecho y el nombre dispone de más espacio; los encuadres comprobados pasan.
+- **Siguientes pasos sugeridos:** revisar la vista de países en el dispositivo habitual.
+
+## Biblioteca · Botón Países más compacto · 09/11/2026
+
+- [x] Revisar el botón y sus estilos responsive.
+- [x] Reducir el ancho, relleno, texto e iconos de forma proporcionada.
+- [x] Verificar los encuadres existentes y completar Review.
+
+### Review
+
+- **Resumen de cambios:** `src/styles.css` reduce aproximadamente un 20 % el ancho del botón Países, ajusta el relleno y el texto y escala los iconos con el botón. En pantallas inferiores a 360 px limita el ancho a 220 px y reduce los iconos a 28 px. Mantiene una altura táctil mínima de 44 px.
+- **Verificación:** prueba responsive existente de biblioteca: 2/2 correctas en Chromium y WebKit, siete tamaños por navegador, sin desbordamientos y con controles de al menos 44 px de altura. `git diff --check`: sin errores de espacios.
+- **Riesgos potenciales:** el texto dispone de menos espacio horizontal; los encuadres comprobados pasan.
+- **Siguientes pasos sugeridos:** revisar el tamaño en el dispositivo habitual.
+
+## Cantabria · Incorporar la lámina de ruta indicada · 09/11/2026
+
+- [x] Revisar los recursos de Cantabria y el formato de ruta de los otros viajes.
+- [x] Incorporar la lámina indicada, generar el mapa optimizado y conectar el visor compartido.
+- [x] Actualizar las expectativas y documentación vigentes, verificar y completar Review.
+
+### Review
+
+- **Resumen de cambios:** `scripts/trip-asset-manifest.mjs` incorpora `BEDEDD88…`, la lámina indicada por el usuario, y define el recorte del mapa. Generados `public/media/trips/cantabria/ruta.webp`, el original `originals/ruta.png` y su registro en `src/data/trip-assets.ts`. `src/data/library-trip-details.ts` utiliza el formato compartido de mapa ampliable; Cantabria dispone de cuatro originales y abre «La ruta». Actualizadas las expectativas existentes y la documentación vigente.
+- **Verificación:** `npm run build` correcto. Pruebas focalizadas de inventario/decodificación de los 39 viajes y navegación, visor y encuadres de Cantabria: 6/6 correctas en Chromium y WebKit, cuatro tamaños por navegador y texto al 200 %. Revisados visualmente el mapa generado y la captura móvil de Cantabria. `git diff --check`: sin errores de espacios.
+- **Riesgos potenciales:** la lámina incorporada por indicación expresa contiene nombres y textos de Asturias; se conserva tal como se ha entregado.
+- **Siguientes pasos sugeridos:** revisar la ruta en el dispositivo habitual.
+
+## Biblioteca · Ocultar subtítulos de duración en las tarjetas · 09/11/2026
+
+- [x] Localizar cómo se generan los subtítulos de duración y revisar las pruebas existentes.
+- [x] Mostrar únicamente los subtítulos descriptivos de las tarjetas.
+- [x] Actualizar las expectativas existentes, verificar el catálogo y completar Review.
+
+### Review
+
+- **Resumen de cambios:** `src/screens/LibraryCatalog.tsx` muestra el subtítulo solo cuando hay un texto descriptivo, eliminando la duración que se añadía automáticamente como segunda línea. `tests/catalog.spec.ts` actualiza las expectativas de Perú, Cantabria, Menorca y Japón y comprueba que Galicia y Navarra conservan sus subtítulos.
+- **Verificación:** pruebas de catálogo, filtros y encuadres responsive: 8/8 correctas en Chromium y WebKit, con cuatro tamaños de pantalla por navegador. `git diff --check`: sin errores de espacios.
+- **Riesgos potenciales:** las tarjetas que solo tenían duración pasan a mostrar una única línea de texto.
+- **Siguientes pasos sugeridos:** revisar visualmente el catálogo en el dispositivo habitual.
+
+## Biblioteca · Conectores entre las etapas del viaje · 09/11/2026
+
+- [x] Revisar la causa del solapamiento y los estilos compartidos por todos los viajes.
+- [x] Alinear los círculos y hacer que cada línea nazca en su base y termine 6 px antes del siguiente.
+- [x] Verificar móvil, escritorio y destinos de varias líneas; completar Review.
+
+### Review
+
+- **Resumen de cambios:** `src/trip-detail.css` alinea los círculos al inicio de cada etapa, centra el conector en su eje y lo extiende desde su base hasta 6 px antes del siguiente círculo. El estilo compartido se aplica a todos los viajes y adapta la longitud a los textos de varias líneas.
+- **Verificación:** prueba responsive existente de detalle: 2/2 correctas en Chromium y WebKit, seis encuadres por navegador y texto al 200 %. Comprobación temporal en navegador: 114 conectores de Galicia, Estados Unidos (Costa Este) y Perú en ambos motores a 280, 390 y 1440 px; inicio exacto, separación de 6 px, centrado y ausencia de conector final, incluidos cuatro casos con títulos de varias líneas. Capturas de Galicia revisadas en móvil y escritorio. `git diff --check`: sin errores de espacios.
+- **Riesgos potenciales:** los círculos quedan alineados al inicio del texto en lugar de centrados respecto al bloque completo de destino y días.
+- **Siguientes pasos sugeridos:** comprobar el resultado en el dispositivo habitual.
+
+## Hub · Más separación en los subtítulos de las tres tarjetas · 09/11/2026
+
+- [x] Revisar el margen compartido de los subtítulos de las tarjetas.
+- [x] Duplicar el margen superior manteniendo su adaptación al tamaño de pantalla.
+- [x] Verificar encuadres y completar Review.
+
+### Review
+
+- **Resumen de cambios:** `src/styles.css` duplica el margen superior compartido de los subtítulos de las tres tarjetas, de `clamp(.35em, .6svh, .55em)` a `clamp(.7em, 1.2svh, 1.1em)`.
+- **Verificación:** prueba responsive del hub: 2/2 correctas en Chromium y WebKit, siete tamaños por navegador, con textos dentro de las tarjetas. `git diff --check`: sin errores de espacios.
+- **Riesgos potenciales:** el espacio adicional aumenta la altura del bloque de texto; los encuadres comprobados pasan.
+- **Siguientes pasos sugeridos:** revisar la separación en el dispositivo habitual.
+
+## Hub · Más margen superior del subtítulo · 09/11/2026
+
+- [x] Revisar el margen superior actual de «en tres formas».
+- [x] Ampliar el margen superior de 0,05 a 0,25 em.
+- [x] Comprobar los encuadres responsive y completar Review.
+
+### Review
+
+- **Resumen de cambios:** `src/styles.css` amplía el margen superior de «en tres formas» de 0,05 a 0,25 em, adaptando la separación al tamaño de la fuente.
+- **Verificación:** prueba responsive del hub: 2/2 correctas en Chromium y WebKit, siete tamaños por navegador. `git diff --check`: sin errores de espacios.
+- **Riesgos potenciales:** la separación adicional aumenta la altura de la cabecera; los encuadres comprobados pasan.
+- **Siguientes pasos sugeridos:** revisar visualmente la separación en el dispositivo habitual.
+
+## Hub · Subtítulo ligeramente a la derecha · 09/11/2026
+
+- [x] Revisar la posición del subtítulo y los ajustes responsive.
+- [x] Desplazar «en tres formas» entre 8 y 18 px a la derecha según el ancho disponible.
+- [x] Verificar encuadres y completar Review.
+
+### Review
+
+- **Resumen de cambios:** `src/styles.css` desplaza el subtítulo a la derecha mediante posición relativa y `left: clamp(8px, 2cqw, 18px)`, proporcional al ancho del lienzo.
+- **Verificación:** prueba responsive del hub: 2/2 correctas en Chromium y WebKit, con siete tamaños por navegador. `git diff --check`: sin errores de espacios.
+- **Riesgos potenciales:** ajuste visual localizado; sin desbordamientos de página en los tamaños comprobados.
+- **Siguientes pasos sugeridos:** valorar la nueva alineación en el dispositivo habitual.
+
+## Hub · Sparkling Valentine y doble espacio · 09/11/2026
+
+- [x] Localizar la fuente original y revisar los estilos del subtítulo.
+- [x] Incorporar Sparkling Valentine y mostrar dos espacios entre las palabras de «en tres formas».
+- [x] Verificar compilación y encuadres; completar Review.
+
+### Review
+
+- **Resumen de cambios:** fuente original de Cat.B en `public/fonts/sparkling-valentine.ttf`, declarada localmente con `@font-face` y aplicada al subtítulo en su peso regular. `JourneyScreen.tsx` contiene dos espacios entre palabras y `white-space: pre-wrap` los conserva visualmente. Retirada la dependencia de WindSong.
+- **Verificación:** `npm run build` correcto. Prueba responsive existente del hub: 2/2 correctas en Chromium y WebKit, siete tamaños por navegador y sin desbordamientos de página. `git diff --check` sin errores de espacios.
+- **Riesgos potenciales:** la distribución de la autora indica «FREE FOR PERSONAL USE»; el aviso y la procedencia se conservan en `public/fonts/sparkling-valentine-LICENSE.txt`.
+- **Siguientes pasos sugeridos:** revisar el aspecto en el dispositivo habitual y disponer de la licencia correspondiente para uso comercial.
+
+## Hub · WindSong Medium en «en tres formas» · 09/11/2026
+
+- [x] Revisar los estilos del subtítulo y la carga de fuentes del proyecto.
+- [x] Incorporar WindSong 500 localmente y aplicarla al subtítulo con su estilo normal.
+- [x] Verificar compilación y encuadres del hub; completar Review.
+
+### Review
+
+- **Resumen de cambios:** WindSong de Google Fonts incorporada mediante `@fontsource/windsong`, con carga local de la variante latina 500 en `src/main.tsx`. `src/styles.css` aplica la fuente al texto «en tres formas», con peso 500 y estilo normal para usar su dibujo manuscrito original.
+- **Verificación:** `npm run build` correcto. `npm run test:frontend -- tests/journey.spec.ts --grep "conserva la composición completa" --workers=2`: 2/2 correctas en Chromium y WebKit, con siete tamaños de pantalla por navegador y sin desbordamiento de página. `git diff --check`: sin errores de espacios.
+- **Riesgos potenciales:** las métricas y el trazo del subtítulo cambian respecto a la fuente anterior; los encuadres responsive comprobados pasan.
+- **Siguientes pasos sugeridos:** revisar el aspecto de la nueva caligrafía en el dispositivo habitual.
+
+## Portada · Recuperar la altura original de los textos · 09/11/2026
+
+- [x] Confirmar la posición original del titular y la separación actual del botón.
+- [x] Restablecer el margen superior del titular a 22,5 svh, conservando los 6 svh antes del botón.
+- [x] Verificar los encuadres y completar Review.
+
+### Review
+
+- **Resumen de cambios:** `src/styles.css` restablece el margen superior del titular a 22,5 svh, recuperando la altura original del bloque de textos. El margen antes de «Comencemos» sigue en 6 svh.
+- **Verificación:** `npm run test:frontend -- tests/intro.spec.ts --grep "la portada cabe" --workers=2`: 2/2 correctas, seis tamaños por navegador en Chromium y WebKit, sin desbordamientos.
+- **Riesgos potenciales:** la distribución vertical depende de la altura disponible de pantalla.
+- **Siguientes pasos sugeridos:** revisar la composición en el dispositivo habitual.
+
+## Portada · Más margen superior de «Comencemos» · 09/11/2026
+
+- [x] Revisar el margen actual del botón.
+- [x] Aumentar el margen superior de 4,5 a 6 svh.
+- [x] Comprobar los encuadres y completar Review.
+
+### Review
+
+- **Resumen de cambios:** `src/styles.css` amplía el margen superior del botón de 4,5 a 6 svh, unos 11–13 px adicionales en las pantallas de referencia.
+- **Verificación:** `npm run test:frontend -- tests/intro.spec.ts --grep "la portada cabe" --workers=2`: 2/2 correctas, seis encuadres por navegador en Chromium y WebKit.
+- **Riesgos potenciales:** el espacio añadido varía proporcionalmente a la altura de pantalla.
+- **Siguientes pasos sugeridos:** revisar la separación en el dispositivo habitual.
+
+## Portada · Altura del texto y espacio del botón · 09/11/2026
+
+- [x] Revisar la referencia con la línea roja y los márgenes actuales.
+- [x] Subir el titular y su subtítulo unos 12 % del alto de pantalla en vertical y ampliar la separación del botón.
+- [x] Verificar encuadres y compilación; completar Review.
+
+### Review
+
+#### Resumen de cambios
+
+- `src/styles.css`: margen superior del titular en vertical de 22,5 a 10,5 svh, desplazando el bloque hacia la línea marcada (aproximadamente 91 px en una pantalla de 762 px de alto).
+- Separación entre el subtítulo y el botón ampliada de 2,9 a 4,5 svh (unos 12 px adicionales a esa altura).
+- `tests/intro.spec.ts`: añadido el encuadre de 632 × 762 px a la comprobación responsive existente.
+
+#### Verificación realizada
+
+- `npm run build`: correcto.
+- `npm run test:frontend -- tests/intro.spec.ts --grep "la portada cabe" --workers=2`: **2/2 correctas**, con seis encuadres por navegador en Chromium y WebKit; sin desbordamientos y con todos los elementos dentro de la pantalla.
+- Revisada la captura de 632 × 762 px y comprobada la nueva separación del botón.
+- `git diff --check`: sin errores de espacios.
+
+#### Riesgos potenciales
+
+- La posición se adapta proporcionalmente a la altura disponible; puede variar con las barras del navegador móvil.
+
+#### Siguientes pasos sugeridos
+
+- Comprobar la nueva altura en el dispositivo de la referencia.
+
+## Portada · Secuencia fluida dentro de los 7 segundos · 09/11/2026
+
+- [x] Revisar los tiempos y sustituir la pausa anterior por una cascada continua según la nueva indicación.
+- [x] Acercar las entradas de los textos y el botón con fundidos suavemente solapados; completar todo antes del segundo 7.
+- [x] Actualizar las pruebas de secuencia en móvil/escritorio y los tiempos del README.
+- [x] Verificar compilación y pruebas de portada; completar Review.
+
+### Review
+
+#### Resumen de cambios
+
+- Este ajuste sustituye la pausa de 0,7 s solicitada anteriormente por una cascada continua dentro de los primeros 7 segundos.
+- `src/styles.css`: entradas separadas 0,5–0,55 s con fundidos de 1 s suavemente solapados, curva de aceleración progresiva y desplazamiento reducido de 10 a 6 px. «Comencemos» aparece el último, desde 5,6 s, y completa su entrada hacia 6,6 s.
+- `src/screens/IntroScreen.tsx`: compensación del retraso del primer evento de reproducción mediante el tiempo real del vídeo; evita que WebKit desplace toda la secuencia fuera del plazo.
+- `tests/intro.spec.ts`: verifica orden, solapamiento y finalización antes del segundo 7 en móvil y escritorio, registrando el tiempo del vídeo en el navegador al finalizar la animación del botón.
+- `README.md`: tiempos y sincronización actualizados.
+
+#### Verificación realizada
+
+- `npm run build`: correcto tras el ajuste de sincronización.
+- `npm run test:frontend -- tests/intro.spec.ts --workers=2`: **12/12 correctas** en Chromium y WebKit. Comprobados secuencia antes del segundo 7, permanencia al finalizar el vídeo, navegación, teclado, reinicio, encuadres, movimiento reducido y recuperación del vídeo.
+- Las ejecuciones iniciales detectaron un inicio tardío de la secuencia en WebKit de escritorio; se corrigió compensando los retardos, sin ampliar el límite de 7 s de las pruebas.
+- `git diff --check`: sin errores de espacios.
+
+#### Riesgos potenciales
+
+- La fluidez final depende de la capacidad de renderizado del dispositivo; los tiempos de entrada y el solapamiento se mantienen coordinados en CSS.
+
+#### Siguientes pasos sugeridos
+
+- Valorar el nuevo ritmo visual en el dispositivo habitual.
+
+## Portada · Pausa antes de «Comencemos» · 09/11/2026 · Plan aprobado
+
+- [x] Revisar la secuencia actual y localizar la falta de retardo del subtítulo y el adelanto al finalizar el vídeo.
+- [x] Dar a «Viajes diseñados contigo» su retardo propio y dejar 0,7 s desde el final de su fundido hasta el inicio del botón.
+- [x] Mantener la secuencia sobre el último fotograma y actualizar las pruebas y los tiempos documentados.
+- [x] Verificar compilación y pruebas de portada en Chromium y WebKit; completar Review.
+
+### Review
+
+#### Resumen de cambios
+
+- `src/styles.css`: retardo explícito del subtítulo (5,25 s desde el inicio de la secuencia) y botón a los 7,2 s; quedan 0,7 s entre el final del fundido del texto y el inicio del botón.
+- `src/screens/IntroScreen.tsx`: el final del vídeo conserva las animaciones pendientes sobre el último fotograma. El botón se habilita al terminar su fundido.
+- `README.md`: tiempos actualizados; el botón aparece aproximadamente a los 8,2 s de reproducción y queda disponible a los 9,3 s.
+- `tests/intro.spec.ts`: comprobaciones de la pausa en la línea temporal del navegador, texto visible con botón aún oculto, final anticipado del vídeo en escritorio y navegación posterior.
+
+#### Verificación realizada
+
+- `npm run build`: correcto.
+- `npm run test:frontend -- tests/intro.spec.ts --workers=2`: **12/12 correctas** en Chromium y WebKit, con secuencia móvil/escritorio, encuadres, regreso, teclado, movimiento reducido, error de vídeo y reproducción manual.
+- La primera ejecución detectó diferencias de entrega de eventos de animación en WebKit; la medición de la pausa utiliza ahora la línea temporal real de las animaciones, sin depender del instante de entrega del evento.
+- `git diff --check`: sin errores de espacios.
+
+#### Riesgos potenciales
+
+- Los tiempos absolutos pueden variar ligeramente con la carga del vídeo y los eventos de reproducción; la pausa relativa queda definida por las animaciones CSS.
+
+#### Siguientes pasos sugeridos
+
+- Revisar el ritmo de la pausa en el móvil habitual.
+
 ## Quién soy · Corrección a la referencia `quienSoy2.png` · 04/11/2026
 
 - [x] Incorporar la ilustración superior derecha, las cintas de cabecera y pie y las decoraciones originales de la nueva referencia.
@@ -65,6 +614,56 @@
 
 - Incorporar las fotografías originales en `public/media/about/` y completar `src`, `alt` y, cuando sea necesario, `position` en `src/data/about-photos.ts`.
 - Revisar los encuadres con las fotografías definitivas en móvil y escritorio.
+
+## Recorte de la imagen final de Japón · 09/11/2026
+
+- [x] Revisar el original y localizar el texto negro incluido en el recorte superior.
+- [x] Ajustar el recorte reproducible, regenerar únicamente la imagen final de Japón y actualizar sus dimensiones.
+- [x] Verificar visualmente el resultado y comprobar los recursos.
+
+### Review
+
+- **Resumen de cambios:** el recorte final de Japón comienza ahora en el píxel 1209 del original, por debajo del texto. Actualizados el manifiesto reproducible, `public/media/trips/japon/esencia.webp` y sus dimensiones declaradas (941 × 463).
+- **Verificación:** imagen resultante revisada visualmente, sin texto negro; inventario y decodificación de recursos correctos en Chromium y WebKit (2/2).
+- **Riesgos potenciales:** se eliminan 35 píxeles superiores del recorte anterior; el torii y su reflejo siguen completos.
+- **Siguientes pasos sugeridos:** ninguno para este ajuste.
+
+## Corrección de duración y portada de Islandia · 09/11/2026
+
+- [x] Localizar y revisar `C:\Users\Mikel\Downloads\islandia.png`, con la duración de 11 días.
+- [x] Corregir la duración a 11 días, retirar la nota de discrepancia y actualizar inventario y documentación.
+- [x] Sustituir la primera lámina original y verificar duración, carga y dimensiones.
+
+### Review
+
+- **Resumen de cambios:** Islandia pasa de 12 a 11 días en los datos compartidos por catálogo y ficha; retirada la nota de discrepancia y actualizados inventario y documentación. Sustituida `public/media/trips/islandia/originals/portada.png` por la imagen aportada de 941 × 1672.
+- **Verificación:** inventario editorial y recursos correctos en Chromium y WebKit (2/2); comprobación del visor en ambos motores con duración visible de 11 días y primera lámina idéntica al archivo aportado mediante SHA-256.
+- **Riesgos potenciales:** regenerar desde la carpeta antigua de recursos restauraría la portada de 12 días.
+- **Siguientes pasos sugeridos:** usar la portada corregida también en los recursos fuente antes de regenerar las imágenes de la biblioteca.
+
+## Sustitución de la portada original de Bilbao · 09/11/2026
+
+- [x] Localizar y revisar la nueva lámina de 6 días: `C:\Users\Mikel\Downloads\bilbao.png`.
+- [x] Sustituir la primera lámina del visor de originales y verificar su carga y dimensiones.
+
+### Review
+
+- **Resumen de cambios:** sustituido `public/media/trips/bilbao/originals/portada.png` por el PNG aportado de 6 días, conservando sus dimensiones de 941 × 1672 y su posición inicial en el visor.
+- **Verificación:** apertura de «Ver las láminas originales» en Chromium y WebKit; primera lámina «Portada» cargada y SHA-256 del recurso servido idéntico al archivo aportado.
+- **Riesgos potenciales:** una regeneración desde la carpeta antigua de recursos restauraría la portada de 7 días.
+- **Siguientes pasos sugeridos:** usar también la portada corregida en los recursos fuente antes de regenerar las imágenes de la biblioteca.
+
+## Corrección de duración de Bilbao · 09/11/2026
+
+- [x] Corregir la duración de Bilbao a 6 días y retirar la nota de discrepancia.
+- [x] Actualizar el inventario editorial y la documentación; verificar el cambio.
+
+### Review
+
+- **Resumen de cambios:** duración de Bilbao corregida a 6 días en los datos compartidos por catálogo y ficha; retirada la nota de discrepancia y actualizados el inventario de pruebas y la documentación.
+- **Verificación:** prueba existente de inventario editorial y recursos superada en Chromium y WebKit (2/2).
+- **Riesgos potenciales:** las láminas originales conservan el texto integrado de origen.
+- **Siguientes pasos sugeridos:** ninguno para esta corrección de texto.
 
 ## Carga completa de la biblioteca · 30/10/2026 · Plan aprobado
 

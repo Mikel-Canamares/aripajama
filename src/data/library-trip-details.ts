@@ -162,11 +162,10 @@ const entries: readonly Entry[] = [
     reflection: 'Montañas que se recorren con los pies, pero se quedan siempre en el corazón.',
   },
   {
-    id: 'bilbao', duration: 7,
+    id: 'bilbao', duration: 6,
     introduction: 'Entre ciudades que se reinventan y acantilados donde el Cantábrico cuenta su historia.',
     routeIntroduction: 'Entre ciudad, acantilados y pueblos marineros del País Vasco.',
     routeSummary: 'Ciudad, acantilados y playas.', routeClosing: 'La esencia del País Vasco en una ruta única.',
-    contentNote: 'La portada indica 7 días; la lámina de etapas detalla los días 1–6.',
     stages: [
       ['Bilbao', 'Día 1', 'Madrid, Salinas de Añana y primera toma de contacto con la ciudad. Casco Viejo, free tour y atardecer desde Artxanda.'],
       ['Bilbao y costa de Getxo', 'Día 2', 'Guggenheim, Puente de Bizkaia, Getxo, La Galea, Sopelana y Castillo de Butrón.'],
@@ -557,11 +556,10 @@ const entries: readonly Entry[] = [
     reflection: 'Un viaje entre lagos y montañas donde la Navidad convierte cada paisaje en un recuerdo especial.',
   },
   {
-    id: 'islandia', duration: 12,
+    id: 'islandia', duration: 11,
     introduction: 'Entre volcanes, glaciares y auroras boreales.',
     routeIntroduction: 'Una vuelta a Islandia entre volcanes, cascadas y naturaleza salvaje.',
     routeSummary: 'Volcanes, glaciares y cascadas.', routeClosing: 'Naturaleza salvaje en estado puro.',
-    contentNote: 'La portada indica 12 días; la lámina de etapas detalla los días 1–11.',
     stages: [
       ['Keflavík', 'Día 1', 'Llegada a Islandia y primeros paisajes volcánicos.'],
       ['Reikiavik y Reykjadalur', 'Día 2', 'La capital, cultura y un baño en aguas termales naturales.'],
@@ -819,20 +817,19 @@ const entries: readonly Entry[] = [
 export const LIBRARY_TRIP_DETAILS: Readonly<Partial<Record<string, TripDetail>>> = Object.fromEntries(entries.map(entry => {
   const assets = TRIP_ASSETS[entry.id]
   const image = (asset: { src: string; width: number; height: number }, alt: string): TripImage => ({ ...asset, alt })
-  const isItinerary = entry.id === 'cantabria'
   if (entry.stages.length !== assets.stages.length) throw new Error(`Fotografías y etapas no coinciden: ${entry.id}`)
   const detail: TripDetail = {
     duration: entry.duration,
     destinationCount: DESTINATION_COUNTS[entry.id],
     introduction: entry.introduction,
     routeIntroduction: entry.routeIntroduction,
-    routeCaption: isItinerary ? 'El recorrido de Cantabria, día a día.' : entry.routeIntroduction,
+    routeCaption: entry.routeIntroduction,
     routeSummary: entry.routeSummary,
     routeClosing: entry.routeClosing,
     routeSheetIndex: assets.routeSheetIndex,
-    routeImageKind: isItinerary ? 'itinerary' : 'map',
+    routeImageKind: 'map',
     cover: image(assets.cover, `Ilustración del viaje: ${entry.introduction}`),
-    map: image(assets.map, isItinerary ? 'Lámina del itinerario de Cantabria en diez jornadas' : `Mapa ilustrado: ${entry.routeIntroduction}`),
+    map: image(assets.map, `Mapa ilustrado: ${entry.routeIntroduction}`),
     closingImage: image(assets.closingImage, `Paisaje ilustrado del viaje: ${entry.reflection}`),
     stages: entry.stages.map(([destination, days, description], index) => ({ destination, days, description, image: image(assets.stages[index], `Ilustración de ${destination} en la lámina del itinerario`), optional: days === 'Si queda tiempo' })),
     themes: entry.themes.map(([title, description, icon]) => ({ title, description, icon })),

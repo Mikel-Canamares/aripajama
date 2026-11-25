@@ -114,10 +114,12 @@ export function LibraryScreen({ active, onReady, onBack }: { active: boolean; on
         <span data-reveal="" className="library__rule" aria-hidden="true" />
         <p data-reveal="">Destinos recorridos.<br />Experiencias reales.</p>
       </header>
-      <section className="library__browse" aria-label="Otras formas de explorar">
-        <button data-reveal="" data-reveal-frame="" data-reveal-group="" id="library-countries" className="library__browse-card" onClick={() => navigate('#biblioteca/paises', 'library-countries')}><Icon name="globe" /><span data-reveal="">Países</span><Icon name="arrow" /></button>
-      </section>
-      <div className="library__all"><button data-reveal="" id="library-all" className="text-button" onClick={() => navigate('#biblioteca/viajes', 'library-all')}>Ver los {TRIPS.length} viajes <span aria-hidden="true">→</span></button></div>
+      <div className="library__explore">
+        <section className="library__browse" aria-label="Otras formas de explorar">
+          <button data-reveal="" data-reveal-frame="" data-reveal-group="" id="library-countries" className="library__browse-card" onClick={() => navigate('#biblioteca/paises', 'library-countries')}><Icon name="globe" /><span data-reveal="">Países</span><Icon name="arrow" /></button>
+        </section>
+        <div className="library__all"><button data-reveal="" id="library-all" className="text-button" onClick={() => navigate('#biblioteca/viajes', 'library-all')}>Ver los {TRIPS.length} viajes <span aria-hidden="true">→</span></button></div>
+      </div>
       <section className="library__continents" aria-labelledby="library-continents">
         <h2 data-reveal="" id="library-continents" className="library__section-title">Explora por continente</h2>
         <ul className="library__grid">
@@ -134,9 +136,6 @@ export function LibraryScreen({ active, onReady, onBack }: { active: boolean; on
         <p data-reveal-group=""><Icon name="heart" /><span data-reveal="">Experiencias<br />de primera mano</span></p>
         <p data-reveal-group=""><Icon name="leaf" /><span data-reveal="">Destinos con<br />sentido</span></p>
       </footer>
-      <div className="library__notice">
-        <p data-reveal="" id="library-pending">Descubre los {TRIPS.length} itinerarios, sus rutas y las experiencias de cada viaje. Próximamente: exploración por tipo de viaje.</p>
-      </div>
       </>}
     </div>
     </div>
