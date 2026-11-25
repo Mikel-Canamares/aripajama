@@ -1,4 +1,5 @@
 import { useEffect, useLayoutEffect, useRef, useState, type ReactNode } from 'react'
+import { BookingCalendar } from '../components/BookingCalendar'
 import { TRAVELER_PROFILES } from '../data/traveler-profiles'
 import { TRAVEL_COMPANIES, tripDetailsErrors, type TripDetails, type TripReceipt } from '../data/trip-request'
 import { useRevealSequence } from '../hooks/useRevealSequence'
@@ -88,8 +89,8 @@ export function TripDetailsScreen({ details, onChange, onContinue, error, ...pro
     </form>
   </Frame>
 }
-export function TripProfileScreen({ receipt, onReview, onLanding, onRestart, ...props }: Common & {
-  receipt: TripReceipt; onReview: () => void; onLanding: () => void; onRestart: () => void
+export function TripProfileScreen({ receipt, bookingLookup, retryBookingLookup, onReview, onLanding, onRestart, ...props }: Common & {
+  receipt: TripReceipt; bookingLookup: 'ready' | 'loading' | 'error'; retryBookingLookup: () => void; onReview: () => void; onLanding: () => void; onRestart: () => void
 }) {
   const profile = TRAVELER_PROFILES[receipt.profile]
   return <Frame {...props} title={profile.title} eyebrow="Tu perfil viajero">
@@ -97,8 +98,7 @@ export function TripProfileScreen({ receipt, onReview, onLanding, onRestart, ...
       <img data-reveal="profile-art" src={`/media/email/${receipt.profile}-art.jpg`} width="384" height="687" alt="" />
       <div data-reveal="profile-copy">
         <p className="trip-final__intro">{profile.description}</p>
-        <button type="button" className="questionnaire__continue" disabled aria-describedby="booking-availability">Reservar mi cita</button>
-        <p id="booking-availability">Reservas disponibles próximamente</p>
+        <BookingCalendar booking={receipt.booking} lookup={bookingLookup} retryLookup={retryBookingLookup} />
       </div>
     </section>
     <div className="questionnaire__complete-actions">

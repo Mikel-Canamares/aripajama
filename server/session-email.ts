@@ -19,10 +19,11 @@ export function readableAnswers(json: string) {
 export function renderSessionEmail(
   request: Pick<RequestRow, 'id' | 'email' | 'answers_json' | 'details_json' | 'profile_json'>,
   booking: Pick<BookingRow, 'uid' | 'appointment_json'> & Partial<Pick<BookingRow, 'is_test'>>,
+  cal?: { phone: string | null },
 ) {
   const testing = booking.is_test === 1
-  const heading = testing ? '[PRUEBA] Primera sesión simulada · 40 €' : 'Primera sesión confirmada · 40 €'
-  const introduction = testing ? 'PRUEBA: reserva y pago simulados. No existe ninguna cita ni cobro real. El formulario corresponde a tu prueba.' : 'Reserva confirmada y pago verificado. Estos son los datos de la cita y el formulario completo.'
+  const heading = cal ? 'Primera videollamada confirmada' : testing ? '[PRUEBA] Primera sesión simulada · 40 €' : 'Primera sesión confirmada · 40 €'
+  const introduction = cal ? 'Estos son los datos de la cita por Cal Video y las respuestas del viajero.' : testing ? 'PRUEBA: reserva y pago simulados. No existe ninguna cita ni cobro real. El formulario corresponde a tu prueba.' : 'Reserva confirmada y pago verificado. Estos son los datos de la cita y el formulario completo.'
   const appointment = JSON.parse(booking.appointment_json!) as Appointment
   const details = JSON.parse(request.details_json) as TripDetails
   const profile = PROFILE_TITLES[(JSON.parse(request.profile_json) as { principal: ProfileId }).principal]
@@ -34,7 +35,7 @@ export function renderSessionEmail(
     ['Email de la reserva', appointment.email], ['Inicio de la cita', format.format(new Date(appointment.start))],
     ['Fin de la cita', format.format(new Date(appointment.end))], ['Zona horaria de la cita', appointment.timeZone],
     ['Zona horaria del cliente', appointment.attendeeTimeZone], ['Videollamada', video || 'Enlace aún no disponible'],
-    [testing ? 'Pago simulado (sin cobro)' : 'Pago verificado', '40 € · EUR'], ['Perfil viajero', profile],
+    ...(cal ? [['Teléfono', cal.phone || 'No facilitado'] as [string, string]] : [[testing ? 'Pago simulado (sin cobro)' : 'Pago verificado', '40 € · EUR'] as [string, string]]), ['Perfil viajero', profile],
     ['Destino', details.destinationUnknown ? 'Aún por definir' : details.destination],
     ['Duración del viaje', details.daysUnknown ? 'Aún por definir' : `${details.days} días`],
     ['Época del viaje', details.seasonUnknown ? 'Aún por definir' : details.season],
@@ -51,5 +52,5 @@ ${fields.map(([label, value]) => `<p><strong>${escape(label)}</strong><br>${labe
 </div></td></tr></table></body></html>`
   const text = [heading, introduction, ...fields.map(([label, value]) => `${label}: ${value}`),
     'Cuestionario completo', ...answers.map((answer, index) => `${index + 1}. ${answer.question}\n${answer.answers.join('\n')}`)].join('\n\n')
-  return { subject: testing ? '[PRUEBA] Aviso de primera sesión · Aripajama' : 'Primera sesión confirmada y pagada · Aripajama', html, text }
+  return { subject: cal ? 'Cita y cuestionario del viajero · Aripajama' : testing ? '[PRUEBA] Aviso de primera sesión · Aripajama' : 'Primera sesión confirmada y pagada · Aripajama', html, text }
 }

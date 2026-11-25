@@ -1,6 +1,7 @@
 import { validEmail, type TripReceipt } from '../src/data/trip-request.ts'
 import type { Env } from './platform.ts'
 import type { ProfileId } from './profiles.ts'
+import { bookingOptions } from './booking-link.ts'
 
 export type RequestRow = {
   id: string; request_hash: string; retry_token_hash: string; email: string | null
@@ -13,9 +14,9 @@ export type RequestRow = {
 }
 export type EmailPayload = { from: string; to: string[]; reply_to: string; subject: string; html: string; text: string; tags: { name: string; value: string }[] }
 export const readRequest = (env: Env, id: string) => env.DB.prepare('SELECT * FROM trip_requests WHERE id = ?').bind(id).first<RequestRow>()
-export function receipt(row: RequestRow): TripReceipt {
+export function receipt(row: RequestRow, env: Env): TripReceipt {
   const profile = JSON.parse(row.profile_json) as { principal: ProfileId }
-  return { requestId: row.id, saved: true, profile: profile.principal }
+  return { requestId: row.id, saved: true, profile: profile.principal, booking: bookingOptions(env, row.booking_reference, row.email) }
 }
 
 export function testRecipientsAllowed(payload: EmailPayload, env: Pick<Env, 'EMAIL_TEST_RECIPIENTS'>): boolean {

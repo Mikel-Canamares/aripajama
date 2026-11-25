@@ -36,6 +36,8 @@ export function loadTripDraft(): Draft {
       if (draft.request && /^[a-zA-Z0-9_-]{20,80}$/.test(draft.request.id) && /^[a-zA-Z0-9_-]{40,128}$/.test(draft.request.token)) extra.request = draft.request
       if (extra.request && isTripReceipt(draft.receipt, extra.request.id)) extra.receipt = draft.receipt
     }
+    // Never restore a stale event URL or prefilled contact from storage.
+    if (extra.receipt) extra.receipt = { requestId: extra.receipt.requestId, saved: true, profile: extra.receipt.profile }
     memoryDraft = { ...extra, answers, step: draft.step }
   } catch (error) {
     // An unavailable store keeps the memory fallback; corrupt data starts clean.
@@ -48,7 +50,9 @@ export function loadTripDraft(): Draft {
 }
 
 export function saveTripDraft(answers: TripAnswers, step: number, extra?: DraftExtra) {
-  memoryDraft = { ...memoryDraft, ...extra, version: 2, answers, step }
+  const receipt = extra?.receipt
+  memoryDraft = { ...memoryDraft, ...extra, version: 2, answers, step,
+    ...(receipt && { receipt: { requestId: receipt.requestId, saved: true, profile: receipt.profile } }) }
   try { sessionStorage.setItem(DRAFT_KEY, JSON.stringify(memoryDraft)); sessionStorage.removeItem(LEGACY_DRAFT_KEY) } catch { /* Continue in memory. */ }
 }
 

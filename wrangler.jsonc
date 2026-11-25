@@ -15,9 +15,10 @@
   "EMAIL_FROM": "Aripajama <perfil@notificaciones.aripajama.com>",
   "REPLY_TO": "hola@aripajama.com",
   "PUBLIC_SITE_URL": "https://aripajama.com",
-  "BOOKING_ENABLED": "false",
+  "BOOKING_ENABLED": "true",
+  "CAL_BOOKING_URL": "https://cal.com/ariana-travel/30min",
   "BOOKING_NOTIFICATIONS_ENABLED": "true",
-  "PHASE1_TEST_MODE": "true"
+  "PHASE1_TEST_MODE": "false"
 },
   "triggers": { "crons": ["*/5 * * * *"] },
   "observability": { "enabled": false }

@@ -1,4 +1,6 @@
-# Primera sesión · fase 1
+# Primera sesión · fase 1 histórica
+
+Para configurar la reserva actual desde el cuestionario y su correo privado, consulta la [guía de Cal Video](reservas-cal-video.md). Este documento describe la implementación histórica de sesiones de prueba.
 
 Continuación: [guía para configurar Cal.com y Stripe](guia-calcom-stripe.md) y [plan de programación de fase 2](plan-fase-2.md). La recepción y el contenido de los correos de prueba han sido validados personalmente por el titular. La fase 2 queda pendiente de petición de implementación.
 

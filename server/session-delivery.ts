@@ -1,3 +1,4 @@
+import { sendEmail } from './resend.ts'
 import { readRequest, testRecipientsAllowed, type EmailPayload } from './delivery.ts'
 import { defaultIo, digest, type Env, type Io } from './platform.ts'
 import { eligibleBooking, readBooking, type BookingRow } from './sessions.ts'
@@ -81,29 +82,7 @@ export async function deliverSessionNotification(env: Env, uid: string, io: Io =
       .bind(current?.booking_status === 'cancelled' ? 'suppressed' : 'review_required', io.now(), uid, lease).run()
     return
   }
-  let status = mock ? 'simulated' : 'failed'
-  let providerId: string | null = null
-  let error: string | null = null
-  let nextRetry = now + Math.min(60 * 2 ** (persisted.attempts - 1), 3600) * 1000
-  if (!mock) {
-    try {
-      const response = await io.fetch('https://api.resend.com/emails', {
-        method: 'POST', headers: { Authorization: `Bearer ${env.RESEND_API_KEY}`, 'Content-Type': 'application/json', 'Idempotency-Key': persisted.email_key },
-        body: persisted.payload_json!, signal: AbortSignal.timeout(12000),
-      })
-      const data = await response.json() as { id?: unknown; name?: unknown }
-      if (response.ok && typeof data.id === 'string' && data.id.length > 0 && data.id.length < 200) { status = 'accepted'; providerId = data.id }
-      else if (response.status === 429) {
-        error = 'PROVIDER_RATE_LIMIT'
-        const retry = response.headers.get('Retry-After')
-        const seconds = retry === null ? NaN : Number(retry)
-        const retryAt = Number.isFinite(seconds) ? now + Math.max(0, seconds) * 1000 : Date.parse(retry || '')
-        if (Number.isFinite(retryAt)) nextRetry = Math.max(nextRetry, retryAt)
-      } else if (response.status === 409 && data.name === 'concurrent_idempotent_requests') error = 'PROVIDER_BUSY'
-      else if (response.status >= 400 && response.status < 500) { status = 'review_required'; error = 'PROVIDER_CONFIGURATION_OR_CONFLICT' }
-      else error = 'PROVIDER_UNCONFIRMED'
-    } catch { error = 'PROVIDER_UNCONFIRMED' }
-  }
+  let { status, providerId, error, nextRetry } = await sendEmail(env, io, persisted.email_key, persisted.payload_json!, persisted.attempts, mock)
   if (status === 'failed' && (persisted.attempts >= LIMIT || nextRetry >= persisted.first_attempt_at! + WINDOW)) {
     status = 'review_required'; error = persisted.attempts >= LIMIT ? 'ATTEMPTS_EXHAUSTED' : 'RETRY_WINDOW_EXPIRED'
   }

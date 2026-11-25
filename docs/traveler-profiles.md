@@ -2,7 +2,7 @@
 
 ## Flujo actual
 
-Las diez preguntas conducen a los detalles del viaje. «Ver mi perfil viajero» valida esos datos y los envía directamente, sin Turnstile ni peticiones a `/api/trip-config`. El servidor calcula y guarda la solicitud sin email, con estado interno `not_requested`. Devuelve el identificador del perfil principal. La pantalla `/completado` muestra su descripción e ilustración y el botón desactivado «Reservar mi cita». La antigua ruta `/email` recupera el borrador en detalles.
+Las diez preguntas conducen a los detalles del viaje. «Ver mi perfil viajero» valida esos datos y los envía directamente, sin Turnstile ni peticiones a `/api/trip-config`. El servidor calcula y guarda la solicitud sin email, con estado interno `not_requested`. Devuelve el identificador del perfil principal. La pantalla `/completado` muestra su descripción e ilustración y el botón «Reservar mi cita», disponible cuando el Worker tiene configurado el evento. La [guía de reservas](reservas-cal-video.md) describe el calendario y los avisos. La antigua ruta `/email` recupera el borrador en detalles.
 
 | Operación | Contrato actual |
 | --- | --- |

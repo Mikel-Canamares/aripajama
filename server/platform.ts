@@ -24,6 +24,7 @@ export interface Env {
   WHATSAPP_URL?: string
   BOOKING_ENABLED?: string
   CAL_BOOKING_URL?: string
+  CAL_WEBHOOK_SECRET?: string
   ARIANA_EMAIL?: string
   BOOKING_NOTIFICATIONS_ENABLED?: string
   PHASE1_TEST_MODE?: string

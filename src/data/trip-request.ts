@@ -39,7 +39,22 @@ export function normalizeTripDetails(input: unknown): TripDetails {
   return data
 }
 export const validEmail = (value: string) => value.length <= 254 && /^[^\s<>@,;]+@[^\s<>@,;]+\.[^\s<>@,;]+$/.test(value)
-export type TripReceipt = { requestId: string; saved: true; profile: ProfileId }
+export type BookingOptions = { path: string; reference: string; email?: string; name?: string }
+export const bookingPath = /^[a-zA-Z0-9_-]+\/[a-zA-Z0-9_-]+$/
+export function bookingHref({ path, reference }: BookingOptions) {
+  const url = new URL(path, 'https://cal.com')
+  url.searchParams.set('metadata[aripajama_reference]', reference)
+  return url.href
+}
+export function validBooking(value: unknown): value is BookingOptions {
+  if (!value || typeof value !== 'object') return false
+  const item = value as Partial<BookingOptions>
+  return typeof item.path === 'string' && bookingPath.test(item.path) &&
+    typeof item.reference === 'string' && /^[a-f0-9]{64}$/.test(item.reference) &&
+    (item.email === undefined || (typeof item.email === 'string' && validEmail(item.email))) &&
+    (item.name === undefined || (typeof item.name === 'string' && item.name.length <= 200))
+}
+export type TripReceipt = { requestId: string; saved: true; profile: ProfileId; booking?: BookingOptions }
 export function isTripReceipt(value: unknown, requestId: string): value is TripReceipt {
   if (!value || typeof value !== 'object') return false
   return 'requestId' in value && value.requestId === requestId && 'saved' in value && value.saved === true &&

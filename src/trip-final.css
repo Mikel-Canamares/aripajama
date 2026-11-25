@@ -27,6 +27,18 @@
   }
   .trip-final button:disabled { cursor: default; opacity: .65; }
 }
+@layer components {
+  .booking-dialog { width: min(68rem, calc(100% - 1rem)); max-width: none; max-height: calc(100dvh - 1rem); margin: auto; padding: 0; border: 1px solid #e9d6c5; border-radius: 18px; background: #fffaf5; color: #273047; }
+  .booking-dialog[open] { display: flex; flex-direction: column; overflow: hidden; }
+  .booking-dialog::backdrop { background: rgb(37 32 30 / .55); }
+  .booking-dialog header { flex: none; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: .4rem 1rem; padding: .65rem 1rem; }
+  .booking-dialog h2 { margin: 0; font: 600 clamp(1.35rem, 4vw, 2rem)/1.15 var(--font-editorial); overflow-wrap: anywhere; }
+  .booking-dialog header button { width: auto; margin: 0; }
+  .booking-dialog__body { min-width: 0; min-height: 0; overflow-y: auto; overscroll-behavior: contain; }
+  .booking-dialog__body > p, .booking-dialog__body > div:has([role="alert"]) { margin: 1rem; }
+  .booking-dialog__body a { display: inline-flex; align-items: center; min-height: 44px; margin-inline: .65rem; color: #703021; }
+  .booking-dialog iframe { max-width: 100%; border: 0; }
+}
 @layer responsive {
   @container (max-width: 16rem) {
     .trip-final__field summary { grid-template-columns: 48px minmax(0,1fr) 16px; padding: .65rem; gap: .5rem; }

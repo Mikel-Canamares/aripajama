@@ -25,6 +25,23 @@ export function useTripRequest({ draft, answers, step, active, onSaved }: {
   draft: DraftExtra; answers: TripAnswers; step: number; active: boolean; onSaved: () => void
 }) {
   const [form, setForm] = useState<DraftExtra>({ details: draft.details, request: draft.request, receipt: draft.receipt })
+  const [restoreAttempt, setRestoreAttempt] = useState(0)
+  const [restoreState, setRestoreState] = useState<'loading' | 'error' | 'ready'>(draft.receipt && draft.request ? 'loading' : 'ready')
+  // A restored profile gets today's event configuration from its authenticated receipt.
+  useEffect(() => {
+    if (!draft.receipt || !draft.request) return
+    const request = draft.request
+    let current = true
+    setRestoreState('loading')
+    queueMicrotask(async () => {
+      if (!current) return
+      try {
+        const receipt = await api(request.id, '/api/trip-requests/' + request.id, { headers: { Authorization: 'Bearer ' + request.token } })
+        if (current) { apply(receipt, request); setRestoreState('ready') }
+      } catch { if (current) setRestoreState('error') }
+    })
+    return () => { current = false }
+  }, [draft, restoreAttempt])
   const latest = useRef(form)
   latest.current = form
   const savedCallback = useRef(onSaved)
@@ -70,5 +87,7 @@ export function useTripRequest({ draft, answers, step, active, onSaved }: {
     if (result && latest.current.request?.id === request.id) savedCallback.current()
   }
   return { form, edit, busy, locked, error, submit,
+    bookingLookup: form.request?.id === draft.request?.id ? restoreState : 'ready' as const,
+    retryBookingLookup: () => setRestoreAttempt(value => value + 1),
     reset: () => { setForm({ details: emptyTripDetails(), request: null, receipt: null }); setError('') } }
 }

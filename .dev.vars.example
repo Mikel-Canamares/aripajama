@@ -14,5 +14,8 @@ WHATSAPP_URL=
 # Local automated-development defaults; personal tests use the production Worker.
 BOOKING_ENABLED=false
 CAL_BOOKING_URL=
+# Secreto del webhook Booking Created de este entorno, solo en el Worker.
+CAL_WEBHOOK_SECRET=
+# Activar para probar el aviso interno con EMAIL_MODE=mock y ARIANA_EMAIL.
 BOOKING_NOTIFICATIONS_ENABLED=false
 ARIANA_EMAIL=mikel.canamares@gmail.com

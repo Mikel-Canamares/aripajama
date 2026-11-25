@@ -2,14 +2,15 @@ import { normalizeTripDetails } from '../src/data/trip-request.ts'
 import { ALGORITHM_VERSION, calcularPerfil, InvalidAnswers, mapCurrentAnswers } from './profiles.ts'
 import { readRequest, receipt } from './delivery.ts'
 import { ApiError, defaultIo, digest, localDevelopment, type Env, type Io } from './platform.ts'
-import { newBookingReference } from './booking-link.ts'
+import { bookingOptions, newBookingReference } from './booking-link.ts'
+import { calWebhook, processCalEmails } from './cal-webhook.ts'
 import { processSessionNotifications } from './session-delivery.ts'
 import { sessionTestPage } from './session-test.ts'
 
 const ID = /^[a-zA-Z0-9_-]{20,80}$/
 const TOKEN = /^[a-zA-Z0-9_-]{40,128}$/
 const json = (value: unknown, status = 200) => Response.json(value, { status, headers: { 'Cache-Control': 'no-store', 'X-Content-Type-Options': 'nosniff', 'Referrer-Policy': 'no-referrer' } })
-async function body(request: Request): Promise<Record<string, unknown>> {
+async function bodyBytes(request: Request, maxSize = 16384) {
   if (!request.headers.get('content-type')?.startsWith('application/json')) throw new ApiError(415, 'JSON_REQUIRED')
   const stream = request.body?.getReader()
   if (!stream) throw new ApiError(400, 'INVALID_JSON')
@@ -19,12 +20,16 @@ async function body(request: Request): Promise<Record<string, unknown>> {
     const item = await stream.read()
     if (item.done) break
     size += item.value.byteLength
-    if (size > 16384) { await stream.cancel(); throw new ApiError(413, 'REQUEST_TOO_LARGE') }
+    if (size > maxSize) { await stream.cancel(); throw new ApiError(413, 'REQUEST_TOO_LARGE') }
     chunks.push(item.value)
   }
   const bytes = new Uint8Array(size)
   let offset = 0
   for (const chunk of chunks) { bytes.set(chunk, offset); offset += chunk.length }
+  return bytes
+}
+async function body(request: Request): Promise<Record<string, unknown>> {
+  const bytes = await bodyBytes(request)
   try {
     const value = JSON.parse(new TextDecoder().decode(bytes))
     if (!value || typeof value !== 'object' || Array.isArray(value)) throw new Error()
@@ -58,13 +63,18 @@ export function createHandler(io: Io = defaultIo) {
     if (!url.pathname.startsWith('/api/')) return env.ASSETS ? env.ASSETS.fetch(request) : new Response('Not found', { status: 404 })
     try {
       if (url.pathname === '/api/health' && request.method === 'GET') return json({ ok: true })
+      if (url.pathname === '/api/cal/webhook') {
+        if (request.method !== 'POST') return json({ code: 'METHOD_NOT_ALLOWED' }, 405)
+        await calWebhook(env, request.headers.get('X-Cal-Signature-256'), await bodyBytes(request, 128 * 1024), io)
+        return json({ ok: true })
+      }
       const testSession = url.pathname.match(/^\/api\/session-test\/([a-f0-9]{64})$/)
       if (testSession) {
         if (request.method === 'POST') { checkOrigin(request, env); await limit(request, env) }
         return await sessionTestPage(request, env, testSession[1], io)
       }
       const match = url.pathname.match(/^\/api\/trip-requests\/([a-zA-Z0-9_-]{20,80})$/)
-      if (match && request.method === 'GET') return json(receipt(await authorize(request, env, match[1])))
+      if (match && request.method === 'GET') return json(receipt(await authorize(request, env, match[1]), env))
       if (url.pathname !== '/api/trip-requests') return json({ code: 'NOT_FOUND' }, 404)
       if (request.method !== 'POST') return json({ code: 'METHOD_NOT_ALLOWED' }, 405)
       checkOrigin(request, env)
@@ -80,21 +90,22 @@ export function createHandler(io: Io = defaultIo) {
       const existing = await readRequest(env, data.requestId)
       if (existing) {
         if (existing.request_hash !== hash || existing.retry_token_hash !== tokenHash) throw new ApiError(409, 'REQUEST_CONFLICT')
-        return json(receipt(existing))
+        return json(receipt(existing, env))
       }
       const profile = calcularPerfil(answers)
       const now = io.now()
+      const reference = newBookingReference()
       const inserted = await env.DB.prepare(`INSERT INTO trip_requests
         (id,request_hash,retry_token_hash,answers_json,details_json,profile_json,algorithm_version,created_at,updated_at,email_key,booking_reference)
         VALUES (?,?,?,?,?,?,?,?,?,?,?) ON CONFLICT(id) DO NOTHING`)
-        .bind(data.requestId, hash, tokenHash, JSON.stringify(answers), JSON.stringify(details), JSON.stringify(profile), ALGORITHM_VERSION, now, now, `profile/${data.requestId}/v1`, newBookingReference()).run()
+        .bind(data.requestId, hash, tokenHash, JSON.stringify(answers), JSON.stringify(details), JSON.stringify(profile), ALGORITHM_VERSION, now, now, `profile/${data.requestId}/v1`, reference).run()
       if (!inserted.meta.changes) {
         const duplicate = await readRequest(env, data.requestId)
         if (!duplicate) throw new ApiError(503, 'SERVICE_UNAVAILABLE')
         if (duplicate.request_hash !== hash || duplicate.retry_token_hash !== tokenHash) throw new ApiError(409, 'REQUEST_CONFLICT')
-        return json(receipt(duplicate))
+        return json(receipt(duplicate, env))
       }
-      return json({ requestId: data.requestId, saved: true, profile: profile.principal }, 201)
+      return json({ requestId: data.requestId, saved: true, profile: profile.principal, booking: bookingOptions(env, reference) }, 201)
     } catch (error) {
       if (error instanceof ApiError) return json({ code: error.code }, error.status)
       if (error instanceof InvalidAnswers) return json({ code: error.code }, 422)
@@ -108,5 +119,6 @@ export default {
   fetch: createHandler(),
   scheduled: (_event: unknown, env: Env, context: { waitUntil(promise: Promise<unknown>): void }) => {
     context.waitUntil(processSessionNotifications(env))
+    context.waitUntil(processCalEmails(env))
   },
 }
